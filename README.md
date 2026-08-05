@@ -27,7 +27,7 @@ convex body admits such a partition into an arbitrary prescribed number of conve
 
 The case of three parts was established by **Imre Bárány, Pavle V. M. Blagojević, and András
 Szűcs** [3]. Topological methods later proved the conjecture when the number of parts is a prime
-power [4, 5]. A related result on simultaneous convex fair partitions of \(d\) measures in \(\mathbb{R}^d\) was proved in [6].
+power [4, 5]. A related result on simultaneous convex fair partitions of d measures in ℝᵈ was proved in [6].
 
 The full result for an arbitrary number of parts was proved by **Arseniy Akopyan, Sergey
 Avvakumov, and Roman Karasev** [1]. A preprint appeared in 2018, and the final paper was
@@ -58,23 +58,17 @@ Equivalently, the main checks are:
 
 ```bash
 lake build
-python3 scripts/check_dependencies.py
 lake env lean HumanVerification/Main.lean
 lake env lean HumanVerification/Check.lean
 python3 scripts/audit_project.py
 ```
-
-`HumanVerification/Check.lean` also verifies by definitional equality that the public plane,
-area, perimeter, and partition predicate use the intended Mathlib definitions. The dependency
-check confirms that Mathlib comes from the official repository, is at the exact commit recorded
-in `lake-manifest.json`, and has no local modifications.
 
 Lean reports that the main theorem depends only on the standard foundational axioms used by
 Mathlib: `propext`, `Classical.choice`, and `Quot.sound`. The project contains no `sorry`, `admit`,
 project-specific `axiom`, `unsafe`, or `implemented_by` declarations.
 
 The formalization was developed and prepared for verification with assistance from
-**Aristotle** and **ChatGPT**. The resulting proof term is checked independently by the Lean
+[**Aristotle**](https://aristotle.harmonic.fun/) and [**ChatGPT**](https://chatgpt.com/). The resulting proof term is checked independently by the Lean
 kernel.
 
 ## References
@@ -104,12 +98,11 @@ kernel.
    *Geometriae Dedicata* **170** (2014), 263–279.
 
 6. Pablo Soberón,
-   [*Balanced convex partitions of measures in* $\mathbb{R}^d$](https://www.cambridge.org/core/journals/mathematika/article/abs/balanced-convex-partitions-of-measures-in-d/980CC476E4C821C0C5158560C8C1A347),
+   [*Balanced convex partitions of measures in* ℝᵈ](https://www.cambridge.org/core/journals/mathematika/article/abs/balanced-convex-partitions-of-measures-in-d/980CC476E4C821C0C5158560C8C1A347),
    *Mathematika* **58** (2012), no. 1, 71–76.
    [DOI: 10.1112/S0025579311001914](https://doi.org/10.1112/S0025579311001914) ·
    [arXiv:1010.6191](https://arxiv.org/abs/1010.6191)
 
 ## Software
 
-- [Lean 4](https://lean-lang.org/)
-- [Mathlib](https://leanprover-community.github.io/)
+[Lean 4](https://lean-lang.org/) · [Mathlib](https://leanprover-community.github.io/) · [Aristotle](https://aristotle.harmonic.fun/) · [ChatGPT](https://chatgpt.com/)

@@ -1,4 +1,4 @@
-# The Nandakumar–Ramana Rao theorem in Lean
+# Proof of the Nandakumar–Ramana Rao conjecture in Lean
 
 This repository contains a Lean 4 formalization of the theorem proved by
 **Arseniy Akopyan, Sergey Avvakumov, and Roman Karasev** [1].

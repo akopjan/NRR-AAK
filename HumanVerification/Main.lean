@@ -12,7 +12,7 @@ structure ConvexFigure where
   carrier : Set Plane
   isConvex : Convex ℝ carrier
   isCompact : IsCompact carrier
-  hasNonemptyInterior : (Set.interior carrier).Nonempty
+  hasNonemptyInterior : (interior carrier).Nonempty
 
 namespace ConvexFigure
 
@@ -22,7 +22,7 @@ def area (F : ConvexFigure) : ENNReal :=
 def perimeter (F : ConvexFigure) : ENNReal :=
   (MeasureTheory.Measure.hausdorffMeasure (1 : ℝ) :
       MeasureTheory.Measure Plane)
-    (Set.frontier F.carrier)
+    (frontier F.carrier)
 
 end ConvexFigure
 
@@ -31,8 +31,8 @@ def IsConvexPartition {n : ℕ}
   F.carrier = ⋃ i, (pieces i).carrier ∧
   ∀ i j, i ≠ j →
     Disjoint
-      (Set.interior (pieces i).carrier)
-      (Set.interior (pieces j).carrier)
+      (interior (pieces i).carrier)
+      (interior (pieces j).carrier)
 
 /--
 Every nondegenerate compact convex figure can be partitioned into `n > 0`

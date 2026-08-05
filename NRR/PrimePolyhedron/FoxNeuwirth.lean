@@ -1,0 +1,108 @@
+import NRR.PrimePolyhedron.FoxNeuwirth.BarredPermutation
+import NRR.PrimePolyhedron.FoxNeuwirth.PrimeBoundary
+import NRR.PrimePolyhedron.FoxNeuwirth.CanonicalConfiguration
+import NRR.PrimePolyhedron.FoxNeuwirth.Strata
+import NRR.PrimePolyhedron.FoxNeuwirth.TopCells
+import NRR.PrimePolyhedron.FoxNeuwirth.TopCellModel
+import NRR.PrimePolyhedron.FoxNeuwirth.CellAtlas
+import NRR.PrimePolyhedron.FoxNeuwirth.Phase5Complete
+import NRR.PrimePolyhedron.FoxNeuwirth.Orientation
+import NRR.PrimePolyhedron.FoxNeuwirth.OrientedBoundary
+import NRR.PrimePolyhedron.FoxNeuwirth.OrderComplex
+import NRR.PrimePolyhedron.FoxNeuwirth.ModPOrbitCycle
+import NRR.PrimePolyhedron.FoxNeuwirth.ReferenceZero
+import NRR.PrimePolyhedron.FoxNeuwirth.TopFlagSubdivision
+import NRR.PrimePolyhedron.FoxNeuwirth.CellularCycle
+import NRR.PrimePolyhedron.FoxNeuwirth.OrbitRepresentatives
+import NRR.PrimePolyhedron.FoxNeuwirth.ActualCellularBoundary
+import NRR.PrimePolyhedron.FoxNeuwirth.FacetShuffleEquiv
+import NRR.PrimePolyhedron.FoxNeuwirth.TopIncidenceComplex
+
+import NRR.PrimePolyhedron.FoxNeuwirth.FiniteMultivariateGenericPerturbation
+import NRR.PrimePolyhedron.FoxNeuwirth.EquivariantPrismVertexParameters
+import NRR.PrimePolyhedron.FoxNeuwirth.EquivariantPrismGenericityPolynomials
+import NRR.PrimePolyhedron.FoxNeuwirth.EquivariantPrismGenericityNonzero
+
+import NRR.PrimePolyhedron.FoxNeuwirth.EquivariantPrismGenericPerturbation
+
+import NRR.PrimePolyhedron.FoxNeuwirth.EquivariantPrismSubdivisionMargin
+
+import NRR.PrimePolyhedron.FoxNeuwirth.EquivariantPrismGlobalCancellation
+
+import NRR.PrimePolyhedron.FoxNeuwirth.EquivariantPrismNonhorizontalCancellation
+
+import NRR.PrimePolyhedron.FoxNeuwirth.EquivariantPrismHorizontalEndpointIdentification
+
+import NRR.PrimePolyhedron.FoxNeuwirth.RegularApproximationStability
+
+import NRR.PrimePolyhedron.FoxNeuwirth.ReferenceZeroFreeMaps
+import NRR.PrimePolyhedron.FoxNeuwirth.StableObstructionCount
+
+import NRR.PrimePolyhedron.FoxNeuwirth.EquivariantPrismStableRelativeBoundary
+
+import NRR.PrimePolyhedron.FoxNeuwirth.StableCollarComparison
+
+import NRR.PrimePolyhedron.FoxNeuwirth.StableCollarExistenceAudit
+
+import NRR.PrimePolyhedron.FoxNeuwirth.StableCollarRelativeSubdivision
+import NRR.PrimePolyhedron.FoxNeuwirth.RelativeSubdivisionCellParameters
+
+import NRR.PrimePolyhedron.FoxNeuwirth.RelativeCollarThinSlabs
+import NRR.PrimePolyhedron.FoxNeuwirth.RelativeCollarThinSlabsBoundary
+import NRR.PrimePolyhedron.FoxNeuwirth.RelativeCollarThinSlabsEndpoints
+
+import NRR.PrimePolyhedron.FoxNeuwirth.StableCollarRelativeSubdivisionExact
+
+import NRR.PrimePolyhedron.FoxNeuwirth.RelativeSubdivisionCylinderCombinatorics
+import NRR.PrimePolyhedron.FoxNeuwirth.RelativeSubdivisionOneStepCells
+import NRR.PrimePolyhedron.FoxNeuwirth.RelativeSubdivisionOneStepEndpoints
+import NRR.PrimePolyhedron.FoxNeuwirth.RelativeSubdivisionOneStepBoundaryBase
+import NRR.PrimePolyhedron.FoxNeuwirth.FiniteSimplexDoubleBoundary
+import NRR.PrimePolyhedron.FoxNeuwirth.RelativeSubdivisionCylinderBoundary
+import NRR.PrimePolyhedron.FoxNeuwirth.RelativeSubdivisionOneStepBoundary
+import NRR.PrimePolyhedron.FoxNeuwirth.RelativeSubdivisionOneStepCollar
+import NRR.PrimePolyhedron.FoxNeuwirth.ExplicitAffineRelativeCollarReverse
+import NRR.PrimePolyhedron.FoxNeuwirth.ExplicitAffineRelativeCollarCompose
+import NRR.PrimePolyhedron.FoxNeuwirth.RelativeSubdivisionEndpointCollar
+
+import NRR.PrimePolyhedron.FoxNeuwirth.StableEndpointBridges
+
+import NRR.PrimePolyhedron.FoxNeuwirth.StablePatchedHomotopyBoundary
+
+import NRR.PrimePolyhedron.FoxNeuwirth.StablePatchedHomotopyFineMargin
+
+import NRR.PrimePolyhedron.FoxNeuwirth.StableFullCollarOriginMargin
+
+import NRR.PrimePolyhedron.FoxNeuwirth.EndpointStackLastVertexCore
+import NRR.PrimePolyhedron.FoxNeuwirth.EndpointStackGlobalDescent
+import NRR.PrimePolyhedron.FoxNeuwirth.AffineBarycentricSubdivisionCarrier
+import NRR.PrimePolyhedron.FoxNeuwirth.RefinedChartCarrierCore
+import NRR.PrimePolyhedron.FoxNeuwirth.RefinedChartCarrierEquivariant
+import NRR.PrimePolyhedron.FoxNeuwirth.ExplicitAffineRelativeCollarAssignmentCompose
+import NRR.PrimePolyhedron.FoxNeuwirth.EndpointStackAffinePullbackCore
+import NRR.PrimePolyhedron.FoxNeuwirth.EndpointStackAffinePullbackDescent
+import NRR.PrimePolyhedron.FoxNeuwirth.StableFullCollarRelativeMesh
+import NRR.PrimePolyhedron.FoxNeuwirth.StableFullCollarConstructionAffinePullback
+import NRR.PrimePolyhedron.FoxNeuwirth.StableFullCollarOriginMarginAffinePullback
+import NRR.PrimePolyhedron.FoxNeuwirth.RouteBFacetWitnessRealization
+import NRR.PrimePolyhedron.FoxNeuwirth.RouteBEndpointFacetTargets
+import NRR.PrimePolyhedron.FoxNeuwirth.RouteBFacetTargetComposition
+import NRR.PrimePolyhedron.FoxNeuwirth.RouteBFrozenSupportGeometry
+import NRR.PrimePolyhedron.FoxNeuwirth.StableFullCollarRouteB
+import NRR.PrimePolyhedron.FoxNeuwirth.StableFullCollarRouteBGeometry
+import NRR.PrimePolyhedron.FoxNeuwirth.StableFullCollarRouteBFacetGeometry
+import NRR.PrimePolyhedron.FoxNeuwirth.StableFullCollarRouteBComplete
+import NRR.PrimePolyhedron.FoxNeuwirth.StableFullCollarRouteBInstantiation
+
+import NRR.PrimePolyhedron.FoxNeuwirth.StableExactRelativeCollarConstructionAffinePullback
+import NRR.PrimePolyhedron.FoxNeuwirth.StableHomotopyInvarianceAffinePullback
+
+/-!
+# Fox--Neuwirth model for planar configurations
+
+The public API contains the barred-permutation face combinatorics, prime shuffle arithmetic, the
+concrete compact top-cell polyhedron, its free prime-symmetry action, the equivariant configuration
+and reference maps, the full finite face poset, canonical cell orientations, signed codimension-one
+boundary relations, the order-complex skeleton, modulo-prime orbit cancellation, and the
+reference-zero orbit count.
+-/

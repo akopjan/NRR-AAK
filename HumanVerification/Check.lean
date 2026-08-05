@@ -21,7 +21,7 @@ example (F : HumanVerification.ConvexFigure) :
     F.perimeter =
       (MeasureTheory.Measure.hausdorffMeasure (1 : ℝ) :
           MeasureTheory.Measure HumanVerification.Plane)
-        (Set.frontier F.carrier) := by
+        (frontier F.carrier) := by
   rfl
 
 /-- The public partition predicate has the intended covering and disjoint-interior meaning. -/
@@ -32,8 +32,8 @@ example {n : ℕ}
       F.carrier = ⋃ i, (pieces i).carrier ∧
       ∀ i j, i ≠ j →
         Disjoint
-          (Set.interior (pieces i).carrier)
-          (Set.interior (pieces j).carrier) := by
+          (interior (pieces i).carrier)
+          (interior (pieces j).carrier) := by
   rfl
 
 example (F : HumanVerification.ConvexFigure) (n : ℕ) (hn : 0 < n) :

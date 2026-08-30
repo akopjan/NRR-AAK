@@ -1,0 +1,106 @@
+version: "v0.4"
+
+project:
+  name: "NRR-AAK"
+  description: >-
+    Lean 4 formalization of the theorem that every nondegenerate compact
+    convex figure in the Euclidean plane can be partitioned into any positive
+    number of compact convex pieces having equal areas and equal perimeters.
+  authors:
+    - "Arseniy Akopyan"
+  license: "Apache-2.0"
+  responsible_maintainers:
+    - "Arseniy Akopyan"
+
+classification:
+  arxiv: ["math.MG"]
+  msc2020: ["52C35", "55M20", "55M35"]
+
+sources:
+  - title: "Convex fair partitions into an arbitrary number of pieces"
+    authors:
+      - "Arseniy Akopyan"
+      - "Sergey Avvakumov"
+      - "Roman Karasev"
+    id: "doi:10.1016/j.aim.2026.110927"
+    type: "paper"
+    location: "https://doi.org/10.1016/j.aim.2026.110927"
+    relationship: "formalizes"
+
+
+related_formalizations: []
+
+status:
+  scope: >-
+    Formalizes the planar convex fair partition theorem: every nondegenerate
+    compact convex figure can be partitioned into any positive number of compact
+    convex pieces with equal areas and equal perimeters. The formalization
+    focuses on this main theorem rather than the full contents of the source paper.
+
+  sorry_count: 0
+  sorry_in_definitions: 0
+
+  axioms:
+    - "propext"
+    - "Quot.sound"
+    - "Classical.choice"
+
+
+automation:
+  methods:
+    - method: "copilot"
+      models:
+        - "ChatGPT"
+      framework: "ChatGPT"
+      tool_setup: "AI-assisted Lean development using ChatGPT for proof ideas, debugging, and code suggestions."
+      cost:
+        wall_time: "not tracked"
+        spend_usd: "subscription-based"
+        hardware: "API/cloud"
+      prompting_notes: "Interactive prompts for Lean proof construction, error diagnosis, and refactoring."
+
+    - method: "agent"
+      models:
+        - "Aristotle"
+      framework: "Aristotle"
+      tool_setup: "Aristotle was used as an automated theorem-proving agent for parts of the Lean formalization."
+      cost:
+        wall_time: "not tracked"
+        spend_usd: "not tracked"
+        hardware: "cloud"
+      prompting_notes: "Used to search for and construct Lean proofs."
+
+  spend_usd: "not tracked"
+  notes: "The formalization was developed by the author with substantial assistance from ChatGPT and Aristotle."
+
+fidelity:
+  divergences: >-
+  The original paper proves the more general result that, for any d, m >= 2,
+  any d-1 finite nonzero Borel measures on a convex body K ⊂ ℝ^d that are
+  absolutely continuous with respect to Lebesgue measure, and any continuous
+  functional f on convex bodies, K can be partitioned into m convex parts,
+  so that all d-1 measures and f take equal values
+  on all parts. The present formalization covers only the planar equal-area,
+  equal-perimeter case.
+
+review:
+  status: "self-assessed"
+  reviewers:
+    - "none"
+  notes: "The formalization has been self-reviewed. No independent mathematical or Lean review has been completed yet."
+
+alignment:
+  namespace: "HumanVerification"
+  statements:
+    - source: "Main theorem of Akopyan–Avvakumov–Karasev"
+      lean: "HumanVerification.equalAreaEqualPerimeterPartition"
+      module: "HumanVerification.Main"
+      status: "proved"
+      note: >-
+        Formalizes the theorem that every compact convex
+        figure can be partitioned into any positive number of convex
+        pieces with equal areas and equal perimeters.
+
+acknowledgements: >-
+  This formalization uses Lean 4 and Mathlib. ChatGPT and Aristotle were used
+  as AI-assisted tools during proof development and debugging.

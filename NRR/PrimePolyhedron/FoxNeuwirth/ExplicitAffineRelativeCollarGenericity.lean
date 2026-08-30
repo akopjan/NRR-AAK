@@ -1,6 +1,13 @@
 import NRR.PrimePolyhedron.FoxNeuwirth.ExplicitAffineRelativeCollarStokes
 import NRR.PrimePolyhedron.FoxNeuwirth.EquivariantPrismGenericPerturbation
 import NRR.PrimePolyhedron.FoxNeuwirth.EquivariantPrismSubdivisionMargin
+set_option linter.unusedVariables false
+set_option linter.unusedSectionVars false
+set_option linter.unusedSimpArgs false
+set_option linter.unnecessarySimpa false
+set_option linter.unnecessarySeqFocus false
+set_option linter.unusedTactic false
+set_option linter.unreachableTactic false
 
 /-!
 # Relative genericity for explicit affine collars
@@ -676,7 +683,7 @@ theorem exists_relativeGeneric_perturbation
       (replaceMovable hp C base move) (m / 2) := by
     have h := retain_localAffineCoordinateNormMargin hp C
       (replaceMovable hp C base move) base hmargin hfullClose
-    convert h using 1 <;> ring
+    convert h using 1 ; ring
   refine ⟨{
     move := move
     closeToBase := hfullClose

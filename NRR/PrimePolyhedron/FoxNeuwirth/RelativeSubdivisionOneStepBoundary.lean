@@ -1,6 +1,13 @@
 import NRR.PrimePolyhedron.FoxNeuwirth.RelativeSubdivisionOneStepBoundaryBase
 import NRR.PrimePolyhedron.FoxNeuwirth.RelativeSubdivisionCylinderBoundary
 import NRR.PrimePolyhedron.FoxNeuwirth.EquivariantPrismNonhorizontalCancellation
+set_option linter.unusedVariables false
+set_option linter.unusedSectionVars false
+set_option linter.unnecessarySeqFocus false
+set_option linter.unusedTactic false
+set_option linter.unreachableTactic false
+set_option linter.unusedSimpArgs false
+set_option linter.unnecessarySimpa false
 
 /-!
 # Pointwise boundary of the one-step relative subdivision cylinder

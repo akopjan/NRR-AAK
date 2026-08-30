@@ -2,6 +2,13 @@ import NRR.OddSphereDegree.AlgebraicTopology.SingularH0
 import NRR.OddSphereDegree.AlgebraicTopology.SubChainSubspaceBridge
 import NRR.OddSphereDegree.AlgebraicTopology.SingularHomologyFunctorAPI
 import Mathlib
+set_option linter.unusedVariables false
+set_option linter.unusedSectionVars false
+set_option linter.unnecessarySeqFocus false
+set_option linter.unusedTactic false
+set_option linter.unreachableTactic false
+set_option linter.unusedSimpArgs false
+set_option linter.unnecessarySimpa false
 
 /-!
 # Zeroth homology of path-connected spaces, via the augmentation

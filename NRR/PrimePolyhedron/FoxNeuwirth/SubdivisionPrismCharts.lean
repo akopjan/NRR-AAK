@@ -1,5 +1,13 @@
 import NRR.PrimePolyhedron.FoxNeuwirth.RefinedAffineMap
 import NRR.OddSphereDegree.AlgebraicTopology.IteratedSubdivisionSmallSimplex
+set_option linter.unusedSectionVars false
+set_option linter.unusedSimpArgs false
+set_option linter.unnecessarySimpa false
+set_option linter.unnecessarySeqFocus false
+set_option linter.unusedTactic false
+set_option linter.unreachableTactic false
+
+set_option linter.unusedVariables false
 
 /-!
 # Staircase prism charts and their barycentric refinements

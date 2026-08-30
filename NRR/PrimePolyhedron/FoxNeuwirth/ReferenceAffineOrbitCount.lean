@@ -4,6 +4,14 @@ import Mathlib.LinearAlgebra.Matrix.Block
 import Mathlib.LinearAlgebra.Matrix.ToLinearEquiv
 import NRR.PrimePolyhedron.FoxNeuwirth.PrimeOrbitCycle
 import NRR.PrimePolyhedron.FoxNeuwirth.ReferenceZero
+set_option linter.unusedSectionVars false
+set_option linter.unnecessarySeqFocus false
+set_option linter.unusedTactic false
+set_option linter.unreachableTactic false
+set_option linter.unusedSimpArgs false
+set_option linter.unnecessarySimpa false
+
+set_option linter.unusedVariables false
 
 /-!
 # The explicit reference affine orbit count
@@ -414,7 +422,7 @@ theorem selected_stageBlock_sum_rank
           rw [h]
           have hval : ((selectedCode sigma).removal.symm r).1 = r.1 := by
             simp [selectedCode_removal]
-          simp only [hval, stageIndex_val, Fin.le_def, Fin.coe_castSucc]
+          simp only [hval, stageIndex_val, Fin.le_def, Fin.val_castSucc]
         have hsumdiff :
             (∑ j : Fin (p - 1),
                 (stageBlock (selectedCode sigma) (stageIndex hp j.castSucc) x1 : Int)) -
@@ -659,7 +667,7 @@ theorem selectedSimplex_smul
         (stageRank (selectedCode sigma) (stageIndex hp i) (tau.symm x)).1 <
           (stageRank (selectedCode sigma) (stageIndex hp i) (tau.symm y)).1
     rw [stageRank_lt_iff, stageRank_lt_iff]
-    congr 1 <;>
+    congr 1 ;
       simp [stageKey, stageBlock, selectedCode, sigma', tau, retainedBars,
         removedBefore]
   · rfl

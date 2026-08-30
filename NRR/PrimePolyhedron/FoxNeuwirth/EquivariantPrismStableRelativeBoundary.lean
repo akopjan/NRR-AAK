@@ -4,6 +4,14 @@ import NRR.PrimePolyhedron.FoxNeuwirth.RelativeCollarMiddlePrismEndpoints
 import NRR.PrimePolyhedron.FoxNeuwirth.ExplicitAffineRelativeCollarStokes
 import NRR.PrimePolyhedron.FoxNeuwirth.EquivariantPrismSubdivisionMargin
 import NRR.PrimePolyhedron.FoxNeuwirth.RegularApproximationStability
+set_option linter.unusedSectionVars false
+set_option linter.unnecessarySeqFocus false
+set_option linter.unusedTactic false
+set_option linter.unreachableTactic false
+set_option linter.unusedSimpArgs false
+set_option linter.unnecessarySimpa false
+
+set_option linter.unusedVariables false
 
 /-!
 # Stable endpoint approximations and a boundary-relative prism perturbation
@@ -894,7 +902,7 @@ theorem exists_controlled_generic_perturbation
     have hz : m ≤ ‖z‖ := by
       have hy_le : ‖y‖ ≤ ‖z - y‖ + ‖z‖ := by
         calc
-          ‖y‖ = ‖-(z - y) + z‖ := by congr 1 <;> module
+          ‖y‖ = ‖-(z - y) + z‖ := by congr 1 ; module
           _ ≤ ‖-(z - y)‖ + ‖z‖ := norm_add_le _ _
           _ = ‖z - y‖ + ‖z‖ := by rw [norm_neg]
       dsimp [m]

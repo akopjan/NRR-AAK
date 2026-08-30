@@ -1,5 +1,12 @@
 import NRR.PrimePolyhedron.FoxNeuwirth.ChartMapCollarRepresentation
 import NRR.PrimePolyhedron.FoxNeuwirth.RelativeSubdivisionEndpointCollar
+set_option linter.unusedVariables false
+set_option linter.unusedSectionVars false
+set_option linter.unnecessarySeqFocus false
+set_option linter.unusedTactic false
+set_option linter.unreachableTactic false
+set_option linter.unusedSimpArgs false
+set_option linter.unnecessarySimpa false
 
 /-!
 # Iterated affine-pullback endpoint stacks

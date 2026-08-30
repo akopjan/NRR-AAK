@@ -1,6 +1,13 @@
 import NRR.PrimePolyhedron.FoxNeuwirth.CompatibleChartMapOneStep
 import NRR.PrimePolyhedron.FoxNeuwirth.RelativeCollarMiddlePrismEndpoints
 import NRR.PrimePolyhedron.FoxNeuwirth.EquivariantPrismSubdivisionMargin
+set_option linter.unusedVariables false
+set_option linter.unusedSectionVars false
+set_option linter.unusedSimpArgs false
+set_option linter.unnecessarySimpa false
+set_option linter.unnecessarySeqFocus false
+set_option linter.unusedTactic false
+set_option linter.unreachableTactic false
 
 /-!
 # Fine prism assignments for compatible chart homotopies
@@ -382,7 +389,7 @@ theorem exists_refinement_avoidsOrigin
       (StandardSimplex.ofDelta (affineCompMap p L q.2 (StandardSimplex.toDelta w)))
   have hy_le : ‖y‖ ≤ ‖z - y‖ + ‖z‖ := by
     calc
-      ‖y‖ = ‖-(z - y) + z‖ := by congr 1 <;> module
+      ‖y‖ = ‖-(z - y) + z‖ := by congr 1 ; module
       _ ≤ ‖-(z - y)‖ + ‖z‖ := norm_add_le _ _
       _ = ‖z - y‖ + ‖z‖ := by rw [norm_neg]
   have hz : 0 < ‖z‖ := by linarith

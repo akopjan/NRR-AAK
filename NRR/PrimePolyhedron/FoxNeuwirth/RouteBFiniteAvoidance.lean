@@ -1,5 +1,13 @@
 import Mathlib.MeasureTheory.Measure.Typeclasses.Finite
 import Mathlib.Topology.MetricSpace.Pseudo.Defs
+set_option linter.unusedVariables false
+set_option linter.unusedSimpArgs false
+set_option linter.unnecessarySimpa false
+set_option linter.unnecessarySeqFocus false
+set_option linter.unusedTactic false
+set_option linter.unreachableTactic false
+
+set_option linter.unusedSectionVars false
 
 /-!
 # Route B, Step 1: avoidance of a finite family of null bad sets

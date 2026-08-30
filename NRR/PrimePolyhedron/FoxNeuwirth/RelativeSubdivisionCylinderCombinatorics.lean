@@ -1,6 +1,14 @@
 import NRR.OddSphereDegree.AlgebraicTopology.BarycentricSubdivisionHomotopyOperator
 import NRR.OddSphereDegree.AlgebraicTopology.BarycentricSubdivisionDiameter
 import NRR.PrimePolyhedron.FoxNeuwirth.AffineSubdivisionDeterminant
+set_option linter.unusedSectionVars false
+set_option linter.unnecessarySeqFocus false
+set_option linter.unusedTactic false
+set_option linter.unreachableTactic false
+set_option linter.unusedSimpArgs false
+set_option linter.unnecessarySimpa false
+
+set_option linter.unusedVariables false
 
 /-!
 # Recursive one-step subdivision cylinders

@@ -2,6 +2,13 @@ import Mathlib
 import NRR.PrimePolyhedron.FoxNeuwirth.OrderComplex
 import NRR.PrimePolyhedron.FoxNeuwirth.CanonicalConfiguration
 import NRR.PrimeModel.Model
+set_option linter.unusedVariables false
+set_option linter.unusedSectionVars false
+set_option linter.unnecessarySeqFocus false
+set_option linter.unusedTactic false
+set_option linter.unreachableTactic false
+set_option linter.unusedSimpArgs false
+set_option linter.unnecessarySimpa false
 
 /-!
 # Topological realization of the Fox--Neuwirth order complex

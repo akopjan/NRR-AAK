@@ -6,6 +6,13 @@ import Mathlib.LinearAlgebra.Matrix.Nondegenerate
 import Mathlib.Order.Interval.Finset.Basic
 import Mathlib.Data.Finset.Max
 import Mathlib.Data.Fin.Tuple.Basic
+set_option linter.unusedVariables false
+set_option linter.unusedSectionVars false
+set_option linter.unnecessarySeqFocus false
+set_option linter.unusedTactic false
+set_option linter.unreachableTactic false
+set_option linter.unusedSimpArgs false
+set_option linter.unnecessarySimpa false
 
 /-!
 # The affine positive-ray boundary identity
@@ -836,7 +843,7 @@ theorem lowerEndpoint_coordinate_eq_zero
   have hc : cofactorDirection hp V (lowerEndpointIndex hp V hregular w) ≠ 0 :=
     cofactorDirection_ne_zero hp V hregular _
   rw [lineCoordinate, lowerParameter_eq_threshold]
-  field_simp [hc] <;> ring
+  field_simp [hc] ; ring
 
 /-- The chosen upper-endpoint coordinate vanishes. -/
 theorem upperEndpoint_coordinate_eq_zero
@@ -847,7 +854,7 @@ theorem upperEndpoint_coordinate_eq_zero
   have hc : cofactorDirection hp V (upperEndpointIndex hp V hregular w) ≠ 0 :=
     cofactorDirection_ne_zero hp V hregular _
   rw [lineCoordinate, upperParameter_eq_threshold]
-  field_simp [hc] <;> ring
+  field_simp [hc] ; ring
 
 /-- A feasible line parameter gives a barycentric point of the standard simplex. -/
 noncomputable def lineSimplexPoint
@@ -1084,7 +1091,7 @@ theorem exists_affine_zero_between_of_opposite_signs
     · apply le_of_lt
       apply (div_lt_iff₀ hb).2
       linarith
-    · field_simp [ne_of_gt hb] <;> ring
+    · field_simp [ne_of_gt hb] ; ring
   · have hb : b < 0 := by
       by_contra h
       have hbnonneg : 0 ≤ b := le_of_not_gt h
@@ -1098,7 +1105,7 @@ theorem exists_affine_zero_between_of_opposite_signs
     · apply le_of_lt
       apply (div_lt_iff_of_neg hb).2
       linarith
-    · field_simp [ne_of_lt hb] <;> ring
+    · field_simp [ne_of_lt hb] ; ring
 
 /-- Along an ordered pair of feasible parameters, origin avoidance forces the mean to have the
 same positive/nonpositive classification at both points. -/

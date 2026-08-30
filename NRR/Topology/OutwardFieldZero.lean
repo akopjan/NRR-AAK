@@ -2,6 +2,13 @@ import Mathlib
 import NRR.OddSphereDegree.DegreePositiveIntegration
 import NRR.OddSphereDegree.AlgebraicTopology.SphereOrientationPosFromMV
 import NRR.OddSphereDegree.BallBoundaryLES
+set_option linter.unusedVariables false
+set_option linter.unusedSectionVars false
+set_option linter.unnecessarySeqFocus false
+set_option linter.unusedTactic false
+set_option linter.unreachableTactic false
+set_option linter.unusedSimpArgs false
+set_option linter.unnecessarySimpa false
 
 /-!
 # A zero theorem for outward-pointing Euclidean vector fields
@@ -69,13 +76,13 @@ theorem exists_zero_closedBall_of_inner_pos_on_sphere
   let incl : C(Sphere d, SphereOddDegree.Disk d) :=
     ⟨fun x => ⟨x.1, by
         have hxnorm : ‖(x.1 : Ambient d)‖ = 1 := by
-          simpa [mem_sphere_zero_iff_norm] using x.2
-        simpa [mem_closedBall, dist_eq_norm] using hxnorm.le⟩,
+          simp
+        simp⟩,
       Continuous.subtype_mk continuous_subtype_val (by
         intro x
         have hxnorm : ‖(x.1 : Ambient d)‖ = 1 := by
-          simpa [mem_sphere_zero_iff_norm] using x.2
-        simpa [mem_closedBall, dist_eq_norm] using hxnorm.le)⟩
+          simp
+        simp)⟩
 
   let boundaryMap : C(Sphere d, Sphere d) := r.comp incl
 
@@ -100,7 +107,7 @@ theorem exists_zero_closedBall_of_inner_pos_on_sphere
       intro p hEq
       have ht1 : (p.1 : Real) ≤ 1 := p.1.2.2
       have hp_norm : ‖(p.2.1 : Ambient d)‖ = 1 := by
-        simpa [mem_sphere_zero_iff_norm] using p.2.2
+        simp
       have hout' : 0 < inner Real p.2.1 (F p.2.1) := hout p.2.1 hp_norm
       have hinner : 0 < inner Real p.2.1
           ((1 - (p.1 : Real)) • F p.2.1 + (p.1 : Real) • p.2.1) := by
@@ -126,11 +133,10 @@ theorem exists_zero_closedBall_of_inner_pos_on_sphere
     · intro x
       apply Subtype.ext
       simp [Hmap, V, radialNormalizeMap, boundaryMap, incl, r,
-        radialNormalize, radialNormalize_val]
+        radialNormalize]
     · intro x
       apply Subtype.ext
-      simp [Hmap, V, radialNormalizeMap, radialNormalize,
-        radialNormalize_val, x.2]
+      simp [Hmap, V, radialNormalizeMap, radialNormalize]
 
   let o : SphereOrientationPos := sphereOrientationPos_unconditional
   have hdeg_id : degreePos o hd boundaryMap = 1 := by

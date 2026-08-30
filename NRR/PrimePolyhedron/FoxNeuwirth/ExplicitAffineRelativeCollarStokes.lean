@@ -2,6 +2,13 @@ import NRR.PrimePolyhedron.FoxNeuwirth.ExplicitAffineRelativeCollar
 import NRR.PrimePolyhedron.FoxNeuwirth.EquivariantPrismGlobalCancellation
 import NRR.PrimePolyhedron.FoxNeuwirth.RegularApproximationStability
 import Mathlib.LinearAlgebra.Matrix.Reindex
+set_option linter.unusedVariables false
+set_option linter.unusedSectionVars false
+set_option linter.unnecessarySeqFocus false
+set_option linter.unusedTactic false
+set_option linter.unreachableTactic false
+set_option linter.unusedSimpArgs false
+set_option linter.unnecessarySimpa false
 
 /-!
 # Finite Stokes theorem for explicit relative affine collars

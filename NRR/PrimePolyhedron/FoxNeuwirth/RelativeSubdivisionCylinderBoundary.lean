@@ -1,5 +1,12 @@
 import NRR.PrimePolyhedron.FoxNeuwirth.RelativeSubdivisionCylinderCombinatorics
 import NRR.PrimePolyhedron.FoxNeuwirth.FiniteSimplexDoubleBoundary
+set_option linter.unusedVariables false
+set_option linter.unusedSectionVars false
+set_option linter.unnecessarySeqFocus false
+set_option linter.unusedTactic false
+set_option linter.unreachableTactic false
+set_option linter.unusedSimpArgs false
+set_option linter.unnecessarySimpa false
 
 /-!
 # Oriented boundary of the recursive one-step subdivision cylinder
@@ -373,7 +380,7 @@ theorem sidePairing_tupleBoundaryWeight
   rw [← Finset.sum_neg_distrib]
   apply Finset.sum_congr rfl
   intro j hj
-  ring_nf <;> rfl
+  ring_nf ; rfl
 
 /-- Expanding the remaining negative weighted recursive-side sum produces exactly the
 codimension-two side-side sum. -/
@@ -403,7 +410,7 @@ theorem neg_weighted_sidePairing_eq_recursive_side_side
   rw [← Finset.sum_neg_distrib]
   apply Finset.sum_congr rfl
   intro q hq
-  ring_nf <;> rfl
+  ring_nf ; rfl
 
 /-- The triangulated boundary chain of the recursive cylinder is closed in every dimension. -/
 theorem baseChainClosed

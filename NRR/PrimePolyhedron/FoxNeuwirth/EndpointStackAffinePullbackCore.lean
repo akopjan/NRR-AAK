@@ -1,6 +1,8 @@
 import NRR.PrimePolyhedron.FoxNeuwirth.RelativeSubdivisionOneStepEndpoints
 import NRR.PrimePolyhedron.FoxNeuwirth.SubdivisionZeroFreeApproximation
 
+set_option linter.unusedVariables false
+
 /-!
 # Affine pullback values on one endpoint-subdivision cylinder
 
@@ -31,7 +33,7 @@ open RefinedAffineMap
 
 variable {p d n : Nat}
 
-private def parentIndex (_hp : Nat.Prime p) : Fin (p - 1 + 1) → Fin (p - 1 + 1) :=
+private def parentIndex (hp : Nat.Prime p) : Fin (p - 1 + 1) → Fin (p - 1 + 1) :=
   id
 
 private def cylinderIndex (hp : Nat.Prime p) : Fin (p + 1) → Fin (p - 1 + 2) :=

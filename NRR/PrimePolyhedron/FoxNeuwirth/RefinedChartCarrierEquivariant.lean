@@ -1,5 +1,12 @@
 import NRR.PrimePolyhedron.FoxNeuwirth.RefinedChartCarrierCore
 import NRR.PrimePolyhedron.FoxNeuwirth.CoordinateEquivariance
+set_option linter.unusedVariables false
+set_option linter.unusedSectionVars false
+set_option linter.unusedSimpArgs false
+set_option linter.unnecessarySimpa false
+set_option linter.unnecessarySeqFocus false
+set_option linter.unusedTactic false
+set_option linter.unreachableTactic false
 
 /-!
 # Equivariant refined-chart carrier compatibility

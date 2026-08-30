@@ -1,5 +1,12 @@
 import NRR.PrimePolyhedron.FoxNeuwirth.RelativeCollarThinSlabsBoundary
 import NRR.PrimePolyhedron.FoxNeuwirth.RelativeCollarMiddlePrismEndpointsCore
+set_option linter.unusedVariables false
+set_option linter.unusedSectionVars false
+set_option linter.unnecessarySeqFocus false
+set_option linter.unusedTactic false
+set_option linter.unreachableTactic false
+set_option linter.unusedSimpArgs false
+set_option linter.unnecessarySimpa false
 
 /-!
 # Endpoint identification for thin-time stacks

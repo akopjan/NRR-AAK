@@ -1,5 +1,12 @@
 import NRR.PrimePolyhedron.FoxNeuwirth.RouteBMixedFaceIncidence
 import Mathlib.MeasureTheory.Measure.Lebesgue.EqHaar
+set_option linter.unusedVariables false
+set_option linter.unusedSectionVars false
+set_option linter.unnecessarySeqFocus false
+set_option linter.unusedTactic false
+set_option linter.unreachableTactic false
+set_option linter.unusedSimpArgs false
+set_option linter.unnecessarySimpa false
 
 /-!
 # Route B, Step 4: one-coordinate affine fibers

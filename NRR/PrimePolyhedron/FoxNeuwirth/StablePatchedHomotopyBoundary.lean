@@ -1,4 +1,12 @@
 import NRR.PrimePolyhedron.FoxNeuwirth.StableEndpointBridges
+set_option linter.unusedSectionVars false
+set_option linter.unnecessarySeqFocus false
+set_option linter.unusedTactic false
+set_option linter.unreachableTactic false
+set_option linter.unusedSimpArgs false
+set_option linter.unnecessarySimpa false
+
+set_option linter.unusedVariables false
 
 /-!
 # Patched endpoint homotopy and exact frozen-boundary samples

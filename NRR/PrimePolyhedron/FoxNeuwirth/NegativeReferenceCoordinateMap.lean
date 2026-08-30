@@ -1,4 +1,11 @@
 import NRR.PrimePolyhedron.FoxNeuwirth.PositiveReferenceCoordinateMap
+set_option linter.unusedVariables false
+set_option linter.unusedSectionVars false
+set_option linter.unnecessarySeqFocus false
+set_option linter.unusedTactic false
+set_option linter.unreachableTactic false
+set_option linter.unusedSimpArgs false
+set_option linter.unnecessarySimpa false
 
 /-!
 # A globally negative coordinate lift of the S5 reference map
@@ -58,7 +65,7 @@ theorem negativeReferenceCoordinateMap_deviation
   apply congrArg (fun vertexValue : BarredPermutation p → Fin (p - 1) → ℝ =>
     ({ vertexValue := vertexValue } : AffineVertexMap p (p - 1)))
   funext c r
-  simp [negativeReferenceCoordinateMap, CoordinateAffineVertexMap.deviation]
+  simp [negativeReferenceCoordinateMap]
 
 /-- The negative reference has zero positive local-index cochain. -/
 theorem negativeReferencePositiveIndex_eq_zero

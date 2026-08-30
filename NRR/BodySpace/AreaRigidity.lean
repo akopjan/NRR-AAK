@@ -1,6 +1,14 @@
 import Mathlib
 import NRR.BodySpace.Basic
 import NRR.Geometry.ConvexBody.PositiveAreaInterior
+set_option linter.unusedSectionVars false
+set_option linter.unusedSimpArgs false
+set_option linter.unnecessarySimpa false
+set_option linter.unnecessarySeqFocus false
+set_option linter.unusedTactic false
+set_option linter.unreachableTactic false
+
+set_option linter.unusedVariables false
 
 /-!
 # `NRR.BodySpace.AreaRigidity` — area rigidity for nested convex subbodies

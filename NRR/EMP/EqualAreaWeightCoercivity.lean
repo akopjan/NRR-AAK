@@ -1,6 +1,14 @@
 import Mathlib
 import NRR.EMP.EqualAreaWeightOutward
 import NRR.EMP.NormalizedAreaDeviation
+set_option linter.unusedSectionVars false
+set_option linter.unnecessarySeqFocus false
+set_option linter.unusedTactic false
+set_option linter.unreachableTactic false
+set_option linter.unusedSimpArgs false
+set_option linter.unnecessarySimpa false
+
+set_option linter.unusedVariables false
 
 /-!
 # Coercivity gauge for the augmented equal-area deviation field
@@ -135,7 +143,7 @@ theorem exists_positive_gauge_lower_bound_on_sphere
     (by
       let i0 : Fin n := ⟨0, hn⟩
       refine ⟨EuclideanSpace.single i0 1, ?_⟩
-      simp [Metric.mem_sphere])
+      simp)
     hcont.continuousOn
   refine ⟨weightCoercivityGauge (fun i => x0 i), ?_, ?_⟩
   · apply weightCoercivityGauge_pos_of_ne_zero hn
@@ -144,7 +152,7 @@ theorem exists_positive_gauge_lower_bound_on_sphere
       ext i
       exact congrFun hzero i
     have hxmem := hx0.1
-    simp [Metric.mem_sphere, hxzero] at hxmem
+    simp [hxzero] at hxmem
   · intro x hx
     exact hx0.2 (by simpa [Metric.mem_sphere, dist_eq_norm] using hx)
 
@@ -394,7 +402,7 @@ lemma augmentedAreaDeviation_outward_on_radius
     rw [ h_gauge, div_mul_eq_mul_div, gt_iff_lt, lt_div_iff₀ ] <;> nlinarith [ this.2 x hx, show 0 < ( n : ℝ ) * ( powerGapBound K s + 1 ) + ( powerGapBound K s * K.area + 1 ) from add_pos_of_nonneg_of_pos ( mul_nonneg ( Nat.cast_nonneg _ ) ( add_nonneg ( powerGapBound_nonneg K s ) zero_le_one ) ) ( add_pos_of_nonneg_of_pos ( mul_nonneg ( powerGapBound_nonneg K s ) ( show 0 ≤ K.area from K.area_nonneg ) ) zero_lt_one ) ];
   have := NRR.EMP.augmentedPairing_pos_of_gauge_large K s hn hs (equalAreaOutwardRadius K s hn • x) h_gauge;
   convert div_pos this ( NRR.EMP.equalAreaOutwardRadius_pos K s hn ) using 1;
-  rw [ eq_div_iff ( ne_of_gt ( NRR.EMP.equalAreaOutwardRadius_pos K s hn ) ) ] ; simp +decide [ inner_smul_left, inner_smul_right ] ; ring!;
+  rw [ eq_div_iff ( ne_of_gt ( NRR.EMP.equalAreaOutwardRadius_pos K s hn ) ) ] ; simp +decide [ inner_smul_left ] ; ring!;
 
 end EMP
 end NRR

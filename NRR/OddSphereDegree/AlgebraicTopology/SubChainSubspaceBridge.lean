@@ -1,6 +1,13 @@
 import NRR.OddSphereDegree.AlgebraicTopology.MayerVietoris
 import NRR.OddSphereDegree.AlgebraicTopology.BarycentricSubdivisionHomotopyFormula
 import NRR.OddSphereDegree.BallBoundaryLES
+set_option linter.unusedVariables false
+set_option linter.unusedSectionVars false
+set_option linter.unnecessarySeqFocus false
+set_option linter.unusedTactic false
+set_option linter.unreachableTactic false
+set_option linter.unusedSimpArgs false
+set_option linter.unnecessarySimpa false
 
 /-!
 # Bridge: subordinate-chain complex ≅ singular chains of the subspace

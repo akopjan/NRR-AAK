@@ -2,6 +2,13 @@ import NRR.PrimePolyhedron.FoxNeuwirth.EquivariantPrismGlobalCancellation
 import NRR.PrimePolyhedron.FoxNeuwirth.RefinedChartCarrierEquivariant
 import NRR.OddSphereDegree.AlgebraicTopology.BarycentricBoundaryCancellation
 import NRR.OddSphereDegree.AlgebraicTopology.BarycentricFiniteCancellation
+set_option linter.unusedVariables false
+set_option linter.unusedSectionVars false
+set_option linter.unnecessarySeqFocus false
+set_option linter.unusedTactic false
+set_option linter.unreachableTactic false
+set_option linter.unusedSimpArgs false
+set_option linter.unnecessarySimpa false
 
 /-!
 # Cancellation of the nonhorizontal refined-prism boundary

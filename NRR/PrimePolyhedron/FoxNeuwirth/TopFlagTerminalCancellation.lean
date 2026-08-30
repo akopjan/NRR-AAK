@@ -1,5 +1,12 @@
 import NRR.PrimePolyhedron.FoxNeuwirth.TopFlagSubdivision
 import NRR.PrimePolyhedron.FoxNeuwirth.FacetShuffleEquiv
+set_option linter.unusedVariables false
+set_option linter.unusedSectionVars false
+set_option linter.unnecessarySeqFocus false
+set_option linter.unusedTactic false
+set_option linter.unreachableTactic false
+set_option linter.unusedSimpArgs false
+set_option linter.unnecessarySimpa false
 
 /-!
 # Terminal cancellation for the top-flag subdivision
@@ -207,7 +214,7 @@ theorem properFace_topExtension
   by_cases hi : i = Fin.last (p - 2)
   · simpa [hi] using hfacet
   · have hilt : i < Fin.last (p - 2) := by
-      apply Fin.lt_iff_val_lt_val.mpr
+      apply Fin.lt_def.mpr
       have hi' : i.1 ≠ p - 2 := by
         intro hval
         apply hi
@@ -345,7 +352,7 @@ theorem liftedTerminalChain_eq_of_terminalSource
       -- Since r' < Fin.last, we have r'.succ = i.castSucc for i = r' + 1 (in Fin ((p-2)+1))
       have hr'_lt : r' < Fin.last (p - 2) := lt_of_le_of_ne (Fin.le_last _) hr'
       have hr'_val : r'.val < p - 2 := by
-        simp only [Fin.lt_iff_val_lt_val, Fin.val_last] at hr'_lt
+        simp only [Fin.lt_def, Fin.val_last] at hr'_lt
         exact hr'_lt
       -- Use i = r' + 1
       let i : Fin ((p - 2) + 1) := ⟨r'.val + 1, by omega⟩

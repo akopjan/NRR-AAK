@@ -4,7 +4,15 @@ import NRR.EMP.AreaVectorTarget
 import NRR.EMP.VariableBody.CompactSiteFamily
 import NRR.PowerDiagram.BodyCellPartition
 import NRR.PowerDiagram.CellAreaVector
+set_option linter.unusedSectionVars false
+set_option linter.unusedSimpArgs false
+set_option linter.unnecessarySimpa false
+set_option linter.unnecessarySeqFocus false
+set_option linter.unusedTactic false
+set_option linter.unreachableTactic false
 
+
+set_option linter.unusedVariables false
 /-!
 # Outward estimates for the equal-area deviation map
 

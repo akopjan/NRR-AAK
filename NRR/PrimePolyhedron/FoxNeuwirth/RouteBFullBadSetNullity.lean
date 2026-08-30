@@ -1,6 +1,13 @@
 import NRR.PrimePolyhedron.FoxNeuwirth.RouteBMixedFaceBadSetMeasurable
 import Mathlib.MeasureTheory.Measure.Lebesgue.EqHaar
 import Mathlib.LinearAlgebra.Dimension.Constructions
+set_option linter.unusedVariables false
+set_option linter.unusedSectionVars false
+set_option linter.unnecessarySeqFocus false
+set_option linter.unusedTactic false
+set_option linter.unreachableTactic false
+set_option linter.unusedSimpArgs false
+set_option linter.unnecessarySimpa false
 
 /-!
 # Route B: full mixed-face bad-set nullity
@@ -55,7 +62,7 @@ theorem card_otherRetainedIndices
       ((Finset.univ.erase κ.omitted₀).erase κ.omitted₁ : Finset (Fin (p + 1))) := by
     simp [κ.retained_ne₀, κ.retained_ne₁]
   simp [otherRetainedIndices, Finset.card_erase_of_mem, h1, hr,
-    κ.omitted_ne, κ.retained_ne₀, κ.retained_ne₁] <;> omega
+    κ.omitted_ne, κ.retained_ne₀, κ.retained_ne₁] ; omega
 
 /-- Finite type of the other retained local vertices. -/
 abbrev OtherRetainedIndex (κ : MixedFaceCase hp C) :=
@@ -216,8 +223,7 @@ theorem weightedSum_eq_selected_add_other
   calc
     (∑ i : Fin (p + 1), w i • V i) =
         ∑ i ∈ s0, w i • V i := by
-      change (∑ i ∈ (Finset.univ : Finset (Fin (p + 1))), w i • V i) = _
-      calc
+          calc
         _ = (∑ i ∈ (Finset.univ.erase κ.omitted₀), w i • V i) +
             w κ.omitted₀ • V κ.omitted₀ := by
               symm

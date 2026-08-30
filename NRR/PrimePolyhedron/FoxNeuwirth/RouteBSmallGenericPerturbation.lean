@@ -1,6 +1,14 @@
 import NRR.PrimePolyhedron.FoxNeuwirth.RouteBFullBadSetNullity
 import Mathlib.Topology.Algebra.MvPolynomial
 import Mathlib.MeasureTheory.Measure.Lebesgue.EqHaar
+set_option linter.unusedSectionVars false
+set_option linter.unusedSimpArgs false
+set_option linter.unnecessarySimpa false
+set_option linter.unnecessarySeqFocus false
+set_option linter.unusedTactic false
+set_option linter.unreachableTactic false
+
+set_option linter.unusedVariables false
 
 /-!
 # Route B, Step 6: small generic relative perturbation
@@ -389,7 +397,7 @@ theorem exists_smallGenericPerturbation
     (assignmentOfMovableParameters hp C base x) base hbaseMargin hcloseHalf
   have hretained : LocalAffineCoordinateNormMargin hp C
       (assignmentOfMovableParameters hp C base x) (margin / 2) := by
-    convert hretainedRaw using 1 <;> ring
+    convert hretainedRaw using 1 ; ring
   have horigin : ∀ q : C.Cell,
       AvoidsOrigin
         (localVertexMap hp C

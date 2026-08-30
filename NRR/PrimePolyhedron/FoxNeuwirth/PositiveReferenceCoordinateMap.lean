@@ -1,5 +1,12 @@
 import NRR.PrimePolyhedron.FoxNeuwirth.ReferenceCoordinateLift
 import NRR.PrimePolyhedron.FoxNeuwirth.RefinedAffineMap
+set_option linter.unusedVariables false
+set_option linter.unusedSectionVars false
+set_option linter.unnecessarySeqFocus false
+set_option linter.unusedTactic false
+set_option linter.unreachableTactic false
+set_option linter.unusedSimpArgs false
+set_option linter.unnecessarySimpa false
 
 /-!
 # A globally positive coordinate lift of the S5 reference map
@@ -96,7 +103,7 @@ theorem positiveReferenceCoordinateMap_deviation
   apply congrArg (fun vertexValue : BarredPermutation p → Fin (p - 1) → ℝ =>
     ({ vertexValue := vertexValue } : AffineVertexMap p (p - 1)))
   funext c r
-  simp [positiveReferenceCoordinateMap, CoordinateAffineVertexMap.deviation]
+  simp [positiveReferenceCoordinateMap]
 
 /-- Positive local indices of the shifted reference map equal the S5 reference indices. -/
 theorem positiveReferenceIndex_eq_referenceIndex

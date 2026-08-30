@@ -1,6 +1,13 @@
 import NRR.OddSphereDegree.AlgebraicTopology.IteratedSubdivisionSmallSimplex
 import Mathlib.LinearAlgebra.Matrix.Determinant.Basic
 import Mathlib.LinearAlgebra.Matrix.Permutation
+set_option linter.unusedVariables false
+set_option linter.unusedSectionVars false
+set_option linter.unnecessarySeqFocus false
+set_option linter.unusedTactic false
+set_option linter.unreachableTactic false
+set_option linter.unusedSimpArgs false
+set_option linter.unnecessarySimpa false
 
 /-!
 # Nondegeneracy of affine barycentric subdivision simplices

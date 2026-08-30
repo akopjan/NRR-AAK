@@ -1,6 +1,13 @@
 import NRR.PrimePolyhedron.FoxNeuwirth.RouteBEndpointFacetTargets
 import NRR.PrimePolyhedron.FoxNeuwirth.EquivariantPrismGenericityNonzero
 import NRR.PrimePolyhedron.FoxNeuwirth.ExplicitAffineRelativeCollarAssignmentReverse
+set_option linter.unusedVariables false
+set_option linter.unusedSectionVars false
+set_option linter.unnecessarySeqFocus false
+set_option linter.unusedTactic false
+set_option linter.unreachableTactic false
+set_option linter.unusedSimpArgs false
+set_option linter.unnecessarySimpa false
 
 /-!
 # Composition of boundary-relative facet targets
@@ -54,7 +61,7 @@ theorem facetMatrix_witnessTarget
   · simp [deviation, facetValue, facetWitnessTarget_succAbove]
     generalize hc : augmentedRowEquiv hp c = c'
     refine Fin.lastCases ?_ (fun t => ?_) c'
-    · simp [coordinateLabel_ne_last]
+    · simp
     · have hinj : coordinateLabel hp s = coordinateLabel hp t ↔ s = t :=
         (coordinateLabel_injective hp).eq_iff
       have hlast : lastLabel hp ≠ coordinateLabel hp t :=

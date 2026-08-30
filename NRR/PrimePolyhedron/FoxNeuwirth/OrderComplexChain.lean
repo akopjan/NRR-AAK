@@ -1,5 +1,13 @@
 import NRR.PrimePolyhedron.FoxNeuwirth.OrderComplexRealization
 import NRR.PrimePolyhedron.FoxNeuwirth.OrientedBoundary
+set_option linter.unusedVariables false
+set_option linter.unnecessarySeqFocus false
+set_option linter.unusedTactic false
+set_option linter.unreachableTactic false
+set_option linter.unusedSimpArgs false
+set_option linter.unnecessarySimpa false
+
+set_option linter.unusedSectionVars false
 
 /-!
 # Simplicial chains on the Fox--Neuwirth order complex

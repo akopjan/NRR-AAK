@@ -1,6 +1,14 @@
 import Mathlib.GroupTheory.GroupAction.Basic
 import Mathlib.GroupTheory.GroupAction.Quotient
 import NRR.PrimePolyhedron.FoxNeuwirth.FiniteAffineZeroCount
+set_option linter.unusedVariables false
+set_option linter.unusedSimpArgs false
+set_option linter.unnecessarySimpa false
+set_option linter.unnecessarySeqFocus false
+set_option linter.unusedTactic false
+set_option linter.unreachableTactic false
+
+set_option linter.unusedSectionVars false
 
 /-!
 # Orbit quotients of finite incidence cycles

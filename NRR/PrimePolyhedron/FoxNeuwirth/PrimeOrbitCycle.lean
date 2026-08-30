@@ -2,6 +2,14 @@ import Mathlib.GroupTheory.SpecificGroups.Alternating
 import NRR.PrimePolyhedron.FoxNeuwirth.MaximalFlagEncodingStepTwo
 import NRR.PrimePolyhedron.FoxNeuwirth.OrbitIncidenceQuotient
 import NRR.PrimePolyhedron.FoxNeuwirth.OrbitRepresentatives
+set_option linter.unusedSectionVars false
+set_option linter.unusedSimpArgs false
+set_option linter.unnecessarySimpa false
+set_option linter.unnecessarySeqFocus false
+set_option linter.unusedTactic false
+set_option linter.unreachableTactic false
+
+set_option linter.unusedVariables false
 
 /-!
 # Prime-symmetry orbit quotient of the Fox--Neuwirth top-flag cycle

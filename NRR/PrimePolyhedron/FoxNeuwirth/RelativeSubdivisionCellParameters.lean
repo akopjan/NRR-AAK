@@ -2,6 +2,8 @@ import NRR.PrimePolyhedron.FoxNeuwirth.StableCollarRelativeSubdivision
 import NRR.PrimePolyhedron.FoxNeuwirth.EquivariantPrismVertexParameters
 import NRR.OddSphereDegree.AlgebraicTopology.IteratedSubdivisionSmallChains
 
+set_option linter.unusedVariables false
+
 /-!
 # Finite relative-collar cells and boundary-frozen parameters
 
@@ -208,7 +210,7 @@ variable (hp : Nat.Prime p) {n : Nat}
 variable (B : RelativeSubdivisionBoundary (ZMod p) (RelativeCylinder p) n)
 
 /-- Chosen finite singular-cell support of a relative cylinder collar. -/
-noncomputable abbrev CollarSupport (_hp : Nat.Prime p)
+noncomputable abbrev CollarSupport (hp : Nat.Prime p)
     (B : RelativeSubdivisionBoundary (ZMod p) (RelativeCylinder p) n) :=
   RelativeSubdivisionBoundary.collarRealization B
 

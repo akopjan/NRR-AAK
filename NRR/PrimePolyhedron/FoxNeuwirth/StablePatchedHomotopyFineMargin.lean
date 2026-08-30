@@ -1,6 +1,13 @@
 import NRR.PrimePolyhedron.FoxNeuwirth.StablePatchedHomotopyBoundary
 import NRR.PrimePolyhedron.FoxNeuwirth.RelativeCollarMiddlePrismEndpoints
 import NRR.PrimePolyhedron.FoxNeuwirth.ExplicitAffineRelativeCollarGenericity
+set_option linter.unusedVariables false
+set_option linter.unusedSectionVars false
+set_option linter.unusedSimpArgs false
+set_option linter.unnecessarySimpa false
+set_option linter.unnecessarySeqFocus false
+set_option linter.unusedTactic false
+set_option linter.unreachableTactic false
 
 /-!
 # Fine middle-prism control and quantitative origin margins
@@ -254,7 +261,7 @@ theorem avoidsOrigin_of_assignmentClose_half_margin
   have hretainedRaw := retain_localAffineCoordinateNormMargin hp C
     perturbed base hbase hclose
   have hretained : LocalAffineCoordinateNormMargin hp C perturbed (margin / 2) := by
-    convert hretainedRaw using 1 <;> ring
+    convert hretainedRaw using 1 ; ring
   intro q
   exact avoidsOrigin_of_localAffineCoordinateNormMargin hp C
     perturbed (half_pos hmargin) hretained q

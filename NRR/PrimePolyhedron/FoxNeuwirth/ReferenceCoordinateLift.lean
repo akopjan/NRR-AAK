@@ -1,4 +1,11 @@
 import NRR.PrimePolyhedron.FoxNeuwirth.AffinePrismObstruction
+set_option linter.unusedVariables false
+set_option linter.unusedSectionVars false
+set_option linter.unnecessarySeqFocus false
+set_option linter.unusedTactic false
+set_option linter.unreachableTactic false
+set_option linter.unusedSimpArgs false
+set_option linter.unnecessarySimpa false
 
 /-!
 # Coordinate lift of the S5 reference deviation map
@@ -43,7 +50,7 @@ theorem referenceCoordinateMap_deviation
     ({ vertexValue := vertexValue } : AffineVertexMap p (p - 1)))
   funext c r
   have hr : (r : Nat) ≠ p - 1 := Nat.ne_of_lt r.isLt
-  simp [referenceCoordinateMap, CoordinateAffineVertexMap.deviation,
+  simp [referenceCoordinateMap, 
     ReferenceAffineOrbitCount.referenceMap, ReferenceAffineOrbitCount.mapAt,
     ReferenceAffineOrbitCount.coordinateLabel,
     ReferenceAffineOrbitCount.lastLabel, hr]

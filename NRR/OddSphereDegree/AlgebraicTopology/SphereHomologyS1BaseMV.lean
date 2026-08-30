@@ -2,6 +2,13 @@ import NRR.OddSphereDegree.AlgebraicTopology.SphereHomologyMVStep
 import NRR.OddSphereDegree.AlgebraicTopology.SingularH0PathConnected
 import NRR.OddSphereDegree.AlgebraicTopology.MayerVietoris
 import Mathlib
+set_option linter.unusedVariables false
+set_option linter.unusedSectionVars false
+set_option linter.unnecessarySeqFocus false
+set_option linter.unusedTactic false
+set_option linter.unreachableTactic false
+set_option linter.unusedSimpArgs false
+set_option linter.unnecessarySimpa false
 
 /-!
 # Mayer–Vietoris base case: `H₁(S¹; ℤ) ≅ ℤ`

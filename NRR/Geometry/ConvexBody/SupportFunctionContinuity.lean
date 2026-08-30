@@ -1,5 +1,7 @@
 import NRR.Geometry.ConvexBody.SupportFunctionBasic
 
+set_option linter.unusedVariables false
+
 /-!
 # `NRR.Geometry.ConvexBody` — continuity of the support function
 
@@ -105,7 +107,7 @@ theorem continuousOn_supportFunction
 any set (in particular any compact set). The compactness hypothesis `_hs` is kept to match the
 requested API but is in fact unnecessary: uniform continuity holds on every subset. -/
 theorem uniformContinuousOn_supportFunction_of_isCompact
-    (K : ConvexBody E) {s : Set E} (_hs : IsCompact s) :
+    (K : ConvexBody E) {s : Set E} (hs : IsCompact s) :
     UniformContinuousOn (fun u : E => supportFunction K u) s := by
   obtain ⟨R, hRnn, hR⟩ := K.exists_radius_bound
   exact ((K.supportFunction_lipschitzWith hRnn hR).uniformContinuous).uniformContinuousOn

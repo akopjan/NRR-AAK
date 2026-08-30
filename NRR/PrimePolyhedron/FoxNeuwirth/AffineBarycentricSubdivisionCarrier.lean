@@ -1,5 +1,12 @@
 import NRR.OddSphereDegree.AlgebraicTopology.IteratedSubdivisionSmallSimplex
 import NRR.PrimePolyhedron.FoxNeuwirth.AffineSubdivisionDeterminant
+set_option linter.unusedVariables false
+set_option linter.unusedSectionVars false
+set_option linter.unnecessarySeqFocus false
+set_option linter.unusedTactic false
+set_option linter.unreachableTactic false
+set_option linter.unusedSimpArgs false
+set_option linter.unnecessarySimpa false
 
 /-!
 # Carrier coordinates for affine barycentric subdivision

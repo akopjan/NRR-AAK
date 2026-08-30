@@ -1,6 +1,13 @@
 import NRR.PrimePolyhedron.FoxNeuwirth.RouteBFacetWitnessRealization
 import NRR.PrimePolyhedron.FoxNeuwirth.EndpointStackIteratedAffinePullback
 import Mathlib.LinearAlgebra.Matrix.Determinant.Basic
+set_option linter.unusedVariables false
+set_option linter.unusedSectionVars false
+set_option linter.unnecessarySeqFocus false
+set_option linter.unusedTactic false
+set_option linter.unreachableTactic false
+set_option linter.unusedSimpArgs false
+set_option linter.unnecessarySimpa false
 
 /-!
 # Boundary-respecting facet targets for affine-pullback endpoint stacks
@@ -227,7 +234,7 @@ theorem oneStepLowerFacetTarget_succAbove
   rw [oneStepLowerFacetTarget, dif_pos h]
   have hc : Classical.choose h = c :=
     Fin.succAbove_right_injective (p := k) (Classical.choose_spec h).symm
-  simp [hc]
+  simp
 
 /-- The selected target facet matrix is a column permutation of the endpoint regularity matrix. -/
 theorem facetMatrix_oneStepLowerFacetTarget
@@ -310,7 +317,7 @@ theorem oneStepLowerFacetTarget_respects_lower
       CompatibleChartMapOneStep.localVector,
       CompatibleChartMapOneStep.localSpatialWeight]
     rw [(cylinderVertex_point hp q (k.succAbove c)).trans hspec]
-    simp [baseOriginalPLMap, RefinedAffineMap.value, RefinedAffineMap.vertex,
+    simp [baseOriginalPLMap, RefinedAffineMap.value, 
       RelativeSubdivisionCylinderCombinatorics.lowerBoundaryVertex,
       StandardSimplex.ofDelta, stdSimplex.vertex, Pi.single_apply, ite_mul,
       Finset.sum_ite_eq']

@@ -3,6 +3,13 @@ import NRR.PrimePolyhedron.FoxNeuwirth.MaximalFlagClassification
 import NRR.PrimePolyhedron.FoxNeuwirth.SubdivisionCharts
 import NRR.PrimePolyhedron.FoxNeuwirth.RefinedAffineMap
 import NRR.PrimePolyhedron.FoxNeuwirth.PrimeOrbitCycle
+set_option linter.unusedVariables false
+set_option linter.unusedSectionVars false
+set_option linter.unnecessarySeqFocus false
+set_option linter.unusedTactic false
+set_option linter.unreachableTactic false
+set_option linter.unusedSimpArgs false
+set_option linter.unnecessarySimpa false
 
 /-!
 # Carrier coordinates for maximal Fox--Neuwirth charts

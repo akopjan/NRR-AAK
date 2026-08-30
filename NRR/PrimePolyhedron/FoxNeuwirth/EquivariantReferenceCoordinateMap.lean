@@ -1,5 +1,12 @@
 import NRR.PrimePolyhedron.FoxNeuwirth.ReferenceAffineOrbitCount
 import NRR.PrimePolyhedron.FoxNeuwirth.AffinePrismObstruction
+set_option linter.unusedVariables false
+set_option linter.unusedSectionVars false
+set_option linter.unnecessarySeqFocus false
+set_option linter.unusedTactic false
+set_option linter.unreachableTactic false
+set_option linter.unusedSimpArgs false
+set_option linter.unnecessarySimpa false
 
 /-!
 # Equivariant full-coordinate lift of the S5 reference map

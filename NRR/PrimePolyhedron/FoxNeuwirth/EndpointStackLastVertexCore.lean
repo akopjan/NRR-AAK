@@ -1,5 +1,12 @@
 import NRR.PrimePolyhedron.FoxNeuwirth.RelativeSubdivisionOneStepCells
 import NRR.PrimePolyhedron.FoxNeuwirth.SubdivisionZeroFreeApproximation
+set_option linter.unusedVariables false
+set_option linter.unusedSectionVars false
+set_option linter.unnecessarySeqFocus false
+set_option linter.unusedTactic false
+set_option linter.unreachableTactic false
+set_option linter.unusedSimpArgs false
+set_option linter.unnecessarySimpa false
 
 /-!
 # Local last-vertex retraction for endpoint subdivision cylinders
@@ -246,7 +253,7 @@ theorem affine_selectedEndpointValue_eq_value
       fun c => ∑ i : Fin ((p - 1 + 1) + 1), w' i *
         A.map (RefinedAffineMap.vertex hp A.level q (localLastIndex (p - 1) r i)) c := by
     funext c
-    apply Fintype.sum_equiv (finCongr hcard) <;> intro i
+    apply Fintype.sum_equiv (finCongr hcard) ; intro i
     have hwi : w i = w' (Fin.cast hcard i) := by
       change w i = w (Fin.cast hcard.symm (Fin.cast hcard i))
       congr 1

@@ -1,4 +1,12 @@
 import NRR.PrimePolyhedron.FoxNeuwirth.RouteBMovableParameterSpace
+set_option linter.unusedSectionVars false
+set_option linter.unusedSimpArgs false
+set_option linter.unnecessarySimpa false
+set_option linter.unnecessarySeqFocus false
+set_option linter.unusedTactic false
+set_option linter.unreachableTactic false
+
+set_option linter.unusedVariables false
 
 /-!
 # Route B, Step 3: decomposition of mixed-face positive-ray incidence

@@ -1,4 +1,11 @@
 import NRR.OddSphereDegree.AlgebraicTopology.AffineBarycentricSubdivision
+set_option linter.unusedVariables false
+set_option linter.unusedSectionVars false
+set_option linter.unnecessarySeqFocus false
+set_option linter.unusedTactic false
+set_option linter.unreachableTactic false
+set_option linter.unusedSimpArgs false
+set_option linter.unnecessarySimpa false
 
 /-!
 # Last-face affine identity for barycentric subdivision
@@ -80,7 +87,7 @@ theorem affineSubdiv_face_last_eq_boundary_subdiv_of_faceData {n : ℕ}
   simp +decide [ *, affineSubdivMap_apply, FunOnFinite.linearMap_apply_apply, stdSimplex.map_coe ];
   rw [ Fin.sum_univ_castSucc ];
   simp +decide [ ← hy, prefixBarycenter_castSucc_eq_map_of_prefix π ι ρ hιρ ];
-  simp +decide [ Finset.sum_filter, Finset.mul_sum _ _ _, mul_assoc, mul_comm, FunOnFinite.linearMap_apply_apply ];
+  simp +decide [ Finset.sum_filter, Finset.mul_sum _ _ _, mul_comm, FunOnFinite.linearMap_apply_apply ];
   rw [ Finset.sum_comm ];
   simp +decide [ Finset.sum_ite ];
   exact Or.inl hxlast

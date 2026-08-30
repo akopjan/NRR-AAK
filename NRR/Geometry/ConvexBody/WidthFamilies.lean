@@ -1,6 +1,14 @@
 import NRR.Geometry.ConvexBody.WidthContinuity
 import NRR.Geometry.ConvexBody.WidthIdentities
 import NRR.Geometry.ConvexBody.SupportFunctionParametric
+set_option linter.unusedSectionVars false
+set_option linter.unusedSimpArgs false
+set_option linter.unnecessarySimpa false
+set_option linter.unnecessarySeqFocus false
+set_option linter.unusedTactic false
+set_option linter.unreachableTactic false
+
+set_option linter.unusedVariables false
 
 /-!
 # `NRR.Geometry.ConvexBody` — width continuity for parameterized families

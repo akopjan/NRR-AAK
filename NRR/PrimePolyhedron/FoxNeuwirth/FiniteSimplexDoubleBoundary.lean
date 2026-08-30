@@ -1,5 +1,13 @@
 import NRR.PrimePolyhedron.FoxNeuwirth.EquivariantPrismNonhorizontalCancellation
 import NRR.OddSphereDegree.AlgebraicTopology.BarycentricFiniteCancellation
+set_option linter.unusedSectionVars false
+set_option linter.unusedSimpArgs false
+set_option linter.unnecessarySimpa false
+set_option linter.unnecessarySeqFocus false
+set_option linter.unusedTactic false
+set_option linter.unreachableTactic false
+
+set_option linter.unusedVariables false
 
 /-!
 # Finite cancellation for the boundary of a boundary
@@ -60,7 +68,7 @@ def deletedIndex {m : Nat} (a b : Fin (m + 1)) (hab : a ≠ b) : Fin m := by
 /-- A sequential deletion determines the two distinct vertices deleted from the original
 simplex. -/
 def sequentialDeletionEquiv (n : Nat) :
-    (Sigma fun j : Fin (n + 3) => Fin (n + 2)) ≃ DeletedVertexPair n where
+    (Sigma fun _ : Fin (n + 3) => Fin (n + 2)) ≃ DeletedVertexPair n where
   toFun z :=
     ⟨(z.1, z.1.succAbove z.2), (Fin.succAbove_ne z.1 z.2).symm⟩
   invFun z :=

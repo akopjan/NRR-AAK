@@ -1,5 +1,12 @@
 import NRR.PrimePolyhedron.FoxNeuwirth.CompatibleRefinedChartHomotopyPrism
 import NRR.PrimePolyhedron.FoxNeuwirth.ExplicitAffineRelativeCollarAssignmentReverse
+set_option linter.unusedVariables false
+set_option linter.unusedSectionVars false
+set_option linter.unnecessarySeqFocus false
+set_option linter.unusedTactic false
+set_option linter.unreachableTactic false
+set_option linter.unusedSimpArgs false
+set_option linter.unnecessarySimpa false
 
 /-!
 # Chart-map representations of relative-collar assignments
@@ -279,7 +286,7 @@ theorem lower_boundary_represents_base
   let q0 : TopCell hp N0 := ancestorTopCell hp N0 d s.2.1.1.1
   let w0 : StandardSimplex (p - 1) := ancestorWeight N0 d s.2.1.1.1 w
   refine ⟨q0, w0, ?_, ?_⟩
-  · simpa [q0, w0, w, coverPoint, RelativeAffineCellSystem.slotPoint,
+  · simp [q0, w0, w, coverPoint, RelativeAffineCellSystem.slotPoint,
       RelativeCollarMiddlePrism.cellSystem, RelativeCollarMiddlePrism.vertex,
       SubdivisionPrismCharts.vertex,
       SubdivisionPrismCharts.chart, EquivariantPrismVertexParameters.CylinderPoint.ofProd,
@@ -313,7 +320,7 @@ theorem upper_boundary_represents_base
   let q0 : TopCell hp N0 := ancestorTopCell hp N0 d s.2.1.1.1
   let w0 : StandardSimplex (p - 1) := ancestorWeight N0 d s.2.1.1.1 w
   refine ⟨q0, w0, ?_, ?_⟩
-  · simpa [q0, w0, w, coverPoint, RelativeAffineCellSystem.slotPoint,
+  · simp [q0, w0, w, coverPoint, RelativeAffineCellSystem.slotPoint,
       RelativeCollarMiddlePrism.cellSystem, RelativeCollarMiddlePrism.vertex,
       SubdivisionPrismCharts.vertex,
       SubdivisionPrismCharts.chart, EquivariantPrismVertexParameters.CylinderPoint.ofProd,

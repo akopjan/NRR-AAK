@@ -2,6 +2,8 @@ import NRR.PrimePolyhedron.FoxNeuwirth.EndpointStackAffinePullbackCore
 import NRR.PrimePolyhedron.FoxNeuwirth.ExplicitAffineRelativeCollar
 import NRR.PrimePolyhedron.FoxNeuwirth.RefinedChartCarrierEquivariant
 
+set_option linter.unusedVariables false
+
 /-!
 # Global descent interface for affine-pullback endpoint-stack values
 
@@ -32,7 +34,7 @@ open AffinePositiveRayBoundary.VertexMap
 
 variable {p : Nat}
 
-private def parentIndex (_hp : Nat.Prime p) :
+private def parentIndex (hp : Nat.Prime p) :
     Fin (p - 1 + 1) → Fin (p - 1 + 1) := id
 
 private def cylinderIndex (hp : Nat.Prime p) : Fin (p + 1) → Fin (p - 1 + 2) :=

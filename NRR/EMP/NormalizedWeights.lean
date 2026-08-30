@@ -3,6 +3,14 @@ import NRR.ConvexBody
 import NRR.EMP.EqualAreaWeights
 import NRR.EMP.WeightShift
 import NRR.EMP.EqualAreaWeightsExistence
+set_option linter.unusedSectionVars false
+set_option linter.unusedSimpArgs false
+set_option linter.unnecessarySimpa false
+set_option linter.unnecessarySeqFocus false
+set_option linter.unusedTactic false
+set_option linter.unreachableTactic false
+
+set_option linter.unusedVariables false
 
 /-!
 # `NRR.EMP.NormalizedWeights` — normalized equal‑area power weights and existence

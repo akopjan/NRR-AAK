@@ -1,6 +1,14 @@
 import NRR.PrimePolyhedron.FoxNeuwirth.EndpointStackIteratedAffinePullback
 import NRR.PrimePolyhedron.FoxNeuwirth.StableFullCollarRelativeMesh
 import NRR.PrimePolyhedron.FoxNeuwirth.ExplicitAffineRelativeCollarComposeDescribed
+set_option linter.unusedSectionVars false
+set_option linter.unusedSimpArgs false
+set_option linter.unnecessarySimpa false
+set_option linter.unnecessarySeqFocus false
+set_option linter.unusedTactic false
+set_option linter.unreachableTactic false
+
+set_option linter.unusedVariables false
 
 /-!
 # Concrete fine full-collar construction by affine pullback

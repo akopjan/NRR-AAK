@@ -1,5 +1,12 @@
 import NRR.EMP.VariableBody.CanonicalCell
 import NRR.EMP.VariableBody.HalfspaceCoefficients
+set_option linter.unusedVariables false
+set_option linter.unusedSectionVars false
+set_option linter.unusedSimpArgs false
+set_option linter.unnecessarySimpa false
+set_option linter.unnecessarySeqFocus false
+set_option linter.unusedTactic false
+set_option linter.unreachableTactic false
 
 /-!
 # `NRR.EMP.VariableBody.CanonicalCellGraph` — one-sided closedness of the cell graph
@@ -65,8 +72,7 @@ theorem isClosed_canonicalCellLowerGraph
     (i : Fin n) :
     IsClosed (CanonicalCellLowerGraph (K := K) sites hA hn i) := by
   refine' isSeqClosed_iff_isClosed.mp _;
-  intro f hf a hlim;
-  intro y hy;
+  intro f hf a hlim y hy;
   -- By `ConvexSubbody.exists_tendsto_points`, obtain a sequence of points `yseq` in the approximating subbodies converging to `y`.
   obtain ⟨yseq, hyseq⟩ : ∃ yseq : ℕ → Plane, (∀ m, yseq m ∈ ((f m).2.body : Set Plane)) ∧ Filter.Tendsto yseq Filter.atTop (nhds y) := by
     convert ConvexSubbody.exists_tendsto_points ( show Filter.Tendsto ( fun m => ( f m |>.2 ) ) Filter.atTop ( nhds hf.2 ) from ?_ ) hy;

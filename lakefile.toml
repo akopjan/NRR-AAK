@@ -1,5 +1,5 @@
 name = "NRR"
-defaultTargets = ["NRR", "HumanVerification"]
+defaultTargets = ["NRR", "HumanVerification", "Challenge", "Solution"]
 
 [[require]]
 name = "mathlib"
@@ -13,3 +13,11 @@ globs = ["NRR", "NRR.+"]
 [[lean_lib]]
 name = "HumanVerification"
 globs = ["HumanVerification.+"]
+
+[[lean_lib]]
+name = "Challenge"
+roots = ["Challenge"]
+
+[[lean_lib]]
+name = "Solution"
+roots = ["Solution"]

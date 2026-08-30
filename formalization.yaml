@@ -75,18 +75,17 @@ automation:
 
 fidelity:
   divergences: >-
-  The original paper proves the more general result that, for any d, m >= 2,
-  any d-1 finite nonzero Borel measures on a convex body K ⊂ ℝ^d that are
-  absolutely continuous with respect to Lebesgue measure, and any continuous
-  functional f on convex bodies, K can be partitioned into m convex parts,
-  so that all d-1 measures and f take equal values
-  on all parts. The present formalization covers only the planar equal-area,
-  equal-perimeter case.
+    The original paper proves the more general result that, for any d, m >= 2,
+    any d-1 finite nonzero Borel measures on a convex body K ⊂ ℝ^d that are
+    absolutely continuous with respect to Lebesgue measure, and any continuous
+    functional f on convex bodies, K can be partitioned into m convex parts,
+    so that all d-1 measures and f take equal values
+    on all parts. The present formalization covers only the planar equal-area,
+    equal-perimeter case.
 
 review:
   status: "self-assessed"
-  reviewers:
-    - "none"
+  reviewers: "none"
   notes: "The formalization has been self-reviewed. No independent mathematical or Lean review has been completed yet."
 
 alignment:

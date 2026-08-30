@@ -224,8 +224,8 @@ theorem modTwoTopClassComparison_of_topHomologyScalar {n : ℕ}
   have hψne : ψ ≠ 0 := by
     intro hcontra
     apply hc
-    apply kroneckerMap_injective X n
-    rw [map_zero]; exact hcontra
+    have hinj := kroneckerMap_injective (TopCat.of (Sphere n)) n
+    exact hinj (hcontra.trans (map_zero (kroneckerMap (TopCat.of (Sphere n)) n).hom).symm)
   have hnat := kroneckerMap_naturality_apply (TopCat.ofHom f) n c
   have hfix' : (cohPullback (TopCat.ofHom f) n).hom c = c := hfix
   rw [hfix'] at hnat

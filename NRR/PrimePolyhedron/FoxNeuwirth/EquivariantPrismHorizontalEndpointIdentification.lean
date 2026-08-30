@@ -1,4 +1,5 @@
 import NRR.PrimePolyhedron.FoxNeuwirth.EquivariantPrismNonhorizontalCancellation
+set_option backward.isDefEq.respectTransparency false
 set_option linter.unusedVariables false
 set_option linter.unusedSectionVars false
 set_option linter.unnecessarySeqFocus false
@@ -209,10 +210,14 @@ theorem lowerHorizontalContribution_eq_occurrence_sum
       have hl : MapIsLowerHorizontal (occurrenceFacetMap hp N L o) ↔
           IsLowerHorizontal hp N L (facetSignature hp N L o) := by
         constructor <;> intro h i
-        · simpa [MapIsLowerHorizontal, IsLowerHorizontal,
-            signatureTime, facetSignature] using h i
-        · simpa [MapIsLowerHorizontal, IsLowerHorizontal,
-            signatureTime, facetSignature] using h i
+        · have hi := h i
+          rw [occurrenceFacetMap_vertex] at hi
+          change (SubdivisionPrismCharts.vertex hp N L o.1 (o.2.succAbove i)).2.1 = 0
+          exact hi
+        · have hi := h i
+          change (SubdivisionPrismCharts.vertex hp N L o.1 (o.2.succAbove i)).2.1 = 0 at hi
+          rw [occurrenceFacetMap_vertex]
+          exact hi
       unfold lowerHorizontalMapWeight
       rw [realizedFacetWeight_occurrence]
       by_cases hlow : IsLowerHorizontal hp N L (facetSignature hp N L o)
@@ -276,10 +281,14 @@ theorem upperHorizontalContribution_eq_occurrence_sum
       have hu : MapIsUpperHorizontal (occurrenceFacetMap hp N L o) ↔
           IsUpperHorizontal hp N L (facetSignature hp N L o) := by
         constructor <;> intro h i
-        · simpa [MapIsUpperHorizontal, IsUpperHorizontal,
-            signatureTime, facetSignature] using h i
-        · simpa [MapIsUpperHorizontal, IsUpperHorizontal,
-            signatureTime, facetSignature] using h i
+        · have hi := h i
+          rw [occurrenceFacetMap_vertex] at hi
+          change (SubdivisionPrismCharts.vertex hp N L o.1 (o.2.succAbove i)).2.1 = 1
+          exact hi
+        · have hi := h i
+          change (SubdivisionPrismCharts.vertex hp N L o.1 (o.2.succAbove i)).2.1 = 1 at hi
+          rw [occurrenceFacetMap_vertex]
+          exact hi
       unfold upperHorizontalMapWeight
       rw [realizedFacetWeight_occurrence]
       by_cases hupp : IsUpperHorizontal hp N L (facetSignature hp N L o)
@@ -385,8 +394,7 @@ theorem genericStaircaseIntervalPoint_pos_lt_one
   have hlast : f (Fin.last (n + 1)) = w (Fin.last (n + 1)) := by
     dsimp [f, genericStaircaseTime]
     have hnle : ¬ n + 1 ≤ k.1 := by omega
-    rw [if_neg hnle]
-    simp
+    simp [hnle]
   have hzero : f 0 = 0 := by
     simp [f, genericStaircaseTime]
   have hsum : (genericStaircaseIntervalPoint n k w).1 = ∑ j, f j := rfl

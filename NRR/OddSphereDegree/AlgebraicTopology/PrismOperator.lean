@@ -1,9 +1,12 @@
 import Mathlib.AlgebraicTopology.SingularHomology.Basic
 import Mathlib.Topology.Homotopy.Basic
 import Mathlib.AlgebraicTopology.SimplicialSet.StdSimplex
+import Mathlib.AlgebraicTopology.SimplicialSet.TopAdj
 import Mathlib.CategoryTheory.Limits.Preserves.Shapes.BinaryProducts
 import Mathlib.Analysis.Convex.StdSimplex
 import NRR.OddSphereDegree.AlgebraicTopology.HomotopyToChainHomotopy
+
+set_option backward.isDefEq.respectTransparency false
 
 /-!
 # Singular prism construction
@@ -18,7 +21,7 @@ open CategoryTheory Limits AlgebraicTopology Simplicial
 namespace SphereOddDegree
 
 /-- The unit interval as an object of `TopCat`. -/
-noncomputable def unitI : TopCat.{0} := TopCat.of unitInterval
+noncomputable abbrev unitI : TopCat.{0} := TopCat.of unitInterval
 
 /-- The singular simplicial set functor preserves limits, being a right adjoint
 (`sSetTopAdj : SSet.toTop ⊣ TopCat.toSSet`). -/
@@ -41,9 +44,8 @@ noncomputable def edge : Δ[1] ⟶ TopCat.toSSet.obj unitI :=
     ((unitI.toSSetObjEquiv (Opposite.op (SimplexCategory.mk 1))).symm edgeCM)
 
 /-- The const-valued simplicial map onto the `j`-th vertex of `Δ[1]`. -/
-noncomputable def vtx (Z : SSet.{0}) (j : Fin 2) : Z ⟶ Δ[1] where
-  app m := fun _ => SSet.stdSimplex.const 1 j m
-  naturality := by intro a b φ; funext x; rfl
+noncomputable def vtx (Z : SSet.{0}) (j : Fin 2) : Z ⟶ Δ[1] :=
+  SSet.const (SSet.stdSimplex.obj₀Equiv.symm j)
 
 /-- A `ContinuousMap.Homotopy` between `f.hom` and `g.hom`, repackaged as a
 single morphism out of the categorical product `X ⨯ I`. On a point `p` it is
@@ -77,58 +79,107 @@ noncomputable def sect (X : TopCat.{0}) (j : Fin 2) :
 theorem homotopyMap_zero {X Y : TopCat.{0}} {f g : X ⟶ Y}
     (H : ContinuousMap.Homotopy f.hom g.hom) :
     Limits.prod.lift (𝟙 X) (constI X 0) ≫ homotopyMap H = f := by
-  convert TopCat.hom_ext ( ContinuousMap.ext ?_ ) using 1;
-  simp [prod.lift, constI];
-  convert H.map_zero_left using 1;
-  convert Iff.rfl;
-  convert rfl;
-  convert congr_arg ( fun x => H.toContinuousMap x ) _;
-  exact Prod.ext ( by exact congr_arg ( fun f => f ‹_› ) ( show ( limit.lift ( pair X unitI ) ( BinaryFan.mk ( 𝟙 X ) ( TopCat.ofHom ( ContinuousMap.const ( X : Type _ ) 0 ) ) ) ) ≫ prod.snd = TopCat.ofHom ( ContinuousMap.const ( X : Type _ ) 0 ) from by exact limit.lift_π _ _ ) ) ( by exact congr_arg ( fun f => f ‹_› ) ( show ( limit.lift ( pair X unitI ) ( BinaryFan.mk ( 𝟙 X ) ( TopCat.ofHom ( ContinuousMap.const ( X : Type _ ) 0 ) ) ) ) ≫ prod.fst = 𝟙 X from by exact limit.lift_π _ _ ) )
+  ext x
+  have hfst :
+      (Limits.prod.fst (X := X) (Y := unitI))
+          ((Limits.prod.lift (𝟙 X) (constI X 0)) x) = x := by
+    change ((Limits.prod.lift (𝟙 X) (constI X 0) ≫ Limits.prod.fst) : X ⟶ X) x = x
+    rw [Limits.prod.lift_fst]
+    rfl
+  have hsnd :
+      (Limits.prod.snd (X := X) (Y := unitI))
+          ((Limits.prod.lift (𝟙 X) (constI X 0)) x) = (0 : unitInterval) := by
+    change ((Limits.prod.lift (𝟙 X) (constI X 0) ≫ Limits.prod.snd) : X ⟶ unitI) x =
+      (0 : unitInterval)
+    rw [Limits.prod.lift_snd]
+    change (0 : unitInterval) = 0
+    rfl
+  change H.toContinuousMap
+      ((Limits.prod.snd (X := X) (Y := unitI))
+          ((Limits.prod.lift (𝟙 X) (constI X 0)) x),
+       (Limits.prod.fst (X := X) (Y := unitI))
+          ((Limits.prod.lift (𝟙 X) (constI X 0)) x)) = f x
+  rw [hsnd, hfst]
+  exact H.apply_zero x
 
 /-- At interval coordinate `1`, the repackaged homotopy recovers `g`. -/
 theorem homotopyMap_one {X Y : TopCat.{0}} {f g : X ⟶ Y}
     (H : ContinuousMap.Homotopy f.hom g.hom) :
     Limits.prod.lift (𝟙 X) (constI X 1) ≫ homotopyMap H = g := by
-  ext x;
-  convert H.map_one_left x using 1;
-  convert congr_arg ( fun x => H.toContinuousMap x ) _;
-  exact Prod.ext ( by exact congr_arg ( fun f => f x ) ( show ( limit.lift ( pair X unitI ) ( BinaryFan.mk ( 𝟙 X ) ( TopCat.ofHom ( ContinuousMap.const ( X : Type _ ) 1 ) ) ) ) ≫ prod.snd = TopCat.ofHom ( ContinuousMap.const ( X : Type _ ) 1 ) from by exact limit.lift_π _ _ ) ) ( by exact congr_arg ( fun f => f x ) ( show ( limit.lift ( pair X unitI ) ( BinaryFan.mk ( 𝟙 X ) ( TopCat.ofHom ( ContinuousMap.const ( X : Type _ ) 1 ) ) ) ) ≫ prod.fst = 𝟙 X from by exact limit.lift_π _ _ ) )
+  ext x
+  have hfst :
+      (Limits.prod.fst (X := X) (Y := unitI))
+          ((Limits.prod.lift (𝟙 X) (constI X 1)) x) = x := by
+    change ((Limits.prod.lift (𝟙 X) (constI X 1) ≫ Limits.prod.fst) : X ⟶ X) x = x
+    rw [Limits.prod.lift_fst]
+    rfl
+  have hsnd :
+      (Limits.prod.snd (X := X) (Y := unitI))
+          ((Limits.prod.lift (𝟙 X) (constI X 1)) x) = (1 : unitInterval) := by
+    change ((Limits.prod.lift (𝟙 X) (constI X 1) ≫ Limits.prod.snd) : X ⟶ unitI) x =
+      (1 : unitInterval)
+    rw [Limits.prod.lift_snd]
+    change (1 : unitInterval) = 1
+    rfl
+  change H.toContinuousMap
+      ((Limits.prod.snd (X := X) (Y := unitI))
+          ((Limits.prod.lift (𝟙 X) (constI X 1)) x),
+       (Limits.prod.fst (X := X) (Y := unitI))
+          ((Limits.prod.lift (𝟙 X) (constI X 1)) x)) = g x
+  rw [hsnd, hfst]
+  exact H.apply_one x
 
 /-- The `0`-vertex of `Δ[1]`, pushed along the singular edge, is the const-valued
 singular map at `0 ∈ I`. -/
 theorem edge_vtx_zero (X : TopCat.{0}) :
     vtx (TopCat.toSSet.obj X) 0 ≫ edge = TopCat.toSSet.map (constI X 0) := by
-  ext m;
-  simp +decide [ edge, vtx ];
-  simp +decide [ SSet.yonedaEquiv, unitI, constI, edgeCM ];
-  simp +decide [ uliftYonedaEquiv, SSet.stdSimplex.const ];
-  simp +decide [ TopCat.toSSetObjEquiv, SSet.stdSimplex.objMk ];
-  simp +decide [ TopCat.toSSet, SSet.stdSimplex.objEquiv, Equiv.ulift, ConcreteCategory.homEquiv ];
-  congr! 1;
-  ext; simp +decide [ stdSimplexHomeomorphUnitInterval ];
-  simp +decide [ TopCat.uliftFunctor, stdSimplexEquivIcc ];
-  simp +decide [ Homeomorph.ulift ];
-  simp +decide [ ULift.map, stdSimplex.map ];
-  simp +decide [ FunOnFinite.linearMap ];
-  simp +decide [ Finsupp.mapDomain ];
-  simp +decide [ ConcreteCategory.hom ]
+  rw [vtx, SSet.const_comp]
+  change SSet.const _ = TopCat.toSSet.map
+    (TopCat.const (X := X) (Y := unitI) (show ↑unitI from (0 : unitInterval)))
+  rw [TopCat.toSSet_map_const]
+  congr 1
+  apply TopCat.toSSetObj₀Equiv.injective
+  let α := SSet.stdSimplex.obj₀Equiv.symm (0 : Fin 2)
+  change TopCat.toSSetObj₀Equiv
+    ((SSet.yonedaEquiv.symm
+      ((unitI.toSSetObjEquiv (Opposite.op (SimplexCategory.mk 1))).symm edgeCM)).app _ α) = 0
+  rw [show α = SSet.stdSimplex.objEquiv.symm (SSet.stdSimplex.objEquiv α) by simp]
+  rw [SSet.yonedaEquiv_symm_app_objEquiv_symm]
+  change unitI.toSSetObjEquiv _
+    ((TopCat.toSSet.obj unitI).map _
+      ((unitI.toSSetObjEquiv (Opposite.op (SimplexCategory.mk 1))).symm edgeCM)) default = 0
+  rw [TopCat.toSSetObjEquiv_naturality_apply]
+  change stdSimplexHomeomorphUnitInterval _ = 0
+  rw [← stdSimplexHomeomorphUnitInterval_zero]
+  congr 1
+  rw [Subsingleton.elim default (stdSimplex.vertex 0), stdSimplex.map_vertex]
+  rfl
 
 /-- The `1`-vertex of `Δ[1]`, pushed along the singular edge, is the const-valued
 singular map at `1 ∈ I`. -/
 theorem edge_vtx_one (X : TopCat.{0}) :
     vtx (TopCat.toSSet.obj X) 1 ≫ edge = TopCat.toSSet.map (constI X 1) := by
-  ext m x; simp +decide [ edge, vtx ] ;
-  simp +decide [ SSet.yonedaEquiv, SSet.stdSimplex.const, unitI, constI, edgeCM ];
-  simp +decide [ uliftYonedaEquiv, SSet.stdSimplex.objMk, TopCat.toSSet, TopCat.toSSetObjEquiv, Equiv.ulift, ConcreteCategory.homEquiv ];
-  congr! 1;
-  ext; simp +decide [ TopCat.uliftFunctor, stdSimplexHomeomorphUnitInterval ];
-  simp +decide [ Homeomorph.ulift, ULift.map, stdSimplex.map ];
-  simp +decide [ FunOnFinite.linearMap ];
-  simp +decide [ Finsupp.mapDomain, Finsupp.linearEquivFunOnFinite ];
-  simp +decide [ Finsupp.sum_fintype, Finsupp.single_apply ];
-  simp +decide [ SSet.stdSimplex.objEquiv, SimplexCategory.Hom.mk, OrderHom.const ];
-  simp +decide [ Equiv.ulift, ConcreteCategory.hom ];
-  simp +decide [ SimplexCategory.Hom.toOrderHom ]
+  rw [vtx, SSet.const_comp]
+  change SSet.const _ = TopCat.toSSet.map
+    (TopCat.const (X := X) (Y := unitI) (show ↑unitI from (1 : unitInterval)))
+  rw [TopCat.toSSet_map_const]
+  congr 1
+  apply TopCat.toSSetObj₀Equiv.injective
+  let α := SSet.stdSimplex.obj₀Equiv.symm (1 : Fin 2)
+  change TopCat.toSSetObj₀Equiv
+    ((SSet.yonedaEquiv.symm
+      ((unitI.toSSetObjEquiv (Opposite.op (SimplexCategory.mk 1))).symm edgeCM)).app _ α) = 1
+  rw [show α = SSet.stdSimplex.objEquiv.symm (SSet.stdSimplex.objEquiv α) by simp]
+  rw [SSet.yonedaEquiv_symm_app_objEquiv_symm]
+  change unitI.toSSetObjEquiv _
+    ((TopCat.toSSet.obj unitI).map _
+      ((unitI.toSSetObjEquiv (Opposite.op (SimplexCategory.mk 1))).symm edgeCM)) default = 1
+  rw [TopCat.toSSetObjEquiv_naturality_apply]
+  change stdSimplexHomeomorphUnitInterval _ = 1
+  rw [← stdSimplexHomeomorphUnitInterval_one]
+  congr 1
+  rw [Subsingleton.elim default (stdSimplex.vertex 0), stdSimplex.map_vertex]
+  rfl
 
 /-- Key reduction: the product-comparison inverse turns the lifted const-valued
 section into `Sing` of the lifted topological section. -/

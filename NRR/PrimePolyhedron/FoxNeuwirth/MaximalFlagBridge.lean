@@ -167,11 +167,11 @@ theorem card_bottomPrefix (z : Code p) (r : Fin (p - 1)) :
       = (Finset.univ.filter (fun y : Fin p => y.1 ≤ r.1)).card := by
     apply Finset.card_nbij' (i := z.bottom) (j := z.bottom.symm)
     · intro x hx
-      simp only [bottomPrefix, Finset.coe_filter, Set.mem_setOf_eq,
+      simp only [bottomPrefix, Finset.coe_filter, Set.mem_ofPred_eq,
         Finset.mem_univ, true_and] at hx ⊢
       exact hx
     · intro y hy
-      simp only [bottomPrefix, Finset.coe_filter, Set.mem_setOf_eq,
+      simp only [bottomPrefix, Finset.coe_filter, Set.mem_ofPred_eq,
         Finset.mem_univ, true_and] at hy ⊢
       simpa using hy
     · intro x hx; simp
@@ -399,7 +399,9 @@ def stageIndex (hp : Nat.Prime p) (i : Fin (p - 1 + 1)) : Fin p :=
 noncomputable def toSimplex (hp : Nat.Prime p) (z : Code p) : Simplex p (p - 1) :=
   ⟨fun i => stageCell z (stageIndex hp i), by
     intro i j hij
-    exact stageCell_properFace hp z (by simpa [stageIndex] using hij)⟩
+    apply stageCell_properFace hp z
+    change i.1 < j.1
+    exact hij⟩
 
 @[simp] theorem toSimplex_apply
     (hp : Nat.Prime p) (z : Code p) (i : Fin (p - 1 + 1)) :
@@ -419,6 +421,7 @@ theorem stageCell_ext
     apply Fin.ext
     simp [stageCell, stageRank, ordinalRankFin, ordinalRankNat, stageKey,
       hblock, htop]
+    rfl
   · exact hbars
 
 /-- The first removed bar is absent from every positive stage. -/
@@ -439,8 +442,7 @@ theorem stageBlock_bottomPartner
   ext r
   simp only [Finset.mem_filter]
   have hbars : retainedBars (bottomPartner hp z) j = retainedBars z j := by
-    ext q
-    simp [retainedBars, removedBefore, bottomPartner]
+    rfl
   rw [hbars]
   have hcast : ((ePp hp) (z.removal (firstRemovalStep hp)).castSucc).1
       = (z.removal (firstRemovalStep hp)).1 := rfl
@@ -475,8 +477,7 @@ theorem stageCell_bottomPartner
     (hp : Nat.Prime p) (z : Code p) {j : Fin p} (hj : 0 < j.1) :
     stageCell (bottomPartner hp z) j = stageCell z j := by
   apply stageCell_ext
-  · ext r
-    simp [retainedBars, removedBefore, bottomPartner]
+  · rfl
   · exact stageBlock_bottomPartner hp z hj
   · rfl
 

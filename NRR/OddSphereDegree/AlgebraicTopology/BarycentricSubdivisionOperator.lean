@@ -51,7 +51,7 @@ theorem continuous_affineSubdivMapFun_coord (n : ℕ)
     (π : Equiv.Perm (Fin (n + 1))) (j : Fin (n + 1)) :
     Continuous fun x : Delta n => affineSubdivMapFun n π x j := by
   unfold affineSubdivMapFun
-  apply continuous_finset_sum
+  apply continuous_finsetSum
   intro k _
   exact (((continuous_apply k).comp continuous_subtype_val).mul continuous_const)
 
@@ -133,14 +133,7 @@ of a fixed basis simplex. -/
 noncomputable def barycentricSubdivisionGeneratorHom (R : Type) [CommRing R]
     (X : TopCat.{0}) (n : ℕ) (σ : singularSimplices X n) :
     ModuleCat.of R R ⟶ singularChainGroup R X n :=
-  ModuleCat.ofHom
-    { toFun := fun r => r • barycentricSubdivisionGenerator R X n σ
-      map_add' := by
-        intro r s
-        simp [add_smul]
-      map_smul' := by
-        intro a r
-        simp [mul_smul] }
+  ModuleCat.ofHom ((LinearMap.id : R →ₗ[R] R).smulRight (barycentricSubdivisionGenerator R X n σ))
 
 /-- The degree-`n` barycentric subdivision operator on singular chains. It is
 obtained from the coproduct universal property by prescribing its value on each
@@ -157,16 +150,13 @@ theorem barycentricSubdivisionLinearMap_generator (R : Type) [CommRing R]
     (X : TopCat.{0}) (n : ℕ) (σ : singularSimplices X n) :
     (barycentricSubdivisionLinearMap R X n).hom (chainGenerator R X n σ)
       = barycentricSubdivisionGenerator R X n σ := by
-  have h : Sigma.ι (fun (_ : singularSimplices X n) => ModuleCat.of R R) σ
+  have key : Sigma.ι (fun (_ : singularSimplices X n) => ModuleCat.of R R) σ
         ≫ barycentricSubdivisionLinearMap R X n
       = barycentricSubdivisionGeneratorHom R X n σ := Sigma.ι_desc _ _
-  have h2 := congrArg
-    (fun f : ModuleCat.of R R ⟶ singularChainGroup R X n => f.hom (1 : R)) h
-  simp only [ModuleCat.hom_comp, LinearMap.comp_apply] at h2
-  refine h2.trans ?_
-  rw [barycentricSubdivisionGeneratorHom]
-  show (1 : R) • barycentricSubdivisionGenerator R X n σ = _
-  rw [one_smul]
+  have h := congrArg (fun (f : ModuleCat.of R R ⟶ singularChainGroup R X n) => f.hom (1 : R)) key
+  dsimp [chainGenerator, barycentricSubdivisionGeneratorHom] at h
+  have hone : (1 : R) • barycentricSubdivisionGenerator R X n σ = barycentricSubdivisionGenerator R X n σ := one_smul _ _
+  exact h.trans hone
 
 /-- Integral degree-wise barycentric subdivision. -/
 noncomputable abbrev barycentricSubdivisionLinearMapℤ (X : TopCat.{0}) (n : ℕ) :
@@ -224,22 +214,8 @@ theorem singularBoundary_sigma_ι_formula (R : Type) [CommRing R] (X : TopCat.{0
         ≫ singularBoundary R X n
       = ∑ i : Fin (n + 2), (-1 : ℤ) ^ (i : ℕ) •
           Sigma.ι (fun (_ : singularSimplices X n) => ModuleCat.of R R)
-            (AlexanderWhitney.faceSimplex X n i σ) := by
-  rw [singularBoundary,
-    show (((singularChainComplexFunctor (ModuleCat.{0} R)).obj (ModuleCat.of R R)).obj X).d (n + 1) n
-        = (AlternatingFaceMapComplex.obj (singularChainSimplicialModule R X)).d (n + 1) n from rfl,
-    AlternatingFaceMapComplex.obj_d_eq, Preadditive.comp_sum]
-  apply Finset.sum_congr rfl
-  intro i _
-  rw [Preadditive.comp_zsmul]
-  congr 1
-  have key : Sigma.ι (fun (_ : singularSimplices X (n + 1)) => ModuleCat.of R R) σ
-      ≫ (singularChainSimplicialModule R X).δ i
-      = Sigma.ι (fun (_ : singularSimplices X n) => ModuleCat.of R R)
-        (AlexanderWhitney.faceSimplex X n i σ) := by
-    simp [singularChainSimplicialModule, SimplicialObject.whiskering, Limits.sigmaConst,
-      AlexanderWhitney.faceSimplex, SimplicialObject.δ]
-  exact key
+            (AlexanderWhitney.faceSimplex X n i σ) :=
+  @SSet.ιChainComplex_d (ModuleCat R) _ _ _ (TopCat.toSSet.obj X) (ModuleCat.of R R) n σ
 
 /-- **Singular boundary on a generator.** The differential `∂` of the singular
 chain complex acts on a basis chain `[σ]` by the classical alternating sum over
@@ -255,18 +231,22 @@ theorem singularBoundary_chainGenerator_formula (R : Type) [CommRing R] (X : Top
     (singularBoundary R X n).hom (chainGenerator R X (n + 1) σ)
       = ∑ i : Fin (n + 2),
           ((-1 : R) ^ i.val) • chainGenerator R X n (AlexanderWhitney.faceSimplex X n i σ) := by
-  unfold chainGenerator
+  let F : Fin (n + 2) → (ModuleCat.of R R ⟶ singularChainGroup R X n) :=
+    fun i => Sigma.ι (fun (_ : singularSimplices X n) => ModuleCat.of R R) (AlexanderWhitney.faceSimplex X n i σ)
   have h := singularBoundary_sigma_ι_formula R X n σ
-  have h2 := DFunLike.congr_fun (congrArg ModuleCat.Hom.hom h) (1 : R)
-  simp only [ModuleCat.hom_comp, LinearMap.comp_apply, ModuleCat.hom_sum, LinearMap.sum_apply,
-    ModuleCat.hom_zsmul, LinearMap.smul_apply] at h2
-  refine h2.trans ?_
-  apply Finset.sum_congr rfl
-  intro i _
-  rw [← Int.cast_smul_eq_zsmul R ((-1 : ℤ) ^ (i : ℕ))]
-  congr 1
-  push_cast
-  ring
+  have h2 := congrArg (fun (f : ModuleCat.of R R ⟶ singularChainGroup R X n) => f.hom (1 : R)) h
+  dsimp [chainGenerator] at h2
+  have h_hom : (∑ (i : Fin (n + 2)), (-1 : ℤ) ^ (i : ℕ) • F i).hom (1 : R)
+      = ∑ (i : Fin (n + 2)), (-1 : ℤ) ^ (i : ℕ) • (F i).hom (1 : R) := by simp
+  have h_sum : ∑ (i : Fin (n + 2)), (-1 : ℤ) ^ (i : ℕ) • (F i).hom (1 : R)
+      = ∑ i : Fin (n + 2), ((-1 : R) ^ i.val) • chainGenerator R X n (AlexanderWhitney.faceSimplex X n i σ) := by
+    apply Finset.sum_congr rfl
+    intro i _
+    rw [← Int.cast_smul_eq_zsmul R ((-1 : ℤ) ^ (i : ℕ))]
+    congr 1
+    push_cast
+    rfl
+  exact (h2.trans h_hom).trans h_sum
 
 end AffineBarycentricSubdivision
 end SphereOddDegree

@@ -88,74 +88,73 @@ theorem isBounded_range (n : ℕ) (V : Fin (n + 1) → E) :
     Bornology.IsBounded (Set.range V) :=
   (Set.finite_range V).isBounded
 
-/-
-Distance from an old vertex `V (π i)` (with `i ≤ l`) to the `l`-th new
-barycenter is at most `l/(l+1)` times the diameter of the old vertex set.
--/
 theorem dist_vertex_step_le (n : ℕ) (V : Fin (n + 1) → E)
     (π : Equiv.Perm (Fin (n + 1))) (l i : Fin (n + 1)) (hi : i ≤ l) :
     dist (V (π i)) (stepVertices n V π l)
       ≤ (l.val : ℝ) / (l.val + 1) * Metric.diam (Set.range V) := by
-  -- By definition of $stepVertices$, we have:
   have h_step : V (π i) - (stepVertices n V π l) = (l.val + 1 : ℝ)⁻¹ • ∑ j ∈ Finset.Iic l, (V (π i) - V (π j)) := by
-    simp [stepVertices];
-    simp +decide [ smul_sub, ← Nat.cast_smul_eq_nsmul ℝ ];
-    rw [ inv_smul_smul₀ ( Nat.cast_add_one_ne_zero _ ) ];
+    simp [stepVertices]
+    simp [smul_sub, ← Nat.cast_smul_eq_nsmul ℝ]
+    rw [inv_smul_smul₀ (Nat.cast_add_one_ne_zero _)]
   have h_norm : ‖∑ j ∈ Finset.Iic l, (V (π i) - V (π j))‖ ≤ l.val * Metric.diam (Set.range V) := by
-    have h_norm : ∑ j ∈ Finset.Iic l \ {i}, ‖V (π i) - V (π j)‖ ≤ l.val * Metric.diam (Set.range V) := by
-      refine' le_trans ( Finset.sum_le_sum fun j hj => show ‖V ( π i ) - V ( π j )‖ ≤ Metric.diam ( Set.range V ) from _ ) _;
-      · convert Metric.dist_le_diam_of_mem ( isBounded_range n V ) ( Set.mem_range_self ( π i ) ) ( Set.mem_range_self ( π j ) ) using 1 ; simp +decide [ dist_eq_norm ];
-      · simp +decide [ Finset.card_sdiff, * ];
-    refine' le_trans ( le_trans ( norm_sum_le _ _ ) _ ) h_norm;
-    simp +decide [ Finset.sum_eq_sum_diff_singleton_add ( show i ∈ Finset.Iic l from Finset.mem_Iic.mpr hi ) ];
-  convert mul_le_mul_of_nonneg_left h_norm ( inv_nonneg.2 ( by positivity : 0 ≤ ( l : ℝ ) + 1 ) ) using 1;
-  · rw [ dist_eq_norm, h_step, norm_smul, Real.norm_of_nonneg ( by positivity ) ];
-  · ring
+    have h_bound : ∀ j ∈ (Finset.Iic l).erase i, ‖V (π i) - V (π j)‖ ≤ Metric.diam (Set.range V) := by
+      intro j _
+      rw [← dist_eq_norm]
+      exact Metric.dist_le_diam_of_mem (isBounded_range n V) (Set.mem_range_self (π i)) (Set.mem_range_self (π j))
+    have h_sum := norm_sum_le (Finset.Iic l) (fun j => V (π i) - V (π j))
+    have h_zero : ‖V (π i) - V (π i)‖ = 0 := by simp
+    have h_split : ∑ j ∈ Finset.Iic l, ‖V (π i) - V (π j)‖ = ∑ j ∈ (Finset.Iic l).erase i, ‖V (π i) - V (π j)‖ := by
+      rw [← Finset.sum_erase (Finset.Iic l) h_zero]
+    have h_card : ((Finset.Iic l).erase i).card = l.val := by
+      rw [Finset.card_erase_of_mem (Finset.mem_Iic.mpr hi), Fin.card_Iic, Nat.add_sub_cancel]
+    have h_sum_le : ∑ j ∈ (Finset.Iic l).erase i, ‖V (π i) - V (π j)‖ ≤ l.val * Metric.diam (Set.range V) := by
+      have := Finset.sum_le_card_nsmul ((Finset.Iic l).erase i) (fun j => ‖V (π i) - V (π j)‖) (Metric.diam (Set.range V)) (fun j hj => h_bound j hj)
+      rwa [h_card, nsmul_eq_mul] at this
+    linarith
+  rw [dist_eq_norm, h_step, norm_smul, Real.norm_of_nonneg (by positivity)]
+  have hl_pos : 0 ≤ (l.val + 1 : ℝ)⁻¹ := by positivity
+  have h_le := mul_le_mul_of_nonneg_left h_norm hl_pos
+  have h_eq : (l.val + 1 : ℝ)⁻¹ * (l.val * Metric.diam (Set.range V)) = (l.val : ℝ) / (l.val + 1) * Metric.diam (Set.range V) := by
+    ring
+  linarith
 
-/-
-Distance between two new barycenters `stepVertices … l` and `stepVertices … l'`
-with `l ≤ l'` is at most `l'/(l'+1)` times the old diameter.
--/
 theorem dist_step_step_le_aux (n : ℕ) (V : Fin (n + 1) → E)
     (π : Equiv.Perm (Fin (n + 1))) (l l' : Fin (n + 1)) (hll : l ≤ l') :
     dist (stepVertices n V π l) (stepVertices n V π l')
       ≤ (l'.val : ℝ) / (l'.val + 1) * Metric.diam (Set.range V) := by
-  -- Write `D := Metric.diam (Set.range V)` and `s := Finset.Iic l`, with `s.card = l.val + 1` (`Fin.card_Iic`).
   set D := Metric.diam (Set.range V)
   set s := Finset.Iic l
   have hs : s.card = l.val + 1 := by
-    simp +decide [ s ];
-  -- By definition of stepVertices, we have:
+    simp [s]
   have h_step : stepVertices n V π l - stepVertices n V π l' = (l.val + 1 : ℝ)⁻¹ • ∑ i ∈ s, (V (π i) - stepVertices n V π l') := by
-    simp +decide [ stepVertices, Finset.smul_sum, Finset.sum_sub_distrib, smul_sub ];
-    simp +decide [ hs, ← smul_assoc ];
-    grind;
-  -- By definition of stepVertices, we have that for each $i \in s$, $\|V (π i) - stepVertices n V π l'\| \leq \frac{l'.val}{l'.val + 1} * D$.
+    rw [Finset.sum_sub_distrib, smul_sub, Finset.sum_const, hs, ← Nat.cast_smul_eq_nsmul ℝ,
+      Nat.cast_add, Nat.cast_one, inv_smul_smul₀ (by positivity : (l.val : ℝ) + 1 ≠ 0)]
+    rfl
   have h_dist : ∀ i ∈ s, ‖V (π i) - stepVertices n V π l'‖ ≤ (l'.val : ℝ) / (l'.val + 1) * D := by
-    intro i hi; have := dist_vertex_step_le n V π l' i ( le_trans ( Finset.mem_Iic.mp hi ) hll ) ; simp_all +decide [ dist_eq_norm ] ;
-    exact this;
-  rw [ dist_eq_norm, h_step, norm_smul, Real.norm_of_nonneg ( by positivity ) ];
-  refine' le_trans ( mul_le_mul_of_nonneg_left ( norm_sum_le _ _ ) ( by positivity ) ) _;
-  refine' le_trans ( mul_le_mul_of_nonneg_left ( Finset.sum_le_sum h_dist ) ( by positivity ) ) _ ; simp +decide [ hs, ne_of_gt ( Nat.cast_add_one_pos _ ) ]
+    intro i hi
+    have := dist_vertex_step_le n V π l' i (le_trans (Finset.mem_Iic.mp hi) hll)
+    simpa [dist_eq_norm] using this
+  rw [dist_eq_norm, h_step, norm_smul, Real.norm_of_nonneg (by positivity)]
+  refine le_trans (mul_le_mul_of_nonneg_left (norm_sum_le _ _) (by positivity)) ?_
+  have h_sum_le := mul_le_mul_of_nonneg_left (Finset.sum_le_sum h_dist) (by positivity : 0 ≤ (l.val + 1 : ℝ)⁻¹)
+  refine le_trans h_sum_le ?_
+  simp only [Finset.sum_const, nsmul_eq_mul, hs]
+  push_cast
+  have : (l.val + 1 : ℝ) ≠ 0 := by positivity
+  rw [← mul_assoc, inv_mul_cancel₀ this, one_mul]
 
-/-
-Distance between any two new barycenters is at most `contractionFactor n`
-times the old diameter.
--/
 theorem dist_step_step_le (n : ℕ) (V : Fin (n + 1) → E)
     (π : Equiv.Perm (Fin (n + 1))) (l l' : Fin (n + 1)) :
     dist (stepVertices n V π l) (stepVertices n V π l')
       ≤ contractionFactor n * Metric.diam (Set.range V) := by
-  by_cases h : l ≤ l';
-  · refine' le_trans ( dist_step_step_le_aux _ _ _ _ _ h ) _;
-    exact mul_le_mul_of_nonneg_right ( ratio_le_contractionFactor ( Nat.le_of_lt_succ ( Fin.is_lt l' ) ) ) ( Metric.diam_nonneg );
-  · convert dist_step_step_le_aux n V π l' l ( le_of_not_ge h ) |> le_trans <| mul_le_mul_of_nonneg_right ( ratio_le_contractionFactor <| Nat.le_of_lt_succ l.2 ) ( Metric.diam_nonneg ) using 1;
-    exact dist_comm _ _
+  by_cases h : l ≤ l'
+  · refine le_trans (dist_step_step_le_aux _ _ _ _ _ h) ?_
+    exact mul_le_mul_of_nonneg_right (ratio_le_contractionFactor (Nat.le_of_lt_succ (Fin.is_lt l'))) (Metric.diam_nonneg)
+  · rw [dist_comm]
+    have h' : l' ≤ l := le_of_not_ge h
+    refine le_trans (dist_step_step_le_aux n V π l' l h') ?_
+    exact mul_le_mul_of_nonneg_right (ratio_le_contractionFactor (Nat.le_of_lt_succ l.isLt)) Metric.diam_nonneg
 
-/-
-**One-step contraction.** One barycentric subdivision shrinks the diameter of
-the vertex set by the factor `contractionFactor n`.
--/
 theorem stepVertices_diam_le (n : ℕ) (V : Fin (n + 1) → E)
     (π : Equiv.Perm (Fin (n + 1))) :
     Metric.diam (Set.range (stepVertices n V π))
@@ -165,15 +164,10 @@ theorem stepVertices_diam_le (n : ℕ) (V : Fin (n + 1) → E)
   rintro _ ⟨a, rfl⟩ _ ⟨b, rfl⟩
   exact dist_step_step_le n V π a b
 
-/-! ## Iterated barycentric subdivision -/
-
-/-- The vertex tuple of an affine sub-simplex appearing after `N` barycentric
-subdivisions, specified by a sequence of `N` permutations `πs`. -/
-noncomputable def iterVertices (n : ℕ) :
-    (N : ℕ) → (Fin N → Equiv.Perm (Fin (n + 1))) → (Fin (n + 1) → E) →
-      (Fin (n + 1) → E)
+noncomputable def iterVertices (n : ℕ) : (N : ℕ) → (Fin N → Equiv.Perm (Fin (n + 1))) →
+    (Fin (n + 1) → E) → (Fin (n + 1) → E)
   | 0, _, V => V
-  | (N + 1), πs, V =>
+  | N + 1, πs, V =>
       stepVertices n (iterVertices n N (fun i => πs i.castSucc) V) (πs (Fin.last N))
 
 @[simp] theorem iterVertices_zero (n : ℕ)
@@ -186,18 +180,18 @@ theorem iterVertices_succ (n N : ℕ)
       = stepVertices n (iterVertices n N (fun i => πs i.castSucc) V) (πs (Fin.last N)) :=
   rfl
 
-/-
-**Iterated contraction.** The `N`-fold barycentric subdivision shrinks the
-diameter of the vertex set by `(contractionFactor n)^N`.
--/
 theorem iterVertices_diam_le (n N : ℕ)
     (πs : Fin N → Equiv.Perm (Fin (n + 1))) (V : Fin (n + 1) → E) :
     Metric.diam (Set.range (iterVertices n N πs V))
       ≤ (contractionFactor n) ^ N * Metric.diam (Set.range V) := by
-  induction' N with N ih;
-  · simp +decide [ iterVertices ];
-  · convert le_trans ( stepVertices_diam_le n ( iterVertices n N ( fun i => πs ( Fin.castSucc i ) ) V ) ( πs ( Fin.last N ) ) ) ?_ using 1;
-    simpa only [ pow_succ', mul_assoc ] using mul_le_mul_of_nonneg_left ( ih _ ) ( contractionFactor_nonneg n )
+  induction' N with N ih
+  · simp [iterVertices]
+  · rw [iterVertices_succ]
+    refine le_trans (stepVertices_diam_le n (iterVertices n N (fun i => πs i.castSucc) V) (πs (Fin.last N))) ?_
+    have h_ih := ih (fun i => πs i.castSucc)
+    have h_mul := mul_le_mul_of_nonneg_left h_ih (contractionFactor_nonneg n)
+    rw [pow_succ', mul_assoc]
+    exact h_mul
 
 end Normed
 

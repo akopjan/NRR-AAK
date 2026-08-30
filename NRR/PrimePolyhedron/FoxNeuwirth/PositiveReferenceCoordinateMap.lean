@@ -85,7 +85,7 @@ noncomputable def positiveReferenceCoordinateMap
       x c * (positiveReferenceCoordinateMap hp).vertexValue c i := by
     obtain ⟨c, hc⟩ : ∃ c, 0 < x c := by
       by_contra h
-      push_neg at h
+      push Not at h
       have hz : ∀ c, x c = 0 := fun c => le_antisymm (h c) (x.nonneg c)
       have := x.sum_eq_one
       simp [hz] at this

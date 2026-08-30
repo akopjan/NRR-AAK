@@ -1,5 +1,6 @@
 import NRR.PrimePolyhedron.FoxNeuwirth.RelativeSubdivisionOneStepEndpoints
 import NRR.PrimePolyhedron.FoxNeuwirth.SubdivisionZeroFreeApproximation
+set_option backward.isDefEq.respectTransparency false
 
 set_option linter.unusedVariables false
 
@@ -33,10 +34,10 @@ open RefinedAffineMap
 
 variable {p d n : Nat}
 
-private def parentIndex (hp : Nat.Prime p) : Fin (p - 1 + 1) → Fin (p - 1 + 1) :=
+def parentIndex (hp : Nat.Prime p) : Fin (p - 1 + 1) → Fin (p - 1 + 1) :=
   id
 
-private def cylinderIndex (hp : Nat.Prime p) : Fin (p + 1) → Fin (p - 1 + 2) :=
+def cylinderIndex (hp : Nat.Prime p) : Fin (p + 1) → Fin (p - 1 + 2) :=
   Fin.cast (by have := hp.pos; omega)
 
 /-- Evaluate parent-simplex affine vertex data at the spatial point of one local cylinder vertex. -/
@@ -60,6 +61,9 @@ theorem affine_pullbackVertexValue_eq_spatial
   rw [Finset.sum_comm]
   apply Finset.sum_congr rfl
   intro j hj
+  change (∑ i, w i *
+      ((RelativeSubdivisionCylinderCombinatorics.vertex d q i).1 j * V j c)) =
+    (∑ i, w i * (RelativeSubdivisionCylinderCombinatorics.vertex d q i).1 j) * V j c
   simpa [mul_assoc] using
     (Finset.sum_mul Finset.univ
       (fun i => w i * (RelativeSubdivisionCylinderCombinatorics.vertex d q i).1 j)
@@ -107,8 +111,16 @@ theorem affine_pullbackEndpointValue_eq_value
       (V := fun j => A.map (RefinedAffineMap.vertex hp A.level q j))
       (w := RelativeSubdivisionOneStepCells.localWeight hp w)
   obtain ⟨k, rfl⟩ := Nat.exists_eq_succ_of_ne_zero (ne_of_gt hp.pos)
-  simpa [RefinedAffineMap.value, RefinedAffineMap.vertexValue, parentIndex,
-    cylinderIndex, RelativeSubdivisionOneStepCells.localWeight] using h
+  convert h using 1
+  · funext c
+    apply Finset.sum_congr rfl
+    intro i hi
+    congr 2
+  · funext c
+    unfold RefinedAffineMap.value RefinedAffineMap.vertexValue
+    apply Finset.sum_congr rfl
+    intro i hi
+    congr 1
 
 /-- Every affine-pullback one-step endpoint cell avoids the origin because it is an exact
 restriction of the already zero-free endpoint PL map. -/

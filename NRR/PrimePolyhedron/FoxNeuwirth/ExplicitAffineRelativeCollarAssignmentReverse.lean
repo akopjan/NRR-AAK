@@ -1,5 +1,6 @@
 import NRR.PrimePolyhedron.FoxNeuwirth.ExplicitAffineRelativeCollarAssignmentCompose
 import NRR.PrimePolyhedron.FoxNeuwirth.ExplicitAffineRelativeCollarReverse
+set_option backward.isDefEq.respectTransparency false
 
 /-!
 # Reversal of assignments on relative affine collars
@@ -92,10 +93,16 @@ theorem reverseGlobalVector_smul
     (x : GlobalVertex hp (reverseCells C)) :
     reverseGlobalVector C a (g • x) = g • reverseGlobalVector C a x := by
   refine Quotient.inductionOn x ?_
-  intro s
-  simpa [reverseGlobalVector, reverseCoverVector, originalGlobalVertex,
-    originalCoverVertex] using
-    vectorValue_smul hp C a g (Quotient.mk _ (originalCoverVertex C s))
+  rintro ⟨h, ⟨q, i⟩⟩
+  change vectorValue hp C a (Quotient.mk _ (g * h, (q, i))) =
+    g • vectorValue hp C a (Quotient.mk _ (h, (q, i)))
+  have hact :
+      g • (Quotient.mk _ (h, (q, i)) : GlobalVertex hp C) =
+        Quotient.mk _ (g * h, (q, i)) := by
+    change Quotient.map (actCoverVertex hp C g) _ (Quotient.mk _ (h, (q, i))) = _
+    rfl
+  rw [← hact]
+  exact vectorValue_smul hp C a g (Quotient.mk _ (h, (q, i)))
 
 /-- Assignment transported to the reversed cell system. -/
 noncomputable def reverseAssignment

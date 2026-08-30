@@ -1,5 +1,6 @@
 import NRR.PrimePolyhedron.FoxNeuwirth.ExplicitAffineRelativeCollarCompose
 import NRR.PrimePolyhedron.FoxNeuwirth.ExplicitAffineRelativeCollarStokes
+set_option backward.isDefEq.respectTransparency false
 set_option linter.unusedVariables false
 set_option linter.unusedSectionVars false
 set_option linter.unnecessarySeqFocus false
@@ -129,20 +130,40 @@ theorem combinedCoverVector_eq_of_coverPoint_eq
           apply congrArg VC
           apply Quotient.sound
           apply leftPoint_injective
-          simpa [leftCoverVertex] using hab
+          change coverPoint hp (combinedCells C D)
+              (leftCoverVertex C D (ga, (qa, ia))) =
+            coverPoint hp (combinedCells C D)
+              (leftCoverVertex C D (gb, (qb, ib))) at hab
+          rw [coverPoint_leftCoverVertex, coverPoint_leftCoverVertex] at hab
+          exact hab
       | inr qb =>
-          exact hseam (ga, (qa, ia)) (gb, (qb, ib)) (by
-            simpa [leftCoverVertex, rightCoverVertex] using hab)
+          apply hseam (ga, (qa, ia)) (gb, (qb, ib))
+          change coverPoint hp (combinedCells C D)
+              (leftCoverVertex C D (ga, (qa, ia))) =
+            coverPoint hp (combinedCells C D)
+              (rightCoverVertex C D (gb, (qb, ib))) at hab
+          rw [coverPoint_leftCoverVertex, coverPoint_rightCoverVertex] at hab
+          exact hab
   | inr qa =>
       cases qb with
       | inl qb =>
-          exact (hseam (gb, (qb, ib)) (ga, (qa, ia)) (by
-            simpa [leftCoverVertex, rightCoverVertex] using hab.symm)).symm
+          apply (hseam (gb, (qb, ib)) (ga, (qa, ia)) ?_).symm
+          change coverPoint hp (combinedCells C D)
+              (rightCoverVertex C D (ga, (qa, ia))) =
+            coverPoint hp (combinedCells C D)
+              (leftCoverVertex C D (gb, (qb, ib))) at hab
+          rw [coverPoint_rightCoverVertex, coverPoint_leftCoverVertex] at hab
+          exact hab.symm
       | inr qb =>
           apply congrArg VD
           apply Quotient.sound
           apply rightPoint_injective
-          simpa [rightCoverVertex] using hab
+          change coverPoint hp (combinedCells C D)
+              (rightCoverVertex C D (ga, (qa, ia))) =
+            coverPoint hp (combinedCells C D)
+              (rightCoverVertex C D (gb, (qb, ib))) at hab
+          rw [coverPoint_rightCoverVertex, coverPoint_rightCoverVertex] at hab
+          exact hab
 
 /-- Global combined vector obtained by descent from the piecewise cover value. -/
 noncomputable def combinedGlobalVector
@@ -191,11 +212,25 @@ theorem combinedGlobalVector_smul
   rintro ⟨h, ⟨q, i⟩⟩
   cases q with
   | inl q =>
-      simpa [combinedGlobalVector, combinedCoverVector] using
-        hC g (Quotient.mk _ (h, (q, i)))
+      change VC (Quotient.mk _ (g * h, (q, i))) =
+        g • VC (Quotient.mk _ (h, (q, i)))
+      have hact :
+          g • (Quotient.mk _ (h, (q, i)) : GlobalVertex hp C) =
+            Quotient.mk _ (g * h, (q, i)) := by
+        change Quotient.map (actCoverVertex hp C g) _ (Quotient.mk _ (h, (q, i))) = _
+        rfl
+      rw [← hact]
+      exact hC g (Quotient.mk _ (h, (q, i)))
   | inr q =>
-      simpa [combinedGlobalVector, combinedCoverVector] using
-        hD g (Quotient.mk _ (h, (q, i)))
+      change VD (Quotient.mk _ (g * h, (q, i))) =
+        g • VD (Quotient.mk _ (h, (q, i)))
+      have hact :
+          g • (Quotient.mk _ (h, (q, i)) : GlobalVertex hp D) =
+            Quotient.mk _ (g * h, (q, i)) := by
+        change Quotient.map (actCoverVertex hp D g) _ (Quotient.mk _ (h, (q, i))) = _
+        rfl
+      rw [← hact]
+      exact hD g (Quotient.mk _ (h, (q, i)))
 
 /-- Compose two assignments whose vector values agree on every combined seam vertex. -/
 noncomputable def combinedAssignment
@@ -271,8 +306,9 @@ theorem combinedAssignment_lowerFixed
       have hcomponent : (C.vertex q i).time.1 = 0 := by
         change (C.vertex q i).time.1 / 2 = 0 at htime
         linarith
-      simpa [RelativeAffineCellSystem.slotPoint, combinedCells] using
-        hleft (q, i) hcomponent
+      change vectorValue hp C a (sampleVertex hp C (q, i)) =
+        G (C.slotPoint (q, i)).spatial
+      exact hleft (q, i) hcomponent
   | inr q =>
       have hnonneg := (D.vertex q i).time.2.1
       change (1 + (D.vertex q i).time.1) / 2 = 0 at htime
@@ -304,8 +340,9 @@ theorem combinedAssignment_upperFixed
       have hcomponent : (D.vertex q i).time.1 = 1 := by
         change (1 + (D.vertex q i).time.1) / 2 = 1 at htime
         linarith
-      simpa [RelativeAffineCellSystem.slotPoint, combinedCells] using
-        hright (q, i) hcomponent
+      change vectorValue hp D b (sampleVertex hp D (q, i)) =
+        G (D.slotPoint (q, i)).spatial
+      exact hright (q, i) hcomponent
 
 /-- Composition preserves the external horizontal endpoint values.  Only the lower values of the
 left assignment and the upper values of the right assignment are needed; the common seam is
@@ -339,8 +376,9 @@ theorem combinedAssignment_horizontalVertexFixed
         have hcomponent : (EC.cells.vertex q i).time.1 = 0 := by
           change (EC.cells.vertex q i).time.1 / 2 = 0 at htime
           linarith
-        simpa [RelativeAffineCellSystem.slotPoint, combinedCells] using
-          hlower (q, i) hcomponent
+        change vectorValue hp EC.cells a (sampleVertex hp EC.cells (q, i)) =
+          A₀.toRegularApproximation.map (EC.cells.slotPoint (q, i)).spatial
+        exact hlower (q, i) hcomponent
     | inr q =>
         have hnonneg := (ED.cells.vertex q i).time.2.1
         change (1 + (ED.cells.vertex q i).time.1) / 2 = 0 at htime
@@ -357,8 +395,9 @@ theorem combinedAssignment_horizontalVertexFixed
         have hcomponent : (ED.cells.vertex q i).time.1 = 1 := by
           change (1 + (ED.cells.vertex q i).time.1) / 2 = 1 at htime
           linarith
-        simpa [RelativeAffineCellSystem.slotPoint, combinedCells] using
-          hupper (q, i) hcomponent
+        change vectorValue hp ED.cells b (sampleVertex hp ED.cells (q, i)) =
+          A₁.toRegularApproximation.map (ED.cells.slotPoint (q, i)).spatial
+        exact hupper (q, i) hcomponent
 
 /-- Cellwise origin avoidance is preserved under assignment composition. -/
 theorem combinedAssignment_avoidsOrigin

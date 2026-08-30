@@ -1,3 +1,4 @@
+import Mathlib.Algebra.Homology.Opposite
 import NRR.OddSphereDegree.AlgebraicTopology.SingularCohomology
 import NRR.OddSphereDegree.AlgebraicTopology.HomotopyInvariance
 import NRR.OddSphereDegree.AlgebraicTopology.Backports.PrismSimplicialHomotopy
@@ -51,26 +52,6 @@ namespace SphereOddDegree
 universe u v w
 
 /--
-**Op of a chain homotopy.** A homotopy between two parallel maps `φ, ψ` of
-homological complexes in `V` (shape `c`) dualizes to a homotopy between the
-images `(opFunctor V c).map φ.op`, `(opFunctor V c).map ψ.op` of complexes in
-`Vᵒᵖ` (shape `c.symm`). The dualized homotopy datum is `i j ↦ (H.hom j i).op`;
-the `dNext`/`prevD` terms swap roles under `op`.
--/
-noncomputable def homotopyOpFunctorMap {ι : Type w} {V : Type u} [Category.{v} V]
-    [Preadditive V] {c : ComplexShape ι} {K L : HomologicalComplex V c} {φ ψ : K ⟶ L}
-    (H : Homotopy φ ψ) :
-    Homotopy ((opFunctor V c).map φ.op) ((opFunctor V c).map ψ.op) where
-  hom i j := (H.hom j i).op
-  zero i j hij := by
-    rw [H.zero j i hij]; simp
-  comm i := by
-    convert congr_arg Quiver.Hom.op ( H.comm i ) using 1;
-    simp +decide [ dNext, prevD, opFunctor_map_f ];
-    rw [ add_comm ];
-    rfl
-
-/--
 **Unconditional dualization step.** If the singular chain maps (with
 coefficients in `M : ModuleCat R`) induced by two continuous maps `f, g : X ⟶ Y`
 are chain-homotopic, then the induced pullbacks on the `n`-th singular cohomology
@@ -86,8 +67,8 @@ theorem singularCohomologyMap_eq_of_chainHomotopy
                   (((singularChainComplexFunctor (ModuleCat.{0} R)).obj M).map g)) :
     (singularCohomologyFunctor R M n).map f.op
       = (singularCohomologyFunctor R M n).map g.op := by
-  have cochainH := ((linearYoneda R (ModuleCat R)).obj M).mapHomotopy (homotopyOpFunctorMap H);
-  convert cochainH.homologyMap_eq n using 1
+  have cochainH := (((linearYoneda R (ModuleCat R)).obj M).mapHomotopy H.op)
+  exact cochainH.homologyMap_eq n
 
 /-- **The cohomology prism-operator hypothesis** (coefficient-`M` form).
 

@@ -82,12 +82,25 @@ theorem equivariantReferenceCoordinateMap_global_smul
     intro c
     simpa [BarredPermutation.prime_smul_def] using
       equivariantReferenceCoordinateMap_vertex_smul hp g c i
-  simpa [Realization.prime_smul_apply, hvertex] using
-    (relabelEquiv
-      (PrimeSymmetry.toPerm hp g).symm).sum_comp
-      (fun c => x c *
-        (equivariantReferenceCoordinateMap hp).vertexValue
-          (BarredPermutation.relabel (PrimeSymmetry.toPerm hp g) c) i)
+  change (∑ c, x (BarredPermutation.relabel
+      (PrimeSymmetry.toPerm hp g).symm c) *
+      (equivariantReferenceCoordinateMap hp).vertexValue c i) = _
+  calc
+    (∑ c, x (BarredPermutation.relabel
+          (PrimeSymmetry.toPerm hp g).symm c) *
+        (equivariantReferenceCoordinateMap hp).vertexValue c i) =
+        ∑ c, x c * (equivariantReferenceCoordinateMap hp).vertexValue
+          (BarredPermutation.relabel (PrimeSymmetry.toPerm hp g) c) i := by
+      simpa using
+        (relabelEquiv (PrimeSymmetry.toPerm hp g).symm).sum_comp
+          (fun c => x c *
+            (equivariantReferenceCoordinateMap hp).vertexValue
+              (BarredPermutation.relabel (PrimeSymmetry.toPerm hp g) c) i)
+    _ = ∑ c, x c * (equivariantReferenceCoordinateMap hp).vertexValue c
+          ((PrimeSymmetry.toPerm hp g).symm i) := by
+      apply Finset.sum_congr rfl
+      intro c _
+      rw [hvertex c]
 
 /-- A finite uniform vertex bound for the equivariant lift. -/
 noncomputable def equivariantReferenceAbsBound (hp : Nat.Prime p) : Real :=
@@ -246,7 +259,7 @@ noncomputable def negativeEquivariantReferenceCoordinateMap
       (le_of_lt (positiveEquivariantReferenceCoordinateMap_vertex_pos hp c i))
   obtain ⟨c, hc⟩ : ∃ c, 0 < x c := by
     by_contra h
-    push_neg at h
+    push Not at h
     have hz : ∀ c, x c = 0 := fun c => le_antisymm (h c) (x.nonneg c)
     have hx := x.sum_eq_one
     simp [hz] at hx
@@ -267,7 +280,7 @@ noncomputable def negativeEquivariantReferenceCoordinateMap
       (le_of_lt (negativeEquivariantReferenceCoordinateMap_vertex_neg hp c i))
   obtain ⟨c, hc⟩ : ∃ c, 0 < x c := by
     by_contra h
-    push_neg at h
+    push Not at h
     have hz : ∀ c, x c = 0 := fun c => le_antisymm (h c) (x.nonneg c)
     have hx := x.sum_eq_one
     simp [hz] at hx

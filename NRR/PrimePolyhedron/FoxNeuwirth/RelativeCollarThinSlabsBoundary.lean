@@ -1,6 +1,8 @@
 import NRR.PrimePolyhedron.FoxNeuwirth.RelativeCollarThinSlabs
 import NRR.PrimePolyhedron.FoxNeuwirth.RelativeCollarMiddlePrismBoundary
 
+set_option backward.isDefEq.respectTransparency false
+
 /-!
 # Signed boundary of a thin-time stack
 
@@ -281,6 +283,14 @@ theorem facetIncidence_eq_sum_slabOccurrencePairing
     RelativeCollarThinSlabs.Cell, occurrenceCoefficient,
     RelativeAffineCellSystem.alternatingSign,
     SimplicialChain.faceSign, RelativeCollarMiddlePrism.cellSystem]
+  change
+    (if (StackCells hp N m hm).facetClass ((r, q), k) = s then
+        prismCoefficient hp N 0 q * (-1) ^ (k : Nat)
+      else 0) =
+      if (StackCells hp N m hm).facetClass ((r, q), k) = s then
+        prismCoefficient hp N 0 q * (-1) ^ (k : Nat)
+      else 0
+  rfl
 
 
 /-! ## Mesh endpoint terms and telescoping -/

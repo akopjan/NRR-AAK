@@ -156,11 +156,11 @@ noncomputable def mvConnectingIso (U V : Opens X) (hUV : U ⊔ V = ⊤)
     (hVj : IsZero ((subChainComplex R X (V : Set X)).homology j)) :
     (twoOpenCoverSmallChains R U V hUV).homology i
       ≅ (subChainComplex R X ((U : Set X) ∩ (V : Set X))).homology j :=
-  haveI : IsIso ((mvShortExact R U V hUV).δ i j hij) :=
+  have hIso : IsIso ((mvShortExact R U V hUV).δ i j hij) :=
     isIso_shortExact_δ R (mvShortExact R U V hUV) i j hij
       (isZero_mvX₂_homology R U V hUV i hUi hVi)
       (isZero_mvX₂_homology R U V hUV j hUj hVj)
-  asIso ((mvShortExact R U V hUV).δ i j hij)
+  @asIso _ _ _ _ ((mvShortExact R U V hUV).δ i j hij) hIso
 
 /-- **The singular Mayer–Vietoris connecting isomorphism.**
 

@@ -61,7 +61,7 @@ theorem exists_vertex_of_chartWeight_ne_zero
     ∃ i : Fin (d + 1), s i = c := by
   classical
   by_contra hnone
-  push_neg at hnone
+  push Not at hnone
   apply h
   simp [chartWeight, hnone]
 
@@ -104,8 +104,8 @@ theorem realizationPoint_vertex
   apply Realization.ext
   intro c
   classical
-  simp only [realizationPoint_apply, chartWeight, StandardSimplex.ofDelta,
-    Realization.vertex_apply]
+  change (∑ j, if s j = c then (stdSimplex.vertex (S := Real) i) j else 0) =
+    if c = s i then 1 else 0
   by_cases hci : c = s i
   · subst c
     rw [Finset.sum_eq_single i]
@@ -129,16 +129,19 @@ theorem realizationPoint_vertex
 /-- The affine chart is continuous. -/
 theorem continuous_realizationPoint (s : Simplex p d) :
     Continuous s.realizationPoint := by
+  have hcoord (i : Fin (d + 1)) :
+      Continuous (fun w : StandardSimplex d => w i) := by
+    change @Continuous (StandardSimplex d) ℝ
+      (TopologicalSpace.induced Subtype.val inferInstance) inferInstance _
+    exact (continuous_apply i).comp continuous_induced_dom
   apply continuous_induced_rng.2
   apply continuous_pi
   intro c
   change Continuous (fun w : StandardSimplex d =>
     ∑ i : Fin (d + 1), if s i = c then w i else 0)
-  exact continuous_finset_sum _ fun i _ => by
+  exact continuous_finsetSum _ fun i _ => by
       by_cases h : s i = c
-      · simpa only [h, ↓reduceIte] using
-          ((continuous_apply i).comp (continuous_induced_dom :
-            Continuous (fun w : StandardSimplex d => w.1)))
+      · simpa only [h, ↓reduceIte] using hcoord i
       · simpa only [h, ↓reduceIte] using (continuous_const :
           Continuous (fun _ : StandardSimplex d => (0 : Real)))
 

@@ -1,6 +1,8 @@
 import NRR.PrimePolyhedron.FoxNeuwirth.StableFullCollarRouteBGeometry
 import NRR.PrimePolyhedron.FoxNeuwirth.RouteBFacetTargetComposition
 
+set_option backward.isDefEq.respectTransparency false
+
 /-!
 # Facet-polynomial nontriviality for the affine-pullback full collar
 
@@ -53,7 +55,11 @@ theorem build_lowerFacetTargets
         (positiveWitness hp A.toRegularApproximation.level k).collar.cells
         (build hp A.toRegularApproximation k).assignment
   | 0 => by
-      simpa [positiveWitness] using oneStep_lowerFacetTargets hp A
+      simpa [positiveWitness, EndpointStackIteratedAffinePullback.build,
+        RelativeSubdivisionEndpointCollar.oneStepWitness,
+        RelativeSubdivisionOneStepCollar.endpointIdentifiedCollar,
+        RelativeSubdivisionOneStepCollar.relativeCollar] using
+        oneStep_lowerFacetTargets hp A
   | k + 1 => by
       let D0 := build hp A.toRegularApproximation k
       let K := baseOriginalPLMap hp A.toRegularApproximation
@@ -61,13 +67,23 @@ theorem build_lowerFacetTargets
       let E := (oneStepWitness hp
         (A.toRegularApproximation.level + (k + 1))).collar
       let b : Assignment hp E.cells := by
-        simpa [E] using CompatibleChartMapOneStep.assignment hp (K.refine (k + 1))
+        simpa [E, RelativeSubdivisionEndpointCollar.oneStepWitness,
+          RelativeSubdivisionOneStepCollar.endpointIdentifiedCollar,
+          RelativeSubdivisionOneStepCollar.relativeCollar] using
+          CompatibleChartMapOneStep.assignment hp (K.refine (k + 1))
       have hbRep : Represents E.cells K (vectorValue hp E.cells b) := by
-        simpa [E, b] using oneStepAssignment_represents_base hp K (k + 1)
+        simpa [E, b, RelativeSubdivisionEndpointCollar.oneStepWitness,
+          RelativeSubdivisionOneStepCollar.endpointIdentifiedCollar,
+          RelativeSubdivisionOneStepCollar.relativeCollar] using
+          oneStepAssignment_represents_base hp K (k + 1)
       let hseam := seamCompatible C0.cells E.cells K
         (vectorValue hp C0.cells D0.assignment) (vectorValue hp E.cells b)
         D0.represents hbRep
-      simpa [positiveWitness, C0, E, b, hseam] using
+      simpa [positiveWitness, EndpointStackIteratedAffinePullback.build,
+        C0, E, b, hseam,
+        RelativeSubdivisionEndpointCollar.composeWitness,
+        ExplicitAffineRelativeCollarCompose.endpointIdentifiedCollar,
+        ExplicitAffineRelativeCollarCompose.relativeCollar] using
         lowerFacetTargets_combined_left hp C0.cells E.cells
           D0.assignment b hseam (build_lowerFacetTargets hp A k)
 

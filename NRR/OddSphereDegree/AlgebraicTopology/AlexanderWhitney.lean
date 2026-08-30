@@ -192,8 +192,9 @@ lemma frontSimplex_naturality {X Y : TopCat.{0}} (f : X ⟶ Y) (p q : ℕ)
     (σ : (TopCat.toSSet.obj X).obj (Opposite.op (⦋p + q⦌ : SimplexCategory))) :
     (TopCat.toSSet.map f).app (Opposite.op (⦋p⦌ : SimplexCategory)) (frontSimplex X p q σ)
       = frontSimplex Y p q
-          ((TopCat.toSSet.map f).app (Opposite.op (⦋p + q⦌ : SimplexCategory)) σ) :=
-  (congrFun ((TopCat.toSSet.map f).naturality (frontFace p q).op) σ).symm
+          ((TopCat.toSSet.map f).app (Opposite.op (⦋p + q⦌ : SimplexCategory)) σ) := by
+  dsimp [frontSimplex]
+  exact (NatTrans.naturality_apply (TopCat.toSSet.map f) (frontFace p q).op σ).symm
 
 /-- **Naturality of the back face in the space.** A continuous map `f : X ⟶ Y`
 commutes with taking back faces of singular simplices. -/
@@ -201,8 +202,9 @@ lemma backSimplex_naturality {X Y : TopCat.{0}} (f : X ⟶ Y) (p q : ℕ)
     (σ : (TopCat.toSSet.obj X).obj (Opposite.op (⦋p + q⦌ : SimplexCategory))) :
     (TopCat.toSSet.map f).app (Opposite.op (⦋q⦌ : SimplexCategory)) (backSimplex X p q σ)
       = backSimplex Y p q
-          ((TopCat.toSSet.map f).app (Opposite.op (⦋p + q⦌ : SimplexCategory)) σ) :=
-  (congrFun ((TopCat.toSSet.map f).naturality (backFace p q).op) σ).symm
+          ((TopCat.toSSet.map f).app (Opposite.op (⦋p + q⦌ : SimplexCategory)) σ) := by
+  dsimp [backSimplex]
+  exact (NatTrans.naturality_apply (TopCat.toSSet.map f) (backFace p q).op σ).symm
 
 /-! ## 3. Degree bookkeeping for `p + q = n`
 
@@ -259,9 +261,9 @@ theorem singularChainTensorSquareMap_comp (R : Type) [CommRing R]
     (M : ModuleCat.{0} R) {X Y Z : TopCat.{0}} (f : X ⟶ Y) (g : Y ⟶ Z) :
     singularChainTensorSquareMap R M (f ≫ g)
       = singularChainTensorSquareMap R M f ≫ singularChainTensorSquareMap R M g := by
-  rw [singularChainTensorSquareMap, singularChainTensorSquareMap, singularChainTensorSquareMap,
-    (((singularChainComplexFunctor (ModuleCat.{0} R)).obj M)).map_comp,
-    ← MonoidalCategory.tensorHom_comp_tensorHom]
+  dsimp [singularChainTensorSquareMap]
+  rw [Functor.map_comp]
+  exact (MonoidalCategory.tensorHom_comp_tensorHom _ _ _ _).symm
 
 /-- The tensor square of the singular `F₂`-chain complex, `C_•(X; F₂) ⊗ C_•(X; F₂)`. -/
 noncomputable abbrev singularChainTensorSquareZMod2 (X : TopCat.{0}) :

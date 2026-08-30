@@ -76,7 +76,7 @@ and is not claimed here.) -/
 theorem subset_iInter_support_halfspace (K : ConvexBody Plane) :
     (K : Set Plane) ⊆ ⋂ u : Plane, {x : Plane | ⟪x, u⟫ ≤ K.supportFn u} := by
   intro x hx
-  simp only [Set.mem_iInter, Set.mem_setOf_eq]
+  simp only [Set.mem_iInter, Set.mem_ofPred_eq]
   intro u
   exact K.inner_le_supportFunction hx
 

@@ -105,8 +105,12 @@ theorem inducedOnRPPullback_comp {n : ℕ} (f g : C(Sphere n, Sphere n))
     (hf : IsOddMap f) (hg : IsOddMap g) (k : ℕ) :
     inducedOnRPPullback (g.comp f) (hg.comp hf) k
       = inducedOnRPPullback g hg k ≫ inducedOnRPPullback f hf k := by
-  rw [inducedOnRPPullback, inducedOnRPPullback, inducedOnRPPullback, ← inducedOnRP_comp hf hg,
-    TopCat.ofHom_comp, op_comp, Functor.map_comp]
+  dsimp [inducedOnRPPullback]
+  have h_comp : TopCat.ofHom (inducedOnRP (g.comp f) (hg.comp hf))
+      = TopCat.ofHom (inducedOnRP f hf) ≫ TopCat.ofHom (inducedOnRP g hg) := by
+    rw [← inducedOnRP_comp hf hg, TopCat.ofHom_comp]
+  rw [h_comp, op_comp, Functor.map_comp]
+  rfl
 
 /-- **Naturality square of the double cover.** For an odd map `f` with descent
 `fbar = inducedOnRP f hf`, the cohomology pullbacks fit into the commuting square
@@ -122,16 +126,33 @@ theorem inducedOnRP_pullback_naturality {n : ℕ} (f : C(Sphere n, Sphere n)) (h
     (k : ℕ) :
     inducedOnRPPullback f hf k ≫ projPullback n k
       = projPullback n k ≫ spherePullback f k := by
-  rw [inducedOnRPPullback, projPullback, spherePullback, ← Functor.map_comp, ← Functor.map_comp,
-    ← op_comp, ← op_comp, ← TopCat.ofHom_comp, ← TopCat.ofHom_comp, inducedOnRP_comp_proj]
+  dsimp [inducedOnRPPullback, projPullback, spherePullback]
+  have h_comm : (inducedOnRP f hf).comp (proj n) = (proj n).comp f := inducedOnRP_comp_proj f hf
+  have h_top : TopCat.ofHom (proj n) ≫ TopCat.ofHom (inducedOnRP f hf)
+      = TopCat.ofHom f ≫ TopCat.ofHom (proj n) := by
+    rw [← TopCat.ofHom_comp, ← TopCat.ofHom_comp, h_comm]
+  have h_op : (TopCat.ofHom (proj n) ≫ TopCat.ofHom (inducedOnRP f hf)).op
+      = (TopCat.ofHom f ≫ TopCat.ofHom (proj n)).op := congrArg Opposite.op h_top
+  rw [op_comp, op_comp] at h_op
+  have h_map := congrArg (singularCohomologyZMod2 k).map h_op
+  rw [Functor.map_comp, Functor.map_comp] at h_map
+  exact h_map
 
 /-- The nontrivial deck transformation (the antipodal map) acts trivially on the
 image of `proj^*`: `proj^* ≫ antipodal^* = proj^*`. This is the cohomological
 form of `proj_comp_antipodal` (`proj n ∘ antipodal n = proj n`). -/
 theorem proj_pullback_antipodal {n : ℕ} (k : ℕ) :
     projPullback n k ≫ spherePullback (antipodal n) k = projPullback n k := by
-  rw [projPullback, spherePullback, ← Functor.map_comp, ← op_comp, ← TopCat.ofHom_comp,
-    proj_comp_antipodal]
+  dsimp [projPullback, spherePullback]
+  have h_comm : (proj n).comp (antipodal n) = proj n := proj_comp_antipodal n
+  have h_top : TopCat.ofHom (antipodal n) ≫ TopCat.ofHom (proj n) = TopCat.ofHom (proj n) := by
+    rw [← TopCat.ofHom_comp, h_comm]
+  have h_op : (TopCat.ofHom (antipodal n) ≫ TopCat.ofHom (proj n)).op = (TopCat.ofHom (proj n)).op :=
+    congrArg Opposite.op h_top
+  rw [op_comp] at h_op
+  have h_map := congrArg (singularCohomologyZMod2 k).map h_op
+  rw [Functor.map_comp] at h_map
+  exact h_map
 
 /-- The pullback of the descended antipodal map is the identity on
 `H^k(RP n; F₂)`, since the antipodal map descends to the identity on `RP n`

@@ -1,81 +1,96 @@
 import NRR.OddSphereDegree.AlgebraicTopology.IteratedSubdivisionSmallSimplex
 import Mathlib.LinearAlgebra.Matrix.Determinant.Basic
 import Mathlib.LinearAlgebra.Matrix.Permutation
-set_option linter.unusedVariables false
-set_option linter.unusedSectionVars false
-set_option linter.unnecessarySeqFocus false
-set_option linter.unusedTactic false
-set_option linter.unreachableTactic false
-set_option linter.unusedSimpArgs false
-set_option linter.unnecessarySimpa false
-
-/-!
-# Nondegeneracy of affine barycentric subdivision simplices
-
-Every affine simplex in an iterated barycentric subdivision of `Δⁿ` is nondegenerate.  The vertex
-matrix of one subdivision step is a permutation matrix times a triangular prefix-average matrix;
-its determinant is a nonzero permutation sign times `∏ k, (k+1)⁻¹`.  Iterated subdivision remains
-nondegenerate by multiplication.
--/
-
-namespace NRR
-namespace AffineSubdivisionDeterminant
 
 open scoped BigOperators
 open SphereOddDegree
 open SphereOddDegree.AffineBarycentricSubdivision
+open SphereOddDegree.BarycentricSubdivisionDiameter
+
+namespace NRR
+namespace AffineSubdivisionDeterminant
+
+set_option linter.deprecated false
 
 /-- Matrix whose columns are the vertices of one barycentric subdivision simplex. -/
 noncomputable def stepVertexMatrix
     (n : Nat) (pi : Equiv.Perm (Fin (n + 1))) :
     Matrix (Fin (n + 1)) (Fin (n + 1)) Real :=
-  fun r k => prefixBarycenter n pi k r
+  fun r k => (prefixBarycenter n pi k).val r
 
 /-- Lower triangular prefix-average matrix before permutation of coordinates. -/
 noncomputable def prefixAverageMatrix (n : Nat) :
     Matrix (Fin (n + 1)) (Fin (n + 1)) Real :=
   fun r k => if r.1 ≤ k.1 then (k.1 + 1 : Real)⁻¹ else 0
 
-/-
-Factorization of a one-step vertex matrix.
--/
+/-- Factorization of a one-step vertex matrix. -/
 theorem stepVertexMatrix_eq
     (n : Nat) (pi : Equiv.Perm (Fin (n + 1))) :
     stepVertexMatrix n pi = Equiv.Perm.permMatrix Real pi.symm * prefixAverageMatrix n := by
-  ext r k; simp +decide [ Matrix.mul_apply, Equiv.Perm.permMatrix ] ;
-  convert prefixBarycenter_val_eq_stepVertices n pi k |> fun h => congr_fun h r using 1;
-  unfold prefixAverageMatrix BarycentricSubdivisionDiameter.stepVertices; simp +decide [ BarycentricSubdivisionDiameter.stdVerts ] ;
-  split_ifs <;> simp_all +decide [ Finset.sum_apply, Pi.single_apply ];
-  · rw [ Finset.card_eq_one.mpr ] ; aesop;
-    use pi.symm r; ext; aesop;
-  · exact Or.inr fun x hx => by intro H; have := pi.injective ( by aesop : pi x = pi ( pi.symm r ) ) ; exact absurd this ( ne_of_lt ( lt_of_le_of_lt hx ‹_› ) ) ;
+  ext r k
+  rw [Matrix.mul_apply]
+  have h_perm : ∀ j, Equiv.Perm.permMatrix Real pi.symm r j = if pi.symm r = j then 1 else 0 := by
+    intro j; simp [Equiv.Perm.permMatrix]
+  simp_rw [h_perm, ite_mul, one_mul, zero_mul]
+  rw [Finset.sum_ite_eq]
+  simp only [Finset.mem_univ, if_true]
+  dsimp [stepVertexMatrix, prefixAverageMatrix]
+  have h_bary := congr_fun (prefixBarycenter_val_eq_stepVertices n pi k) r
+  rw [h_bary]
+  dsimp [stepVertices, stdVerts]
+  simp only [Finset.sum_apply, Pi.single_apply]
+  have hsum : (∑ j ∈ Finset.Iic k, if r = pi j then (1 : ℝ) else 0)
+      = if (pi.symm r).1 ≤ k.1 then 1 else 0 := by
+    have heq : (∑ j ∈ Finset.Iic k, if r = pi j then (1 : ℝ) else 0)
+        = ∑ j ∈ Finset.Iic k, if j = pi.symm r then (1 : ℝ) else 0 := by
+      apply Finset.sum_congr rfl
+      intro j _
+      by_cases hj : r = pi j
+      · rw [if_pos hj, if_pos (by rw [hj, Equiv.symm_apply_apply])]
+      · rw [if_neg hj, if_neg (by intro heq; apply hj; rw [heq, Equiv.apply_symm_apply])]
+    rw [heq]
+    split_ifs with h
+    · have hmem : pi.symm r ∈ Finset.Iic k := Finset.mem_Iic.mpr h
+      simp [hmem]
+    · have hnmem : pi.symm r ∉ Finset.Iic k := by rw [Finset.mem_Iic]; exact h
+      simp [hnmem]
+  rw [hsum]
+  split_ifs with h
+  · ring
+  · ring
 
-/-
-Determinant of the prefix-average matrix.
--/
+/-- Determinant of the prefix-average matrix. -/
 theorem det_prefixAverageMatrix (n : Nat) :
     Matrix.det (prefixAverageMatrix n) =
       ∏ k : Fin (n + 1), (k.1 + 1 : Real)⁻¹ := by
-  rw [ Matrix.det_of_upperTriangular ] <;> norm_num;
-  · unfold prefixAverageMatrix; aesop;
-  · intro i j hij;
-    exact if_neg hij.not_ge
+  rw [Matrix.det_of_isUpperTriangular]
+  · congr 1; ext k; dsimp [prefixAverageMatrix]; rw [if_pos (le_refl _)]
+  · intro i j hij
+    dsimp [prefixAverageMatrix]
+    have hnot : ¬ (i.1 ≤ j.1) := by
+      intro hle
+      have : (i : Fin (n + 1)) ≤ (j : Fin (n + 1)) := Fin.le_iff_val_le_val.mpr hle
+      exact (not_le_of_gt hij) this
+    rw [if_neg hnot]
 
-/-
-One barycentric subdivision simplex is nondegenerate.
--/
+/-- One barycentric subdivision simplex is nondegenerate. -/
 theorem det_stepVertexMatrix_ne_zero
     (n : Nat) (pi : Equiv.Perm (Fin (n + 1))) :
     Matrix.det (stepVertexMatrix n pi) ≠ 0 := by
-  rw [ stepVertexMatrix_eq ];
-  simp +decide [ Matrix.det_permutation, det_prefixAverageMatrix ];
-  exact Finset.prod_ne_zero_iff.mpr fun _ _ => Nat.cast_add_one_ne_zero _
+  rw [stepVertexMatrix_eq]
+  rw [Matrix.det_mul, Matrix.det_permutation, det_prefixAverageMatrix]
+  have hsign : (↑↑(Equiv.Perm.sign pi.symm) : ℝ) ≠ 0 := Int.cast_ne_zero.mpr (Units.ne_zero _)
+  have hprod : ∏ k : Fin (n + 1), (k.1 + 1 : Real)⁻¹ ≠ 0 := by
+    apply Finset.prod_ne_zero_iff.mpr
+    intro x _
+    exact inv_ne_zero (by positivity)
+  exact mul_ne_zero hsign hprod
 
 /-- Vertex matrix of an iterated affine subdivision simplex. -/
 noncomputable def iterVertexMatrix
     (n N : Nat) (rho : Fin N → Equiv.Perm (Fin (n + 1))) :
     Matrix (Fin (n + 1)) (Fin (n + 1)) Real :=
-  fun r k => affineCompMap n N rho (stdSimplex.vertex (S := Real) k) r
+  fun r k => (affineCompMap n N rho (stdSimplex.vertex (S := Real) k)).val r
 
 @[simp] theorem iterVertexMatrix_zero
     (n : Nat) (rho : Fin 0 → Equiv.Perm (Fin (n + 1))) :
@@ -83,33 +98,48 @@ noncomputable def iterVertexMatrix
   ext r k
   simp [iterVertexMatrix, Matrix.one_apply, stdSimplex.vertex, Pi.single_apply]
 
-/-
-Appending one subdivision step multiplies vertex matrices.
--/
+/-- Appending one subdivision step multiplies vertex matrices. -/
 theorem iterVertexMatrix_succ
     (n N : Nat) (rho : Fin (N + 1) → Equiv.Perm (Fin (n + 1))) :
     iterVertexMatrix n (N + 1) rho =
       iterVertexMatrix n N (fun i => rho i.castSucc) *
         stepVertexMatrix n (rho (Fin.last N)) := by
-  ext r k; simp [iterVertexMatrix, affineCompMap_succ];
-  -- By definition of matrix multiplication and the properties of the affine composition map, we can expand the right-hand side.
-  have h_expand : ∀ (x : Delta n), (affineCompMap n N (fun i => rho i.castSucc) (affineSubdivMap n (rho (Fin.last N)) x)).val r = ∑ j, (affineCompMap n N (fun i => rho i.castSucc) (stdSimplex.vertex j)).val r * (affineSubdivMap n (rho (Fin.last N)) x).val j := by
-    intro x
-    have h_expand : (affineCompMap n N (fun i => rho i.castSucc) (affineSubdivMap n (rho (Fin.last N)) x)).val = affineCompLinear n N (fun i => rho i.castSucc) (affineSubdivMap n (rho (Fin.last N)) x).val := by
-      convert affineCompMap_coe n N ( fun i => rho i.castSucc ) ( affineSubdivMap n ( rho ( Fin.last N ) ) x ) using 1;
-    have h_expand : ∀ (v : Fin (n + 1) → ℝ), affineCompLinear n N (fun i => rho i.castSucc) v = ∑ j, v j • affineCompLinear n N (fun i => rho i.castSucc) (Pi.single j 1) := by
-      intro v; exact (by
-      convert ( affineCompLinear n N ( fun i => rho i.castSucc ) ).pi_apply_eq_sum_univ v using 1;
-      exact Finset.sum_congr rfl fun _ _ => by congr; ext; aesop;);
-    convert congr_fun ( h_expand ( affineSubdivMap n ( rho ( Fin.last N ) ) x |> Subtype.val ) ) r using 1;
-    · exact congr_fun ‹_› r;
-    · simp +decide [ mul_comm, Finset.sum_apply, Pi.single_apply ];
-      congr! 2;
-      convert congr_fun ( affineCompMap_coe n N ( fun i => rho i.castSucc ) ( stdSimplex.vertex _ ) ) r using 1;
-  convert h_expand ( stdSimplex.vertex k ) using 1;
-  simp +decide [ Matrix.mul_apply, iterVertexMatrix, stepVertexMatrix ];
-  convert rfl;
-  exact affineSubdivMap_vertex _ _ _
+  ext r k
+  dsimp [iterVertexMatrix, affineCompMap_succ, Matrix.mul_apply, stepVertexMatrix]
+  have h_affine : (affineSubdivMap n (rho (Fin.last N)) (stdSimplex.vertex k)).val
+      = (prefixBarycenter n (rho (Fin.last N)) k).val := by
+    ext j
+    rw [← affineSubdivLinear_coe, affineSubdivLinear_apply]
+    dsimp [stdSimplex.vertex]
+    simp only [Pi.single_apply]
+    simp_rw [ite_mul, one_mul, zero_mul]
+    simp
+  have h_coe := affineCompMap_coe n N (fun i => rho i.castSucc) (affineSubdivMap n (rho (Fin.last N)) (stdSimplex.vertex k))
+  have h_coe_r := congr_fun h_coe r
+  rw [h_coe_r, h_affine]
+  have h_sum : (affineCompLinear n N (fun i => rho i.castSucc)) (fun j => (prefixBarycenter n (rho (Fin.last N)) k).val j)
+      = ∑ j : Fin (n + 1), (prefixBarycenter n (rho (Fin.last N)) k).val j • (affineCompLinear n N (fun i => rho i.castSucc)) (stdVerts n j) := by
+    have h_expand : (fun j => (prefixBarycenter n (rho (Fin.last N)) k).val j)
+        = ∑ j : Fin (n + 1), (prefixBarycenter n (rho (Fin.last N)) k).val j • (stdVerts n j) := by
+      ext a
+      dsimp [stdVerts]
+      simp [Pi.single_apply]
+    conv_lhs => rw [h_expand]
+    rw [map_sum]
+    apply Finset.sum_congr rfl
+    intro j _
+    rw [map_smul]
+  have h_val := congr_fun h_sum r
+  rw [h_val]
+  simp only [Finset.sum_apply, Pi.smul_apply, smul_eq_mul]
+  apply Finset.sum_congr rfl
+  intro j _
+  rw [mul_comm]
+  congr 1
+  have h_vert := affineCompMap_coe n N (fun i => rho i.castSucc) (stdSimplex.vertex j)
+  have h_vert_r := congr_fun h_vert r
+  rw [h_vert_r]
+  rfl
 
 /-- Every iterated subdivision simplex is nondegenerate. -/
 theorem det_iterVertexMatrix_ne_zero

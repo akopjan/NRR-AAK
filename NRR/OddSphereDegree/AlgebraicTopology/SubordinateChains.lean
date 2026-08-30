@@ -159,10 +159,14 @@ noncomputable def subBoundary (R : Type) [CommRing R] (X : TopCat.{0})
 theorem subBoundary_comp_subBoundary
     {S : Set X} (n : ℕ) :
     subBoundary R X S (n + 1) ≫ subBoundary R X S n = 0 := by
-  ext c
-  simp +decide [subBoundary]
-  convert congr_arg (fun f => f c.val)
-    ((singularChainComplex R X).d_comp_d (n + 2) (n + 1) n) using 1
+  apply ModuleCat.hom_ext
+  apply LinearMap.ext
+  intro c
+  apply Subtype.ext
+  show (singularBoundary R X n).hom ((singularBoundary R X (n + 1)).hom (c : singularChainGroup R X (n + 2))) = 0
+  have h := (singularChainComplex R X).d_comp_d (n + 2) (n + 1) n
+  have happ := congrArg (fun (m : (singularChainComplex R X).X (n + 2) ⟶ (singularChainComplex R X).X n) => m.hom (c : singularChainGroup R X (n + 2))) h
+  exact happ
 
 /-- **The subordinate-chain complex** `C_*^S(X; R)`. -/
 noncomputable def subChainComplex (R : Type) [CommRing R] (X : TopCat.{0})
@@ -179,7 +183,9 @@ noncomputable def subChainComplex (R : Type) [CommRing R] (X : TopCat.{0})
 @[simp] theorem subChainComplex_d
     {S : Set X} (n : ℕ) :
     (subChainComplex R X S).d (n + 1) n = subBoundary R X S n :=
-  ChainComplex.of_d _ _ _ n
+  @ChainComplex.of_d (ModuleCat.{0} R) _ _ ℕ _ _ _
+    (fun n => ModuleCat.of R (subChainSubmodule R X S n))
+    (fun n => subBoundary R X S n) n
 
 /-! ## 5. Inclusion chain maps -/
 
@@ -188,10 +194,12 @@ noncomputable def subChainInclusion (S T : Set X) (h : S ⊆ T) :
     subChainComplex R X S ⟶ subChainComplex R X T where
   f n := ModuleCat.ofHom (Submodule.inclusion (subChainSubmodule_mono h n))
   comm' i j hij := by
-    obtain ⟨k, hk⟩ := hij
-    ext c
-    apply Subtype.ext
-    simp +decide [subChainComplex, subBoundary, Submodule.inclusion]
+    subst hij
+    rw [subChainComplex_d, subChainComplex_d]
+    apply ModuleCat.hom_ext
+    apply LinearMap.ext
+    intro c
+    rfl
 
 @[simp] theorem subChainInclusion_f_apply
     {S T : Set X} (h : S ⊆ T) (n : ℕ) (c : subChainSubmodule R X S n) :
@@ -204,11 +212,12 @@ noncomputable def subChainToSmall (𝒰 : OpenCoverData X) (S : Set X) (hS : S �
     subChainComplex R X S ⟶ smallChainComplex R X 𝒰 where
   f n := ModuleCat.ofHom (Submodule.inclusion (subChainSubmodule_le_smallChainSubmodule hS n))
   comm' i j hij := by
-    obtain ⟨k, hk⟩ := hij
-    ext c
-    apply Subtype.ext
-    simp +decide [subChainComplex, smallChainComplex, subBoundary, smallBoundary,
-      Submodule.inclusion]
+    subst hij
+    rw [subChainComplex_d, smallChainComplex_d]
+    apply ModuleCat.hom_ext
+    apply LinearMap.ext
+    intro c
+    rfl
 
 @[simp] theorem subChainToSmall_f_apply
     {𝒰 : OpenCoverData X} {S : Set X} (hS : S ∈ 𝒰.sets) (n : ℕ)

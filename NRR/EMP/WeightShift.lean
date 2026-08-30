@@ -61,7 +61,7 @@ theorem cell_addConstWeight
     (s : Fin n → Plane) (w : Fin n → ℝ) (c : ℝ) (i : Fin n) :
     cell s (EMP.addConstWeight w c) i = cell s w i := by
   ext x
-  simp only [cell, Set.mem_setOf_eq, powerDist_addConstWeight]
+  simp only [cell, Set.mem_ofPred_eq, powerDist_addConstWeight]
   constructor <;> intro h j <;> have := h j <;> linarith [this]
 
 /-- **Restricted‑cell invariance under a constant weight shift.** Immediate from

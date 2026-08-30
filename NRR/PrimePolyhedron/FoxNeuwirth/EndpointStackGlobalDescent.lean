@@ -1,5 +1,6 @@
 import NRR.PrimePolyhedron.FoxNeuwirth.EndpointStackLastVertexCore
 import NRR.PrimePolyhedron.FoxNeuwirth.ExplicitAffineRelativeCollar
+set_option backward.isDefEq.respectTransparency false
 
 /-!
 # Global descent interface for the endpoint-stack last-vertex assignment
@@ -224,9 +225,22 @@ theorem assignment_avoidsOrigin
     (fun c => ∑ i : Fin (p + 1), w i *
       (Polynomials.localVertexMap hp (Cells hp A.level)
         (assignment hp A hcompat) q).value i c) ≠ 0
-  simpa [localVertexMap_assignment_value] using
-    EndpointStackLastVertexCore.affine_selectedEndpointValue_ne_zero hp A q.1 q.2
-      (StandardSimplex.toDelta w)
+  have h := EndpointStackLastVertexCore.affine_selectedEndpointValue_ne_zero hp A q.1 q.2
+    (StandardSimplex.toDelta w)
+  intro hz
+  apply h
+  calc
+    (fun c => ∑ i : Fin (p + 1), (StandardSimplex.toDelta w) i *
+        A.map (vertex hp A.level q.1
+          (EndpointStackLastVertexCore.endpointIndex hp q.2 i)) c) =
+        (fun c => ∑ i : Fin (p + 1), w i *
+          A.map (vertex hp A.level q.1
+            (EndpointStackLastVertexCore.endpointIndex hp q.2 i)) c) := by
+      funext c
+      apply Finset.sum_congr rfl
+      intro i hi
+      congr 1
+    _ = 0 := hz
 
 end
 

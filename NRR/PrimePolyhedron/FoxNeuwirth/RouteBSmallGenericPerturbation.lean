@@ -1,6 +1,7 @@
 import NRR.PrimePolyhedron.FoxNeuwirth.RouteBFullBadSetNullity
 import Mathlib.Topology.Algebra.MvPolynomial
 import Mathlib.MeasureTheory.Measure.Lebesgue.EqHaar
+set_option backward.isDefEq.respectTransparency false
 set_option linter.unusedSectionVars false
 set_option linter.unusedSimpArgs false
 set_option linter.unnecessarySimpa false
@@ -212,7 +213,7 @@ theorem allRestrictedFacetPolynomialsNonzero_of_witnesses
   obtain ⟨x, hx⟩ := h q k
   have heval := congrArg (MvPolynomial.eval x) hzero
   rw [eval_restrictedFacetDeterminantPolynomial] at heval
-  exact hx (by simpa using heval)
+  exact hx (by simpa [assignmentOfMovableParameters] using heval)
 
 /-- Evaluation of every restricted facet determinant is continuous in the finite movable parameter
 space. -/
@@ -237,7 +238,7 @@ theorem isOpen_allCellsFacetRegular
           MvPolynomial.eval x
             (restrictedFacetDeterminantPolynomial hp C base q k) ≠ 0} := by
     ext x
-    simp only [Set.mem_setOf_eq, AllCellsFacetRegular]
+    simp only [Set.mem_ofPred_eq, AllCellsFacetRegular]
     constructor
     · intro h q k
       rw [eval_restrictedFacetDeterminantPolynomial]
@@ -292,7 +293,7 @@ theorem exists_safePerturbationBall
   have hcenterFacet : AllCellsFacetRegular hp C base center := by
     intro q k
     have h := hcenterGeneric (q, k)
-    simpa [P, eval_restrictedFacetDeterminantPolynomial,
+    simpa [P, eval_restrictedFacetDeterminantPolynomial, assignmentOfMovableParameters,
       AllCellsFacetRegular] using h
   obtain ⟨openRadius, hopenPos, hopen⟩ :=
     (Metric.isOpen_iff.mp (isOpen_allCellsFacetRegular hp C base))

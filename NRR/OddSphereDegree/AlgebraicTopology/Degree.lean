@@ -87,7 +87,9 @@ def inducedOnTopHomology {n : ℕ} (f : C(Sphere n, Sphere n)) :
 @[simp]
 theorem inducedOnTopHomology_id (n : ℕ) :
     inducedOnTopHomology (ContinuousMap.id (Sphere n)) = 𝟙 _ := by
-  convert singularHomologyℤ_map_id (TopCat.sphere.{0} n) n using 1
+  dsimp [inducedOnTopHomology]
+  rw [toTopCatSphereSelfMap_id]
+  exact (singularHomologyℤ n).map_id _
 
 /-- Functoriality of the induced endomorphism, in categorical composition form. -/
 theorem inducedOnTopHomology_comp {n : ℕ} (f g : C(Sphere n, Sphere n)) :
@@ -100,7 +102,7 @@ Note that in `End X` the product `a * b` is `b ≫ a`, so the order reverses. -/
 theorem inducedOnTopHomology_comp_mul {n : ℕ} (f g : C(Sphere n, Sphere n)) :
     inducedOnTopHomology (g.comp f)
       = inducedOnTopHomology g * inducedOnTopHomology f := by
-  convert inducedOnTopHomology_comp f g using 1
+  rw [inducedOnTopHomology_comp, End.mul_def]
 
 /-! ## The ℤ-endomorphism scalar API -/
 
@@ -225,7 +227,7 @@ theorem toTopCatSphereSelfMap_hom_homotopic {n : ℕ} {f g : C(Sphere n, Sphere 
         = ((topCatSphereIso n).inv.hom).comp
             (k.comp ((topCatSphereIso n).hom.hom)) := by
     intro k
-    simp [toTopCatSphereSelfMap, TopCat.hom_comp, TopCat.hom_ofHom, ContinuousMap.comp_assoc]
+    simp [toTopCatSphereSelfMap, TopCat.hom_comp, ContinuousMap.comp_assoc]
   rw [e f, e g]
   exact (ContinuousMap.Homotopic.refl _).comp
     (h.comp (ContinuousMap.Homotopic.refl _))

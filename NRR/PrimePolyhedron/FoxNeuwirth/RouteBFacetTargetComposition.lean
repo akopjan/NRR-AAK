@@ -1,6 +1,7 @@
 import NRR.PrimePolyhedron.FoxNeuwirth.RouteBEndpointFacetTargets
 import NRR.PrimePolyhedron.FoxNeuwirth.EquivariantPrismGenericityNonzero
 import NRR.PrimePolyhedron.FoxNeuwirth.ExplicitAffineRelativeCollarAssignmentReverse
+set_option backward.isDefEq.respectTransparency false
 set_option linter.unusedVariables false
 set_option linter.unusedSectionVars false
 set_option linter.unnecessarySeqFocus false
@@ -79,7 +80,7 @@ theorem facetWitnessTarget_determinant
       (augmentedRowEquiv hp c))
     (augmentedRowEquiv hp r)
   change Matrix.det M = 1
-  rw [Matrix.det_of_lowerTriangular]
+  rw [Matrix.det_of_isLowerTriangular]
   · have hd : ∀ i, M i i = 1 := by
       intro i
       dsimp [M]
@@ -209,7 +210,9 @@ theorem frozenFacetTargets_combined
       · have hi0 : (C.vertex q i).time.1 = 0 := by
           change (C.vertex q i).time.1 / 2 = 0 at hlower
           linarith
-        simpa [localVertexMap_combinedAssignment_left] using hfixed i j hi0
+        change target i j =
+          a (RelativeGenericity.localParameter hp C q i j)
+        exact hfixed i j hi0
       · have hle := (C.vertex q i).time.2.2
         change (C.vertex q i).time.1 / 2 = 1 at hupper
         exfalso
@@ -228,7 +231,9 @@ theorem frozenFacetTargets_combined
       · have hi1 : (D.vertex q i).time.1 = 1 := by
           change (1 + (D.vertex q i).time.1) / 2 = 1 at hupper
           linarith
-        simpa [localVertexMap_combinedAssignment_right] using hfixed i j hi1
+        change target i j =
+          b (RelativeGenericity.localParameter hp D q i j)
+        exact hfixed i j hi1
 
 /-- Frozen-relative targets give the pointwise regularity witnesses consumed by Route B. -/
 theorem allFacetRegularityWitnesses_of_frozenFacetTargets

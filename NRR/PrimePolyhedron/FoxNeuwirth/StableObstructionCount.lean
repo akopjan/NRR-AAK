@@ -1,5 +1,6 @@
 import NRR.PrimePolyhedron.FoxNeuwirth.ReferenceZeroFreeMaps
 import NRR.PrimePolyhedron.FoxNeuwirth.EquivariantPrismStableRelativeBoundary
+set_option backward.isDefEq.respectTransparency false
 set_option linter.unusedVariables false
 set_option linter.unusedSectionVars false
 set_option linter.unnecessarySeqFocus false

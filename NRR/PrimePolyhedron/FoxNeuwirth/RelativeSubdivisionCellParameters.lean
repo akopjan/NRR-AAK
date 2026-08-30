@@ -2,6 +2,7 @@ import NRR.PrimePolyhedron.FoxNeuwirth.StableCollarRelativeSubdivision
 import NRR.PrimePolyhedron.FoxNeuwirth.EquivariantPrismVertexParameters
 import NRR.OddSphereDegree.AlgebraicTopology.IteratedSubdivisionSmallChains
 
+set_option backward.isDefEq.respectTransparency false
 set_option linter.unusedVariables false
 
 /-!

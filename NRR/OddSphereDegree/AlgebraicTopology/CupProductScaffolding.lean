@@ -57,10 +57,25 @@ convention as the chain case. -/
 `ComplexShape.up ℕ`, using the sign `ε n = (-1)^n`. This instance makes `HomologicalComplex.monoidalCategory` apply to
 `CochainComplex (ModuleCat R) ℕ`. -/
 instance tensorSigns_up_nat : (ComplexShape.up ℕ).TensorSigns where
-  ε' := MonoidHom.mk' (fun (i : ℕ) => (-1 : ℤˣ) ^ i) (pow_add (-1 : ℤˣ))
-  rel_add p q r (hpq : p + 1 = q) := by dsimp; lia
-  add_rel p q r (hpq : p + 1 = q) := by dsimp; lia
-  ε'_succ := by rintro p _ rfl; dsimp; rw [pow_add, pow_one, mul_neg, mul_one]
+  ε' := {
+    toFun := fun (i : Multiplicative ℕ) => (-1 : ℤˣ) ^ (Multiplicative.toAdd i)
+    map_one' := rfl
+    map_mul' := fun x y => by
+      change (-1 : ℤˣ) ^ (Multiplicative.toAdd x + Multiplicative.toAdd y) = _
+      rw [pow_add]
+  }
+  rel_add p q r hpq := by
+    change p + r + 1 = q + r
+    have : p + 1 = q := hpq
+    omega
+  add_rel p q r hpq := by
+    change r + p + 1 = r + q
+    have : p + 1 = q := hpq
+    omega
+  ε'_succ := by
+    rintro p _ rfl
+    change (-1 : ℤˣ) ^ (p + 1) = -(-1 : ℤˣ) ^ p
+    rw [pow_add, pow_one, mul_neg, mul_one]
 
 /-- The Koszul sign of `ComplexShape.up ℕ` at index `n` is `(-1)^n`. -/
 @[simp]
@@ -105,9 +120,9 @@ theorem singularCochainTensorSquareMap_comp (R : Type) [CommRing R]
     (M : ModuleCat.{0} R) {X Y Z : TopCat.{0}ᵒᵖ} (f : X ⟶ Y) (g : Y ⟶ Z) :
     singularCochainTensorSquareMap R M (f ≫ g)
       = singularCochainTensorSquareMap R M f ≫ singularCochainTensorSquareMap R M g := by
-  rw [singularCochainTensorSquareMap, singularCochainTensorSquareMap,
-    singularCochainTensorSquareMap, (singularCochainComplexFunctor R M).map_comp,
-    ← MonoidalCategory.tensorHom_comp_tensorHom]
+  dsimp [singularCochainTensorSquareMap]
+  rw [Functor.map_comp]
+  exact (MonoidalCategory.tensorHom_comp_tensorHom _ _ _ _).symm
 
 /-! ## 4. `ZMod 2` specializations
 

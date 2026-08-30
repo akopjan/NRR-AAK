@@ -1,5 +1,6 @@
 import NRR.PrimePolyhedron.FoxNeuwirth.EquivariantPrismNonhorizontalCancellation
 import NRR.OddSphereDegree.AlgebraicTopology.BarycentricFiniteCancellation
+set_option backward.isDefEq.respectTransparency false
 set_option linter.unusedSectionVars false
 set_option linter.unusedSimpArgs false
 set_option linter.unnecessarySimpa false

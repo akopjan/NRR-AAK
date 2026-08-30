@@ -90,7 +90,7 @@ private theorem real_le_of_forall_one_lt_mul {A B : ℝ} (hB : 0 ≤ B)
   · have h2 := h 2 (by norm_num)
     nlinarith
   · by_contra hlt
-    push_neg at hlt
+    push Not at hlt
     have hone : 1 < A / B := (one_lt_div hB0).2 hlt
     have hr : 1 < (A / B + 1) / 2 := by
       rw [lt_div_iff₀ (by norm_num : (0:ℝ) < 2)]

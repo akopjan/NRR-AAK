@@ -36,13 +36,18 @@ theorem prefixBarycenter_apply_perm
     (k r : Fin (n + 1)) :
     prefixBarycenter n pi k (pi r) =
       if r.1 <= k.1 then (k.1 + 1 : Real)⁻¹ else 0 := by
-  unfold prefixBarycenter;
-  convert prefixBarycenter_val_eq_stepVertices n pi k using 1;
-  constructor <;> intro h;
-  · exact?;
-  · convert congr_fun h ( pi r ) using 1;
-    unfold BarycentricSubdivisionDiameter.stepVertices;
-    simp +decide [ BarycentricSubdivisionDiameter.stdVerts, Pi.single_apply ]
+  have h := NRR.AffineSubdivisionDeterminant.stepVertexMatrix_eq n pi
+  have h_app := congr_fun (congr_fun h (pi r)) k
+  dsimp [NRR.AffineSubdivisionDeterminant.stepVertexMatrix] at h_app
+  change (prefixBarycenter n pi k).val (pi r) = _
+  rw [h_app]
+  rw [Matrix.mul_apply]
+  have h_perm : ∀ j, Equiv.Perm.permMatrix Real pi.symm (pi r) j = if r = j then 1 else 0 := by
+    intro j; simp [Equiv.Perm.permMatrix]
+  simp_rw [h_perm, ite_mul, one_mul, zero_mul]
+  rw [Finset.sum_ite_eq]
+  simp only [Finset.mem_univ, ite_true]
+  dsimp [NRR.AffineSubdivisionDeterminant.prefixAverageMatrix]
 
 /-- Ordered-coordinate formula for one affine barycentric-subdivision chart. -/
 theorem affineSubdivMap_apply_perm
@@ -151,7 +156,7 @@ theorem affineSubdivMap_perm_lt_of_cut
     affineSubdivMap n pi x (pi s) <
       affineSubdivMap n pi x (pi r.castSucc) := by
   have hrsucc : r.succ <= s := by
-    simpa using hrs
+    exact Fin.castSucc_lt_iff_succ_le.mp hrs
   exact lt_of_le_of_lt
     (affineSubdivMap_perm_antitone n pi x hrsucc)
     (affineSubdivMap_perm_strict_drop n pi x r hr)
@@ -211,7 +216,14 @@ theorem prefixBarycenter_apply
     prefixBarycenter n pi r j =
       if j ∈ prefixSet n pi r then (r.1 + 1 : Real)⁻¹ else 0 := by
   have h := prefixBarycenter_apply_perm n pi r (pi.symm j)
-  simpa [mem_prefixSet] using h
+  have heq : pi (pi.symm j) = j := Equiv.apply_symm_apply pi j
+  rw [heq] at h
+  rw [h]
+  by_cases hj : j ∈ prefixSet n pi r
+  · have hle : (pi.symm j).1 ≤ r.1 := (mem_prefixSet n pi r j).mp hj
+    simp only [hj, hle, ite_true]
+  · have hgt : ¬ (pi.symm j).1 ≤ r.1 := fun hle => hj ((mem_prefixSet n pi r j).mpr hle)
+    simp only [hj, hgt, ite_false]
 
 /-- At a positive cut, every vertex in the prefix has coordinate at least the cut coordinate. -/
 theorem affineSubdivMap_ge_cut_of_mem_prefix
@@ -233,13 +245,17 @@ theorem affineSubdivMap_lt_cut_of_not_mem_prefix
     (hr : 0 < x r)
     (hj : j ∉ prefixSet n pi r) :
     affineSubdivMap n pi x j < affineSubdivMap n pi x (pi r) := by
-  -- Since $j \notin \text{prefixSet } n \pi r$, we have $\pi^{-1}(j) > r$ by mem_prefixSet.
-  have h_pi_inv_j_gt_r : pi.symm j > r := by
-    contrapose! hj; aesop;
-  convert affineSubdivMap_perm_lt_of_cut n pi x ⟨ r.1, _ ⟩ hr ( pi.symm j ) _ using 1;
-  rw [ Equiv.apply_symm_apply ];
-  grind +locals;
-  exact h_pi_inv_j_gt_r
+  have h_pi_inv_j_gt_r : r < pi.symm j := by
+    contrapose! hj
+    rw [mem_prefixSet]
+    exact hj
+  have hr_lt_n : r.1 < n := lt_of_lt_of_le h_pi_inv_j_gt_r (Fin.le_last _)
+  have hlt := affineSubdivMap_perm_lt_of_cut n pi x ⟨r.1, hr_lt_n⟩ hr (pi.symm j) h_pi_inv_j_gt_r
+  have h_eq : pi (pi.symm j) = j := Equiv.apply_symm_apply pi j
+  have h_cast : (⟨r.1, hr_lt_n⟩ : Fin n).castSucc = r := rfl
+  rw [h_cast] at hlt
+  rw [h_eq] at hlt
+  exact hlt
 
 /-- A positive coefficient determines its prefix face from the image point.  Hence two
 barycentric-subdivision charts representing the same point have the same active prefix. -/
@@ -255,7 +271,7 @@ theorem prefixSet_eq_of_affineSubdivMap_eq_of_pos
     by_contra hjSigma
     have hex : ∃ l, l ∈ prefixSet n sigma r ∧ l ∉ prefixSet n pi r := by
       by_contra hnone
-      push_neg at hnone
+      push Not at hnone
       have hsub : prefixSet n sigma r ⊆ prefixSet n pi r := by
         intro l hl
         exact hnone l hl
@@ -343,11 +359,11 @@ theorem affineSubdivMap_next_coordinate_eq_of_pos
   have hsigmaPos : r.succ <= pi.symm (sigma r.succ) := by
     have hlt : r.castSucc < pi.symm (sigma r.succ) :=
       lt_of_not_ge ((mem_prefixSet n pi r.castSucc (sigma r.succ)).not.mp hsigmaNot)
-    simpa using hlt
+    exact Fin.castSucc_lt_iff_succ_le.mp hlt
   have hpiPos : r.succ <= sigma.symm (pi r.succ) := by
     have hlt : r.castSucc < sigma.symm (pi r.succ) :=
       lt_of_not_ge ((mem_prefixSet n sigma r.castSucc (pi r.succ)).not.mp hpiNot)
-    simpa using hlt
+    exact Fin.castSucc_lt_iff_succ_le.mp hlt
   have hlePi : affineSubdivMap n pi x (sigma r.succ) <=
       affineSubdivMap n pi x (pi r.succ) := by
     simpa using affineSubdivMap_perm_antitone n pi x hsigmaPos
@@ -455,7 +471,7 @@ theorem affineSubdivMap_cut_pos
     Finset.single_le_sum (fun k _ => hf_nonneg k) (Finset.mem_univ r)
   have hfr : 0 < f r := by
     dsimp [f]
-    simp only [le_refl, if_true]
+    simp only [le_refl, ite_true]
     exact mul_pos hr (by positivity)
   exact lt_of_lt_of_le hfr hle
 
@@ -649,7 +665,7 @@ theorem affineCompMap_coordinate_eq_sum_vertices
     exact congrArg (fun q => x r • q) hv.symm
   have hj := congrFun hvec j
   rw [Finset.sum_apply] at hj
-  simpa using hj
+  exact hj
 
 /-- The support of an active represented subdivision vertex is contained in the support of the
 represented point. -/

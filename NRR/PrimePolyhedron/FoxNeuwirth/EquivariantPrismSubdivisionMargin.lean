@@ -58,7 +58,7 @@ noncomputable def basePrismChart
             StandardSimplex.ofDelta w j else 0
       apply continuous_pi
       intro i
-      apply continuous_finset_sum
+      apply continuous_finsetSum
       intro j hj
       split_ifs
       · exact (continuous_apply j).comp continuous_subtype_val
@@ -69,7 +69,7 @@ noncomputable def basePrismChart
       change Continuous fun w : Delta p =>
         ∑ j : Fin (p + 1), if staircaseTime q.2 j = 1 then
           StandardSimplex.ofDelta w j else 0
-      apply continuous_finset_sum
+      apply continuous_finsetSum
       intro j hj
       split_ifs
       · exact (continuous_apply j).comp continuous_subtype_val
@@ -111,7 +111,7 @@ theorem exists_coordinate_abs_ge_norm
   · exact ⟨⟨0, hp.pos⟩, by simp [hx]⟩
   have hnorm : 0 < ‖x‖ := norm_pos_iff.mpr hx
   by_contra h
-  push_neg at h
+  push Not at h
   have hlt : ‖x‖ < ‖x‖ :=
     (pi_norm_lt_iff hnorm).2 (fun j => by
       simpa [Real.norm_eq_abs] using h j)

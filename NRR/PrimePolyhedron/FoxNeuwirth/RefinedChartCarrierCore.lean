@@ -189,8 +189,13 @@ theorem refined_innerPoint_eq_of_chart_eq
           (StandardSimplex.ofDelta (affineCompMap (p - 1) N (maximalRefinementWord N q.2) x)) =
         t.realizationPoint
           (StandardSimplex.ofDelta (affineCompMap (p - 1) N (maximalRefinementWord N r.2) y)) := by
-    simpa [chart, Simplex.refinedContinuousMap, maximalRefinementWord,
-      Simplex.realizationContinuousMap, s, t] using h
+    change s.realizationPoint
+        (StandardSimplex.ofDelta
+          (affineCompMap (p - 1) N (maximalRefinementWord N q.2) x)) =
+      t.realizationPoint
+        (StandardSimplex.ofDelta
+          (affineCompMap (p - 1) N (maximalRefinementWord N r.2) y)) at h
+    exact h
   have hstd := maximal_source_eq_of_realizationPoint_eq hp s t
     (StandardSimplex.ofDelta (affineCompMap (p - 1) N (maximalRefinementWord N q.2) x))
     (StandardSimplex.ofDelta (affineCompMap (p - 1) N (maximalRefinementWord N r.2) y)) hreal
@@ -225,8 +230,9 @@ theorem refined_active_vertex_and_coefficient_eq
   have hreal :
       s.realizationPoint (StandardSimplex.ofDelta u) =
         t.realizationPoint (StandardSimplex.ofDelta v) := by
-    simpa [chart, Simplex.refinedContinuousMap, maximalRefinementWord,
-      Simplex.realizationContinuousMap, s, t, u, v] using h
+    change s.realizationPoint (StandardSimplex.ofDelta u) =
+      t.realizationPoint (StandardSimplex.ofDelta v) at h
+    exact h
   have hglobal :
       s.realizationPoint (StandardSimplex.ofDelta z) =
         t.realizationPoint (StandardSimplex.ofDelta z) := by
@@ -273,9 +279,15 @@ theorem refined_active_vertex_and_coefficient_eq
       _ = t.realizationPoint (StandardSimplex.ofDelta z) := hglobal
       _ = _ := by rw [hzEq]
   constructor
-  · simpa [vertex, chart, Simplex.refinedContinuousMap, maximalRefinementWord,
-      Simplex.realizationContinuousMap, s, t,
-      Nat.sub_add_cancel hp.pos] using hglobal'
+  · change s.realizationPoint
+        (StandardSimplex.ofDelta
+          (affineCompMap (p - 1) N (maximalRefinementWord N q.2)
+            (stdSimplex.vertex (S := Real) i))) =
+        t.realizationPoint
+          (StandardSimplex.ofDelta
+            (affineCompMap (p - 1) N (maximalRefinementWord N r.2)
+              (stdSimplex.vertex (S := Real) i)))
+    exact hglobal'
   · simpa [Nat.sub_add_cancel hp.pos] using hiter.2
 
 /-- The refined affine interpolation of one global sampling map is independent of the refined
@@ -299,20 +311,24 @@ theorem refinedAffineValue_eq_of_chart_eq
         lt_of_le_of_ne (v.nonneg i) (Ne.symm hvi)
       have hrev := refined_active_vertex_and_coefficient_eq
         hp N r q (StandardSimplex.toDelta v) (StandardSimplex.toDelta w)
-        h.symm i (by simpa using hvpos)
-      have hcoord : w i = v i := by
-        simpa using hrev.2
+        h.symm i (by
+          change 0 < v i
+          exact hvpos)
+      have hcoord := hrev.2
+      change w i = v i at hcoord
       exact hvi (hcoord.symm.trans hwi)
     simp [hwi, hvi]
   · have hwpos : 0 < w i :=
       lt_of_le_of_ne (w.nonneg i) (Ne.symm hwi)
     have hactive := refined_active_vertex_and_coefficient_eq
       hp N q r (StandardSimplex.toDelta w) (StandardSimplex.toDelta v)
-      h i (by simpa using hwpos)
+      h i (by
+        change 0 < w i
+        exact hwpos)
     have hsample : vertexValue hp N F q i c = vertexValue hp N F r i c := by
       simp [vertexValue, hactive.1]
-    have hcoeff : v i = w i := by
-      simpa using hactive.2
+    have hcoeff := hactive.2
+    change v i = w i at hcoeff
     rw [hsample, hcoeff]
 
 end RefinedChartCarrierCore

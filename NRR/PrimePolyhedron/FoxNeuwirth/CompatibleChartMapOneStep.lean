@@ -1,5 +1,6 @@
 import NRR.PrimePolyhedron.FoxNeuwirth.CompatibleRefinedChartHomotopy
 import NRR.PrimePolyhedron.FoxNeuwirth.ExplicitAffineRelativeCollarAssignmentCompose
+set_option backward.isDefEq.respectTransparency false
 set_option linter.unusedVariables false
 set_option linter.unusedSectionVars false
 set_option linter.unnecessarySeqFocus false
@@ -157,7 +158,8 @@ theorem decoratedVector_eq_of_coverPoint_eq
   have hspatial := congrArg EquivariantPrismVertexParameters.CylinderPoint.spatial hab
   apply K.decorated_compatible a.1 b.1 a.2.1.1 b.2.1.1
       (localSpatialWeight hp N a.2) (localSpatialWeight hp N b.2)
-  simpa [coverPoint, RelativeAffineCellSystem.slotPoint,
+  simpa [coverPoint, RelativeAffineCellSystem.slotPoint, Cells,
+    RelativeSubdivisionOneStepCells.cellSystem,
     localSpatialWeight, RelativeSubdivisionOneStepCells.vertex, RelativeSubdivisionOneStepCells.chart, RelativeSubdivisionOneStepCells.liftPoint,
     EquivariantPrismVertexParameters.CylinderPoint.ofProd] using hspatial
 

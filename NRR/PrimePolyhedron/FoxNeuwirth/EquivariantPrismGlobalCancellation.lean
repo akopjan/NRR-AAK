@@ -35,6 +35,10 @@ open FoxNeuwirthOrderComplex
 namespace FoxNeuwirthOrderComplex
 namespace EquivariantPrismGlobalCancellation
 
+attribute [local simp] Matrix.fromBlocks_apply₁₁ Matrix.fromBlocks_apply₁₂
+  Matrix.fromBlocks_apply₂₁ Matrix.fromBlocks_apply₂₂
+attribute [local simp] Matrix.fromBlocks
+
 open AffinePositiveRayBoundary
 open AffinePositiveRayBoundary.VertexMap
 open EquivariantPrismVertexParameters
@@ -202,7 +206,7 @@ private theorem facetBlockMatrix_eq_swappedRowReduced
       · subst r
         simp [facetBlockMatrix, facetRowReducedMatrix, facetBorderSwap,
           facetRowCoefficient, facetBorderedMatrix, facetCoordinateMatrix,
-          facetMatrix, augmentedRowEquiv_lastLabel]
+          facetMatrix, augmentedRowEquiv_lastLabel, Matrix.fromBlocks]
       · have hrmem : r ∈ {x : Fin p |
             x ≠ ReferenceAffineOrbitCount.lastLabel hp} := hr
         rw [← ReferenceAffineOrbitCount.coordinateLabel_range hp] at hrmem
@@ -262,7 +266,12 @@ private theorem det_facetBlockMatrix
     (hp : Nat.Prime p) (V : VertexMap p) (k : Fin (p + 1)) :
     Matrix.det (facetBlockMatrix hp V k) = facetDeterminant hp V k := by
   classical
-  simp [facetBlockMatrix, facetDeterminant]
+  let C : Matrix Unit (Fin p) Real :=
+    fun _ i => facetValue V k i (ReferenceAffineOrbitCount.lastLabel hp)
+  have h := Matrix.det_fromBlocks_zero₁₂
+    (facetMatrix hp V k) C (1 : Matrix Unit Unit Real)
+  change (Matrix.fromBlocks (facetMatrix hp V k) 0 C 1).det = (facetMatrix hp V k).det
+  simpa using h
 
 /-- The bordered coordinate determinant is the negative of the fixed-difference facet
  determinant. -/

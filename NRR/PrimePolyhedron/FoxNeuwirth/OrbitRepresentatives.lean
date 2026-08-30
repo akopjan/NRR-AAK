@@ -46,7 +46,7 @@ theorem exists_ne_zero_of_orbitSum_ne_zero
     ∃ x ∈ D.representatives, f x ≠ 0 := by
   classical
   by_contra hzero
-  push_neg at hzero
+  push Not at hzero
   apply h
   rw [orbitSum]
   exact Finset.sum_eq_zero hzero

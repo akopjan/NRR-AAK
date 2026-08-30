@@ -1,6 +1,7 @@
 import NRR.PrimePolyhedron.FoxNeuwirth.RelativeCollarMiddlePrism
 import NRR.PrimePolyhedron.FoxNeuwirth.EquivariantPrismNonhorizontalCancellation
 import NRR.PrimePolyhedron.FoxNeuwirth.EquivariantPrismHorizontalEndpointIdentification
+set_option backward.isDefEq.respectTransparency false
 set_option linter.unusedVariables false
 set_option linter.unusedSectionVars false
 set_option linter.unnecessarySeqFocus false
@@ -548,8 +549,8 @@ theorem refined_side_eq_arbitrarySpatialSideWeight_succ
         (iteratedFacetMap n N
           (ReferenceAffineOrbitCount.topRepr hp orbit).realizationContinuousMap
           spatial r) := by
-  simpa [Equiv.cast, deltaCast] using
-    refined_side_eq_arbitrarySpatialSideWeight hp N L V orbit spatial eta r h
+  rw [refined_side_eq_arbitrarySpatialSideWeight hp N L V orbit spatial eta r h]
+  congr 2
 
 /-- Spatial subdivision boundary identity for an arbitrary fixed side weight. -/
 theorem arbitrarySpatialSide_weighted_boundary
@@ -650,7 +651,7 @@ theorem occurrencePairing_side_eq_zero
     rw [← Finset.mul_sum]
   have hfacetFaceIndex (j : Fin (n + 2)) : facetFaceIndex hp j = j := by
     apply Fin.ext
-    rfl
+    simp [occurrenceCoefficient, SimplicialChain.faceSign, facetFaceIndex]
   simp_rw [hfacetFaceIndex]
   conv_lhs =>
     enter [2, orbit, 2, spatial, 2]
@@ -834,8 +835,8 @@ theorem occurrencePairing_side_eq_zero
       have hdeleted :
           (StandardSimplex.ofDelta
             (stdSimplex.map j.succAbove (affineCompMap n N theta x))) j = 0 := by
-        simpa [cofacePoint] using
-          cofacePoint_apply_deleted n j (affineCompMap n N theta x)
+        change (cofacePoint n j (affineCompMap n N theta x)) j = 0
+        exact cofacePoint_apply_deleted n j (affineCompMap n N theta x)
       simp only [hdeleted, ite_self, zero_add]
       apply Finset.sum_congr rfl
       intro i hi
@@ -963,8 +964,11 @@ theorem facetIncidence_eq_occurrencePairing
   apply Finset.sum_congr rfl
   intro o ho
   rw [facetOrbitIndicator_occurrence]
-  simp [occurrenceCoefficient, RelativeCollarMiddlePrism.cellSystem,
-    RelativeAffineCellSystem.alternatingSign, SimplicialChain.faceSign]
+  by_cases hs : (Cells hp N L).facetClass o = s
+  · simp only [hs, if_true]
+    change prismCoefficient hp N L o.1 * (-1 : ZMod p) ^ (o.2 : Nat) = _
+    simp [occurrenceCoefficient, SimplicialChain.faceSign, facetFaceIndex]
+  · simp [hs]
 
 /-- If a lower endpoint map belongs to an orbit facet, that facet is lower horizontal. -/
 theorem isLowerFacet_of_indicator_lower_ne_zero

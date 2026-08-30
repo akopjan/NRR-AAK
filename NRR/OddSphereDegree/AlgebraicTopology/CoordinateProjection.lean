@@ -1,23 +1,6 @@
 import NRR.OddSphereDegree.AlgebraicTopology.SubordinateChains
 import Mathlib
 
-/-!
-# Coordinate "keep" projections on singular chains
-
-The singular chain group `C_n(X; R)` is the free `R`-module on the singular
-`n`-simplices. For any predicate `P` on simplices, the **coordinate projection**
-`keepHom P` keeps the basis chains of simplices satisfying `P` and zeroes out the
-rest:
-
-```text
-keepHom P (chainGenerator σ) = if P σ then chainGenerator σ else 0.
-```
-
-These projections are the algebraic device used to *split* a singular chain by
-the open set its simplices belong to, the key ingredient in the degreewise
-splitting of the singular Mayer–Vietoris short exact sequence.
--/
-
 open CategoryTheory AlgebraicTopology Limits
 open SphereOddDegree.AffineBarycentricSubdivision
 
@@ -25,33 +8,31 @@ namespace SphereOddDegree
 
 variable {R : Type} [CommRing R] {X : TopCat.{0}}
 
-/-- The coordinate projection on `C_n(X; R)` that keeps exactly the basis chains
-of simplices satisfying `P`. -/
+set_option linter.deprecated false
+
 noncomputable def keepHom (R : Type) [CommRing R] (X : TopCat.{0}) {n : ℕ}
     (P : singularSimplices X n → Prop) [DecidablePred P] :
     singularChainGroup R X n ⟶ singularChainGroup R X n :=
   Sigma.desc fun σ =>
     if P σ then Sigma.ι (fun (_ : singularSimplices X n) => ModuleCat.of R R) σ else 0
 
-/-- The value of the coordinate projection on a basis chain. -/
 theorem keepHom_generator {n : ℕ} (P : singularSimplices X n → Prop) [DecidablePred P]
     (σ : singularSimplices X n) :
     (keepHom R X P).hom (chainGenerator R X n σ)
       = if P σ then chainGenerator R X n σ else 0 := by
-  have h : Sigma.ι (fun (_ : singularSimplices X n) => ModuleCat.of R R) σ
-        ≫ keepHom R X P
-      = if P σ then Sigma.ι (fun (_ : singularSimplices X n) => ModuleCat.of R R) σ else 0 :=
-    Sigma.ι_desc _ _
-  have h2 := congrArg
-    (fun f : ModuleCat.of R R ⟶ singularChainGroup R X n => f.hom (1 : R)) h
-  simp only [ModuleCat.hom_comp, LinearMap.comp_apply] at h2
+  have h := Sigma.ι_desc (fun σ => if P σ then Sigma.ι (fun (_ : singularSimplices X n) => ModuleCat.of R R) σ else 0) σ
+  have h2 := congrArg (fun (m : ModuleCat.of R R ⟶ singularChainGroup R X n) => m.hom (1 : R)) h
+  erw [ModuleCat.hom_comp, LinearMap.comp_apply] at h2
+  have hgen : chainGenerator R X n σ = (Sigma.ι (fun (_ : singularSimplices X n) => ModuleCat.of R R) σ).hom (1 : R) := rfl
+  rw [hgen]
   refine h2.trans ?_
   by_cases hP : P σ
-  · rw [if_pos hP, if_pos hP]; rfl
-  · rw [if_neg hP, if_neg hP]; simp
+  · rw [if_pos hP]
+    erw [if_pos hP]
+    rfl
+  · rw [if_neg hP]
+    erw [if_neg hP, ModuleCat.hom_zero, LinearMap.zero_apply]
 
-/-- **Support of a kept chain.** If `c` is subordinate to `T` and we keep the
-simplices subordinate to `S`, the result is subordinate to `S ∩ T`. -/
 theorem keepHom_mem_subChainSubmodule {n : ℕ} {S T : Set X}
     [DecidablePred (IsSubordinate (X := X) S (n := n))]
     {c : singularChainGroup R X n} (hc : c ∈ subChainSubmodule R X T n) :
@@ -75,8 +56,6 @@ theorem keepHom_mem_subChainSubmodule {n : ℕ} {S T : Set X}
     show (keepHom R X (IsSubordinate S)).hom (a • x) ∈ _
     rw [map_smul]; exact Submodule.smul_mem _ _ hx
 
-/-- A chain subordinate to `S` is fixed by keeping the `S`-subordinate
-simplices. -/
 theorem keepHom_eq_self_of_mem {n : ℕ} {S : Set X}
     [DecidablePred (IsSubordinate (X := X) S (n := n))]
     {c : singularChainGroup R X n} (hc : c ∈ subChainSubmodule R X S n) :

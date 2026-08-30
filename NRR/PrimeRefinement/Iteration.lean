@@ -4,6 +4,8 @@ import NRR.PrimeRefinement.IndexedPartition
 import NRR.BodySpace.FullBody
 import NRR.Multivalued.PerimeterObservable
 
+set_option backward.isDefEq.respectTransparency false
+
 /-!
 # Iteration of the prime-refinement lemma
 
@@ -138,7 +140,16 @@ noncomputable def build
             intro C y hy
             have hlift := S.zero_lifts_to_all_children hy
             let x := hlift.choose
-            have hx := hlift.choose_spec
+            have hx : ∀ i : Fin p.1,
+                inner.output.Zero
+                  (EMP.VariableBody.child
+                    (foxNeuwirthTopCellModel p.2).sites hA p.2.pos (C, x) i) y := by
+              intro i
+              change inner.output.Zero
+                (EMP.VariableBody.child
+                  (foxNeuwirthTopCellModel p.2).sites hA p.2.pos
+                    (C, hlift.choose) i) y
+              exact hlift.choose_spec i
             let W := EMP.VariableBody.witness
               (foxNeuwirthTopCellModel p.2).sites hA p.2.pos (C, x)
             let R : ∀ i : Fin p.1,
@@ -173,7 +184,7 @@ noncomputable def build
                         apply (R i).partition.nullOverlap a b
                         intro hab
                         apply hij
-                        simp [hab]
+                        exact congrArg (fun t => (i, t)) hab
                       · apply measure_mono_null ?_ (W.nullOverlap i j hfirst)
                         rintro z ⟨hza, hzb⟩
                         constructor

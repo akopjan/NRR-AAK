@@ -36,7 +36,7 @@ namespace StandardSimplex
 theorem exists_pos {d : Nat} (w : StandardSimplex d) :
     ∃ i : Fin (d + 1), 0 < w i := by
   by_contra h
-  push_neg at h
+  push Not at h
   have hzero : ∀ i : Fin (d + 1), w i = 0 := by
     intro i
     exact le_antisymm (h i) (w.nonneg i)
@@ -80,7 +80,7 @@ theorem continuous_globalValue
     (F : CoordinateAffineVertexMap p) :
     Continuous F.globalValue := by
   exact continuous_pi fun i =>
-    continuous_finset_sum _ fun c _ =>
+    continuous_finsetSum _ fun c _ =>
       ((continuous_apply c).comp continuous_subtype_val).mul continuous_const
 
 /-- Fixed difference-coordinate representation of the zero-sum/deviation part. -/

@@ -141,7 +141,7 @@ noncomputable def chart
             StandardSimplex.ofDelta (affineCompMap p L q.2 w) j else 0
       apply continuous_pi
       intro i
-      apply continuous_finset_sum
+      apply continuous_finsetSum
       intro j hj
       split_ifs
       · change Continuous fun w : Delta p => ((affineCompMap p L q.2) w : Fin (p + 1) → Real) j
@@ -155,7 +155,7 @@ noncomputable def chart
       change Continuous fun w : Delta p =>
         ∑ j : Fin (p + 1), if staircaseTime q.1.2 j = 1 then
           StandardSimplex.ofDelta (affineCompMap p L q.2 w) j else 0
-      apply continuous_finset_sum
+      apply continuous_finsetSum
       intro j hj
       split_ifs
       · change Continuous fun w : Delta p => ((affineCompMap p L q.2) w : Fin (p + 1) → Real) j

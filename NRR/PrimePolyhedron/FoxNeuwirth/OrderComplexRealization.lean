@@ -41,9 +41,25 @@ def relabelEquiv (sigma : Equiv.Perm (Fin p)) :
   toFun c := c.relabel sigma
   invFun c := c.relabel sigma.symm
   left_inv c := by
-    simpa using (BarredPermutation.relabel_mul sigma.symm sigma c).symm
+    calc
+      (c.relabel sigma).relabel sigma.symm = c.relabel (sigma.symm * sigma) :=
+        (BarredPermutation.relabel_mul sigma.symm sigma c).symm
+      _ = c.relabel 1 := by
+        congr 1
+        apply Equiv.ext
+        intro i
+        exact sigma.symm_apply_apply i
+      _ = c := BarredPermutation.relabel_one c
   right_inv c := by
-    simpa using (BarredPermutation.relabel_mul sigma sigma.symm c).symm
+    calc
+      (c.relabel sigma.symm).relabel sigma = c.relabel (sigma * sigma.symm) :=
+        (BarredPermutation.relabel_mul sigma sigma.symm c).symm
+      _ = c.relabel 1 := by
+        congr 1
+        apply Equiv.ext
+        intro i
+        exact sigma.apply_symm_apply i
+      _ = c := BarredPermutation.relabel_one c
 
 @[simp] theorem relabelEquiv_apply
     (sigma : Equiv.Perm (Fin p)) (c : BarredPermutation p) :
@@ -53,13 +69,12 @@ def relabelEquiv (sigma : Equiv.Perm (Fin p)) :
 @[simp] theorem relabel_symm_relabel
     (sigma : Equiv.Perm (Fin p)) (c : BarredPermutation p) :
     (c.relabel sigma).relabel sigma.symm = c := by
-  simpa using (relabelEquiv sigma).left_inv c
+  exact (relabelEquiv sigma).left_inv c
 
 @[simp] theorem relabel_relabel_symm
     (sigma : Equiv.Perm (Fin p)) (c : BarredPermutation p) :
     (c.relabel sigma.symm).relabel sigma = c := by
-  rw [← BarredPermutation.relabel_mul]
-  simp
+  exact (relabelEquiv sigma).right_inv c
 
 /-- Two vertices may simultaneously occur in a simplex exactly when they are equal or properly
 comparable. -/
@@ -100,7 +115,7 @@ theorem chainSupported_set_eq :
   ext weight
   constructor
   · intro h
-    simp only [Set.mem_iInter, Set.mem_setOf_eq]
+    simp only [Set.mem_iInter, Set.mem_ofPred_eq]
     intro a b
     change PairCompatible a b ∨ weight a = 0 ∨ weight b = 0
     by_cases ha : weight a = 0
@@ -153,7 +168,7 @@ theorem isCompact_realizationCarrier :
       ChainSupported weight} := by
   rw [realization_carrier_eq]
   have hsimplex : IsCompact (stdSimplex Real (BarredPermutation p)) :=
-    isCompact_stdSimplex (BarredPermutation p)
+    isCompact_stdSimplex ℝ (BarredPermutation p)
   exact hsimplex.inter_right isClosed_chainSupported
 
 namespace Realization
@@ -202,7 +217,12 @@ def relabel (sigma : Equiv.Perm (Fin p)) (x : Realization p) : Realization p :=
 @[simp] theorem relabel_one (x : Realization p) :
     relabel 1 x = x := by
   ext c
-  simp [relabel]
+  change x (c.relabel (1 : Equiv.Perm (Fin p)).symm) = x c
+  rw [show (1 : Equiv.Perm (Fin p)).symm = 1 by
+    apply Equiv.ext
+    intro i
+    exact (1 : Equiv.Perm (Fin p)).symm_apply_apply i]
+  rw [BarredPermutation.relabel_one]
 
 /-- Coordinate relabelling is a left action. -/
 theorem relabel_mul
@@ -396,14 +416,14 @@ noncomputable def toConfig (x : Realization p) : Config p :=
 theorem continuous_xCoord (i : Fin p) :
     Continuous fun x : Realization p => x.xCoord i := by
   unfold xCoord
-  exact continuous_finset_sum _ fun c _ =>
+  exact continuous_finsetSum _ fun c _ =>
     ((continuous_apply c).comp continuous_subtype_val).mul continuous_const
 
 /-- The second barycentric coordinate sum is continuous. -/
 theorem continuous_yCoord (i : Fin p) :
     Continuous fun x : Realization p => x.yCoord i := by
   unfold yCoord
-  exact continuous_finset_sum _ fun c _ =>
+  exact continuous_finsetSum _ fun c _ =>
     ((continuous_apply c).comp continuous_subtype_val).mul continuous_const
 
 /-- The barycentric site map is continuous. -/

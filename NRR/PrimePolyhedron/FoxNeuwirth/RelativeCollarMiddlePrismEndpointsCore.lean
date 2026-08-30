@@ -1,5 +1,6 @@
 import NRR.PrimePolyhedron.FoxNeuwirth.RelativeCollarMiddlePrism
 import NRR.PrimePolyhedron.FoxNeuwirth.EndpointFaceRefinement
+set_option backward.isDefEq.respectTransparency false
 
 /-!
 # Canonical endpoint occurrences of the common-level middle prism
@@ -154,7 +155,8 @@ private theorem lowerOccurrenceFacetMap_eq_core
     (EquivariantPrismNonhorizontalCancellation.staircase_lower_face_eq n
       (RefinedAffineMap.chart hp N q))
     (affineCompMap n L eta x)
-  simpa [endpointSpatialMap_succ] using h
+  rw [endpointSpatialMap_succ]
+  exact h
 
 private theorem upperOccurrenceFacetMap_eq_core
     (hp : Nat.Prime p) (N L : Nat)
@@ -178,7 +180,8 @@ private theorem upperOccurrenceFacetMap_eq_core
     (EquivariantPrismNonhorizontalCancellation.staircase_upper_face_eq n
       (RefinedAffineMap.chart hp N q))
     (affineCompMap n L eta x)
-  simpa [endpointSpatialMap_succ] using h
+  rw [endpointSpatialMap_succ]
+  exact h
 
 /-- The lower occurrence is horizontal at time zero. -/
 theorem lowerOccurrence_isLower
@@ -193,9 +196,13 @@ theorem lowerOccurrence_isLower
   rw [EquivariantPrismNonhorizontalCancellation.occurrenceFacetMap_vertex] at h
   have ht := congrArg
     (fun z : Realization p × Set.Icc (0 : Real) 1 => z.2) h
-  simpa [RelativeCollarMiddlePrism.cellSystem,
-    RelativeAffineCellSystem.facetSignature, RelativeCollarMiddlePrism.vertex,
-    lowerEndpointMap] using ht
+  change (SubdivisionPrismCharts.vertex hp N L (lowerOccurrence hp N L q eta).1
+    ((lowerOccurrence hp N L q eta).2.succAbove i)).2.1 = 0
+  calc
+    _ = (lowerEndpointMap (endpointSpatialMap hp N L q eta)
+        (stdSimplex.vertex (AffinePositiveRayBoundary.VertexMap.facetCoordinateIndex i))).2.1 :=
+      congrArg Subtype.val ht
+    _ = 0 := rfl
 
 /-- The upper occurrence is horizontal at time one. -/
 theorem upperOccurrence_isUpper
@@ -210,9 +217,13 @@ theorem upperOccurrence_isUpper
   rw [EquivariantPrismNonhorizontalCancellation.occurrenceFacetMap_vertex] at h
   have ht := congrArg
     (fun z : Realization p × Set.Icc (0 : Real) 1 => z.2) h
-  simpa [RelativeCollarMiddlePrism.cellSystem,
-    RelativeAffineCellSystem.facetSignature, RelativeCollarMiddlePrism.vertex,
-    upperEndpointMap] using ht
+  change (SubdivisionPrismCharts.vertex hp N L (upperOccurrence hp N L q eta).1
+    ((upperOccurrence hp N L q eta).2.succAbove i)).2.1 = 1
+  calc
+    _ = (upperEndpointMap (endpointSpatialMap hp N L q eta)
+        (stdSimplex.vertex (AffinePositiveRayBoundary.VertexMap.facetCoordinateIndex i))).2.1 :=
+      congrArg Subtype.val ht
+    _ = 1 := rfl
 
 /-- The actual lower occurrence map is the refined spatial endpoint map at time zero. -/
 theorem lowerOccurrenceFacetMap_eq
@@ -251,11 +262,11 @@ theorem lowerOccurrence_facetSignature
       (AffinePositiveRayBoundary.VertexMap.facetCoordinateIndex i))
   rw [EquivariantPrismNonhorizontalCancellation.occurrenceFacetMap_vertex] at h
   have hc := congrArg CylinderPoint.ofProd h
-  simpa [RelativeCollarMiddlePrism.cellSystem,
+  convert hc using 1 <;> simp [RelativeCollarMiddlePrism.cellSystem,
     RelativeAffineCellSystem.facetSignature, RelativeCollarMiddlePrism.vertex,
     endpointSpatialMap_eq_chart, lowerEndpointMap,
     ExplicitAffineRelativeCollar.lowerCylinderPoint, RefinedAffineMap.vertex,
-    hindex] using hc
+    hindex, CylinderPoint.ofProd]
 
 /-- Vertex-signature form of the upper endpoint identity. -/
 theorem upperOccurrence_facetSignature
@@ -276,11 +287,11 @@ theorem upperOccurrence_facetSignature
       (AffinePositiveRayBoundary.VertexMap.facetCoordinateIndex i))
   rw [EquivariantPrismNonhorizontalCancellation.occurrenceFacetMap_vertex] at h
   have hc := congrArg CylinderPoint.ofProd h
-  simpa [RelativeCollarMiddlePrism.cellSystem,
+  convert hc using 1 <;> simp [RelativeCollarMiddlePrism.cellSystem,
     RelativeAffineCellSystem.facetSignature, RelativeCollarMiddlePrism.vertex,
     endpointSpatialMap_eq_chart, upperEndpointMap,
     ExplicitAffineRelativeCollar.upperCylinderPoint, RefinedAffineMap.vertex,
-    hindex] using hc
+    hindex, CylinderPoint.ofProd]
 
 end RelativeCollarMiddlePrismEndpointsCore
 end EquivariantPrismStableRelativeBoundary

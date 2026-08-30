@@ -65,9 +65,9 @@ theorem weightDifference_eq_of_equalArea
     ext x
     constructor
     · intro hx
-      simp only [U, Set.mem_iUnion, Set.mem_setOf_eq] at hx
+      simp only [U, Set.mem_iUnion, Set.mem_ofPred_eq] at hx
       obtain ⟨i, hxi⟩ := hx
-      simp only [O, Set.mem_iUnion, Set.mem_iInter, Set.mem_setOf_eq]
+      simp only [O, Set.mem_iUnion, Set.mem_iInter, Set.mem_ofPred_eq]
       refine ⟨i, ?_⟩
       intro j
       have hle := (PowerDiagram.mem_cell s w i.1 x.1).mp hxi j.1
@@ -77,7 +77,7 @@ theorem weightDifference_eq_of_equalArea
       dsimp [d] at hi hj
       linarith
     · intro hx
-      simp only [O, Set.mem_iUnion, Set.mem_iInter, Set.mem_setOf_eq] at hx
+      simp only [O, Set.mem_iUnion, Set.mem_iInter, Set.mem_ofPred_eq] at hx
       obtain ⟨i, hstrict⟩ := hx
       obtain ⟨k, _, hk⟩ :=
         Finset.exists_min_image Finset.univ
@@ -96,7 +96,7 @@ theorem weightDifference_eq_of_equalArea
             (hstrict jJ)).le
       have hxk : x.1 ∈ PowerDiagram.cell s w k.1 :=
         (hcellMemEq k x).mpr hxk'
-      simp only [U, Set.mem_iUnion, Set.mem_setOf_eq]
+      simp only [U, Set.mem_iUnion, Set.mem_ofPred_eq]
       exact ⟨k, hxk⟩
 
   have hpowerDist_cont (q : Fin n) :
@@ -124,7 +124,7 @@ theorem weightDifference_eq_of_equalArea
     let xi : I := ⟨i0, rfl⟩
     let xK : X := ⟨x, hxbody.1⟩
     refine ⟨xK, ?_⟩
-    simp only [U, Set.mem_iUnion, Set.mem_setOf_eq]
+    simp only [U, Set.mem_iUnion, Set.mem_ofPred_eq]
     exact ⟨xi, hxbody.2⟩
 
   letI : PreconnectedSpace X :=
@@ -143,7 +143,7 @@ theorem weightDifference_eq_of_equalArea
     · intro hxK
       let xK : X := ⟨x, hxK⟩
       have hxU : xK ∈ U := by rw [hUuniv]; trivial
-      simp only [U, Set.mem_iUnion, Set.mem_setOf_eq] at hxU
+      simp only [U, Set.mem_iUnion, Set.mem_ofPred_eq] at hxU
       obtain ⟨i, hxi⟩ := hxU
       simp only [Set.mem_iUnion]
       exact ⟨i, hxK, hxi⟩

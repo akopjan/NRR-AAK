@@ -77,10 +77,11 @@ theorem mem_of_hausdorffDist_lt {D E : Set Plane} (hDconv : Convex ℝ D)
     rw [norm_smul, Real.norm_of_nonneg hε.le, hu.1, mul_one]
   -- Since `z ∈ E`, `Metric.infDist z D ≤ Metric.hausdorffDist E D` (via `Metric.infDist_le_hausdorffDist_of_mem`, using symmetry of hausdorffEDist finiteness), and `Metric.hausdorffDist E D = Metric.hausdorffDist D E` by `Metric.hausdorffDist_comm`. So `Metric.infDist z D < ε` by `hdist`.
   have h_infDist_z_D : Metric.infDist z D < ε := by
-    refine' lt_of_le_of_lt _ hdist;
-    convert Metric.infDist_le_hausdorffDist_of_mem hz _ using 1;
-    · exact Metric.hausdorffDist_comm;
-    · convert Metric.hausdorffEDist_ne_top_of_nonempty_of_bounded hEne hDne hEbdd hDcomp.isBounded;
+    have h_ne_top : Metric.hausdorffEDist E D ≠ ⊤ :=
+      Metric.hausdorffEDist_ne_top_of_nonempty_of_bounded hEne hDne hEbdd hDcomp.isBounded
+    have h_le := Metric.infDist_le_hausdorffDist_of_mem hz h_ne_top
+    rw [Metric.hausdorffDist_comm] at h_le
+    exact lt_of_le_of_lt h_le hdist
   obtain ⟨ w, hw₁, hw₂ ⟩ := hDcomp.exists_infDist_eq_dist hDne z;
   -- Compute the inner product with `u`: `⟪z - w, u⟫ = ⟪x, u⟫ + ε * ⟪u, u⟫ - ⟪w, u⟫ = ⟪x, u⟫ + ε - ⟪w, u⟫` (since `⟪u, u⟫ = ‖u‖^2 = 1`). Using `⟪w, u⟫ ≤ ⟪x, u⟫` from step 1, this gives `⟪z - w, u⟫ ≥ ε`.
   have h_inner : ⟪z - w, u⟫ ≥ ε := by
@@ -137,9 +138,8 @@ theorem exists_tendsto_points
     {x : Plane} (hx : x ∈ (C₀.body : Set Plane)) :
     ∃ xseq : ℕ → Plane,
       (∀ m, xseq m ∈ ((C m).body : Set Plane)) ∧
-      Tendsto xseq atTop (𝓝 x) := by
-  have := @NRR.BodySpace.exists_tendsto_points_of_tendsto_nonemptyCompacts;
-  convert this ( ConvexSubbody.tendsto_body hC ) hx using 1
+      Tendsto xseq atTop (𝓝 x) :=
+  BodySpace.exists_tendsto_points_of_tendsto_nonemptyCompacts (ConvexSubbody.tendsto_body hC) hx
 
 /-
 **Exterior stability.** A point outside the closed limit body is eventually outside the

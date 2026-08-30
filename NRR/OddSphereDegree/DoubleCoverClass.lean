@@ -2,6 +2,8 @@ import NRR.OddSphereDegree.Monodromy
 import NRR.OddSphereDegree.AlgebraicTopology.InducedOnRPCohomology
 import Mathlib.GroupTheory.Perm.Sign
 
+set_option linter.style.haveILetI false
+
 /-!
 # The canonical `ZMod 2` monodromy class of the double cover `S^n → RP n`
 

@@ -2,6 +2,7 @@ import NRR.PrimePolyhedron.FoxNeuwirth.EndpointStackAffinePullbackCore
 import NRR.PrimePolyhedron.FoxNeuwirth.ExplicitAffineRelativeCollar
 import NRR.PrimePolyhedron.FoxNeuwirth.RefinedChartCarrierEquivariant
 
+set_option backward.isDefEq.respectTransparency false
 set_option linter.unusedVariables false
 
 /-!
@@ -34,11 +35,12 @@ open AffinePositiveRayBoundary.VertexMap
 
 variable {p : Nat}
 
-private def parentIndex (hp : Nat.Prime p) :
-    Fin (p - 1 + 1) → Fin (p - 1 + 1) := id
+private abbrev parentIndex (hp : Nat.Prime p) :
+    Fin (p - 1 + 1) → Fin (p - 1 + 1) :=
+  EndpointStackAffinePullbackCore.parentIndex hp
 
-private def cylinderIndex (hp : Nat.Prime p) : Fin (p + 1) → Fin (p - 1 + 2) :=
-  Fin.cast (by have := hp.pos; omega)
+private abbrev cylinderIndex (hp : Nat.Prime p) : Fin (p + 1) → Fin (p - 1 + 2) :=
+  EndpointStackAffinePullbackCore.cylinderIndex hp
 
 /-- The one-step endpoint cylinder used throughout this module. -/
 noncomputable abbrev Cells (hp : Nat.Prime p) (N : Nat) :=
@@ -91,12 +93,22 @@ theorem pullbackVector_eq_value
     pullbackVector hp A s =
       RefinedAffineMap.value hp A.level A.map s.1.1
         (localSpatialWeight hp A.level s) := by
+  obtain ⟨k, rfl⟩ := Nat.exists_eq_succ_of_ne_zero (ne_of_gt hp.pos)
   have h := EndpointStackAffinePullbackCore.affine_pullbackEndpointValue_eq_value hp A s.1.1 s.1.2
     (stdSimplex.vertex (S := Real) s.2)
   funext c
   have hc := congrFun h c
+  simp [RelativeSubdivisionOneStepCells.localWeight,
+    Nat.sub_add_cancel hp.pos] at hc
+  rw [show RelativeSubdivisionCylinderCombinatorics.spatialPoint k s.1.2
+      (stdSimplex.vertex (S := Real) s.2) =
+      (RelativeSubdivisionCylinderCombinatorics.vertex k s.1.2 s.2).1 by
+    exact congrArg Prod.fst
+      (RelativeSubdivisionCylinderCombinatorics.chart_vertex k s.1.2 s.2)] at hc
   simpa [pullbackVector, localSpatialWeight,
     EndpointStackAffinePullbackCore.pullbackVertexValue,
+    EndpointStackAffinePullbackCore.parentIndex,
+    EndpointStackAffinePullbackCore.cylinderIndex,
     RelativeSubdivisionOneStepCells.localPoint,
     RelativeSubdivisionOneStepCells.localWeight, parentIndex, cylinderIndex,
     Nat.sub_add_cancel hp.pos, Pi.single_apply] using hc
@@ -108,6 +120,7 @@ theorem oneStepAffinePullbackCompatible
     {F : ContinuousCoordinateMap p}
     (A : RegularApproximation hp F) :
     OneStepAffinePullbackCompatible hp A := by
+  obtain ⟨k, rfl⟩ := Nat.exists_eq_succ_of_ne_zero (ne_of_gt hp.pos)
   intro a b hab
   have hspatial := congrArg CylinderPoint.spatial hab
   have hchart :
@@ -116,9 +129,11 @@ theorem oneStepAffinePullbackCompatible
         b.1 • RefinedAffineMap.chart hp A.level b.2.1.1
           (StandardSimplex.toDelta (localSpatialWeight hp A.level b.2)) := by
     simpa [ExplicitAffineRelativeCollar.Parameters.coverPoint,
-      RelativeAffineCellSystem.slotPoint, localSpatialWeight,
-      RelativeSubdivisionOneStepCells.vertex, RelativeSubdivisionOneStepCells.chart, RelativeSubdivisionOneStepCells.liftPoint,
-      CylinderPoint.ofProd] using hspatial
+      RelativeAffineCellSystem.slotPoint, Cells, localSpatialWeight,
+      RelativeSubdivisionOneStepCells.cellSystem,
+      RelativeSubdivisionOneStepCells.vertex, RelativeSubdivisionOneStepCells.chart,
+      RelativeSubdivisionOneStepCells.liftPoint,
+      EquivariantPrismVertexParameters.CylinderPoint.ofProd] using hspatial
   rw [decoratedPullbackVector, decoratedPullbackVector,
     pullbackVector_eq_value hp A a.2, pullbackVector_eq_value hp A b.2]
   exact RefinedChartCarrierEquivariant.decorated_value_eq_of_decorated_chart_eq
@@ -244,9 +259,12 @@ theorem assignment_avoidsOrigin
   change
     (fun c => ∑ i : Fin (p + 1), w i *
       (localVertexMap hp (Cells hp A.level) (assignment hp A hcompat) q).value i c) ≠ 0
-  simpa [localVertexMap_assignment_value] using
-    EndpointStackAffinePullbackCore.affine_pullbackEndpointValue_ne_zero hp A q.1 q.2
-      (StandardSimplex.toDelta w)
+  convert EndpointStackAffinePullbackCore.affine_pullbackEndpointValue_ne_zero
+      hp A q.1 q.2 (StandardSimplex.toDelta w) using 1
+  funext c
+  apply Finset.sum_congr rfl
+  intro x hx
+  rfl
 
 /-- Local values of the canonical assignment use the affine-pullback formula. -/
 theorem localVertexMap_canonicalAssignment_value

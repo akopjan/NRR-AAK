@@ -66,7 +66,7 @@ theorem convex_emptyInterior_subset_affineLine
       exact ⟨u, hu.2, fun w hw => (Submodule.mem_orthogonal _ _).mp hu.1 w hw⟩
     refine ⟨u, ⟪u, Classical.choose h_affine_span_nonempty⟫, hu.1, fun x hx => ?_⟩
     have := hu.2 (x -ᵥ Classical.choose h_affine_span_nonempty) ?_
-    · simp only [Set.mem_setOf_eq]
+    · simp only [Set.mem_ofPred_eq]
       simp_all [inner_sub_left, sub_eq_zero, real_inner_comm]
     · exact AffineSubspace.vsub_mem_direction (subset_affineSpan ℝ _ hx)
         (Classical.choose_spec h_affine_span_nonempty)
@@ -84,7 +84,7 @@ theorem interior_nonempty_of_convex_compact_positive_area
   · exfalso
     obtain ⟨u, c, hu, hc⟩ := convex_emptyInterior_subset_affineLine hconv hcomp h
     have hnull := NRR.Halfspace.hyperplane_null hu c
-    have hzero : volume S = 0 := le_antisymm (hnull ▸ measure_mono hc) (zero_le _)
+    have hzero : volume S = 0 := nonpos_iff_eq_zero.mp (hnull ▸ measure_mono hc)
     rw [hzero] at harea
     simp at harea
   · exact h

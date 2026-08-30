@@ -1,6 +1,7 @@
 import NRR.PrimePolyhedron.FoxNeuwirth.ExplicitAffineRelativeCollarStokes
 import NRR.PrimePolyhedron.FoxNeuwirth.EquivariantPrismGenericPerturbation
 import NRR.PrimePolyhedron.FoxNeuwirth.EquivariantPrismSubdivisionMargin
+set_option backward.isDefEq.respectTransparency false
 set_option linter.unusedVariables false
 set_option linter.unusedSectionVars false
 set_option linter.unusedSimpArgs false
@@ -311,7 +312,9 @@ theorem affineValue_replaceMovable_eq_of_purelyHorizontalCodimTwo
       i j hij (by simp [hzeros.1]) (by simp [hzeros.2])]
   apply Finset.sum_congr rfl
   intro c hc
-  let k : Fin (p + 1) := codimTwoVertex hp (i, omittedIndex i j hij) c
+  let k : Fin (p + 1) :=
+    EquivariantPrismGenericityPolynomials.codimTwoVertex hp
+      (i, omittedIndex i j hij) c
   have hkHorizontal : IsHorizontalPoint (C.slotPoint (q, k)) := by
     rcases hpure with hlower | hupper
     · exact Or.inl (hlower c)
@@ -584,7 +587,7 @@ theorem exists_positive_localAffineCoordinateNormMargin
       apply Continuous.norm
       apply continuous_pi
       intro r
-      exact continuous_finset_sum _ fun i _ => by
+      exact continuous_finsetSum _ fun i _ => by
         have hw : Continuous (fun w : StandardSimplex p => (w : Fin (p + 1) → Real) i) :=
           (continuous_apply i).comp continuous_subtype_val
         have hc : Continuous (fun _ : StandardSimplex p =>
@@ -605,7 +608,7 @@ theorem exists_positive_localAffineCoordinateNormMargin
           refine ⟨StandardSimplex.toDelta w, ?_⟩
           exact StandardSimplex.ofDelta_toDelta w
       letI : CompactSpace (SphereOddDegree.AffineBarycentricSubdivision.Delta p) :=
-        isCompact_iff_compactSpace.mp (isCompact_stdSimplex (Fin (p + 1)))
+        isCompact_iff_compactSpace.mp (isCompact_stdSimplex ℝ (Fin (p + 1)))
       have himage : IsCompact (Set.range f) := isCompact_range hf
       rw [hrange] at himage
       exact himage

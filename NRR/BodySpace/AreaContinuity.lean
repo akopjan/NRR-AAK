@@ -56,17 +56,23 @@ theorem tendsto_indicator_ae
         l
         (𝓝
           ((C₀.body : Set Plane).indicator (fun _ => (1 : ℝ)) x)) := by
-  refine' MeasureTheory.measure_mono_null _ ( C₀.frontier_null );
-  intro x hx; contrapose! hx; simp_all +decide [ Set.indicator ] ;
-  exact tendsto_const_nhds.congr' ( by filter_upwards [ ConvexSubbody.eventually_mem_iff_of_not_mem_frontier hC hx ] with a ha; aesop )
+  have h_ae : ∀ᵐ x ∂volume, x ∉ frontier (C₀.body : Set Plane) :=
+    MeasureTheory.compl_mem_ae_iff.mpr C₀.frontier_null
+  filter_upwards [h_ae] with x hx
+  have h_event : ∀ᶠ a in l, x ∈ (C a).body ↔ x ∈ C₀.body :=
+    ConvexSubbody.eventually_mem_iff_of_not_mem_frontier hC hx
+  apply tendsto_const_nhds.congr'
+  filter_upwards [h_event] with a ha
+  classical
+  rw [Set.indicator_apply, Set.indicator_apply]
+  exact if_congr ha.symm rfl rfl
 
 /-- The constant parent indicator dominates every subbody indicator pointwise. -/
 theorem norm_indicator_le_parent (C : ConvexSubbody K) (x : Plane) :
     ‖(C.body : Set Plane).indicator (fun _ => (1 : ℝ)) x‖
       ≤ (K : Set Plane).indicator (fun _ => (1 : ℝ)) x := by
-  convert Set.indicator_le_indicator_of_subset C.subset_parent ( fun _ => zero_le_one ) x using 1;
-  · rw [ Real.norm_of_nonneg ( Set.indicator_nonneg ( fun _ _ => zero_le_one ) _ ) ];
-  · exact fun _ => inferInstance
+  rw [Real.norm_of_nonneg (Set.indicator_nonneg (fun _ _ => zero_le_one) _)]
+  exact Set.indicator_le_indicator_of_subset C.subset_parent (fun _ => zero_le_one) x
 
 /-- The parent indicator is integrable (the parent has finite volume). -/
 theorem integrable_parent_indicator (K : Geometry.ConvexBody Plane) :

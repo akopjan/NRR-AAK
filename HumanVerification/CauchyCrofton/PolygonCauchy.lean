@@ -148,7 +148,7 @@ theorem supportFunction_polyBody (h0 : (0 : Point2) ∈ interior (K : Set Point2
       · simp
       · exact le_trans (hle _) (le_max_right 0 C)
     have := hbound hxP
-    simp only [Set.mem_setOf_eq, hxinner] at this
+    simp only [Set.mem_ofPred_eq, hxinner] at this
     rcases le_or_gt C 0 with hC | hC
     · rw [max_eq_left hC] at this
       nlinarith
@@ -195,7 +195,7 @@ private theorem no_two_upcrossings (h0 : (0 : Point2) ∈ interior (K : Set Poin
   · have hmid := inner_vtx_gt_of_between' h0 hs (j := j + 1) (i := k) (k := k + 1)
       hjk1 (by omega) hspread hj' hk'.le
     linarith
-  · push_neg at hspread
+  · push Not at hspread
     have hk1m : k + 1 < j + A.m := by
       rcases eq_or_lt_of_le (show k + 1 ≤ j + A.m by omega) with h | h
       · exfalso
@@ -227,7 +227,7 @@ private theorem no_two_downcrossings (h0 : (0 : Point2) ∈ interior (K : Set Po
   · have hmid := inner_vtx_ge_of_between h0 hs (j := j) (i := j + 1) (k := k)
       (by omega) hjk1 hspread hj hk
     linarith
-  · push_neg at hspread
+  · push Not at hspread
     have hshort : A.θ (j + A.m) - A.θ k ≤ Real.pi := by
       have hp := A.period j
       linarith
@@ -332,7 +332,7 @@ theorem cPerimeter_polyBody (h0 : (0 : Point2) ∈ interior (K : Set Point2)) :
     rw [sum_abs_inner_edge h0 (hcv θ)]
     ring
   rw [intervalIntegral.integral_congr hw, intervalIntegral.integral_const_mul,
-    intervalIntegral.integral_finset_sum
+    intervalIntegral.integral_finsetSum
       (fun i _ => intervalIntegrable_abs_inner _)]
   have hterm : ∀ j ∈ Finset.range A.m,
       (∫ θ in (0 : ℝ)..(2 * Real.pi),

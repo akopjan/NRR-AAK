@@ -90,7 +90,9 @@ def relabel (σ : Equiv.Perm (Fin p))
     c.relabel 1 = c := by
   apply BarredPermutation.ext
   · ext i
-    simp [relabel]
+    have hi : (1 : Equiv.Perm (Fin p)).symm i = i :=
+      (1 : Equiv.Perm (Fin p)).symm_apply_apply i
+    exact congrArg (fun j => (c.rank j : ℕ)) hi
   · rfl
 
  theorem relabel_mul
@@ -235,9 +237,11 @@ instance primeSymmetryAction (hp : Nat.Prime p) :
     change c.relabel (PrimeSymmetry.toPerm hp 1) = c
     rw [map_one, relabel_one]
   mul_smul g h c := by
-    simpa using
-      (relabel_mul (PrimeSymmetry.toPerm hp g)
-        (PrimeSymmetry.toPerm hp h) c).symm
+    change c.relabel (PrimeSymmetry.toPerm hp (g * h)) =
+      (c.relabel (PrimeSymmetry.toPerm hp h)).relabel (PrimeSymmetry.toPerm hp g)
+    rw [map_mul]
+    exact relabel_mul (PrimeSymmetry.toPerm hp g)
+      (PrimeSymmetry.toPerm hp h) c
 
 @[simp] theorem prime_smul_def
     (hp : Nat.Prime p) (g : PrimeSymmetry hp)

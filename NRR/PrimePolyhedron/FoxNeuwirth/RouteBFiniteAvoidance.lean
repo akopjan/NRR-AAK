@@ -66,7 +66,7 @@ theorem exists_mem_avoiding_finset_of_null
     dsimp [badUnion]
     exact measure_iUnion_finset_null μ bad indices hnull
   by_contra h
-  push_neg at h
+  push Not at h
   have hsubset : goodRegion ⊆ badUnion := by
     intro x hx
     by_contra hxUnion

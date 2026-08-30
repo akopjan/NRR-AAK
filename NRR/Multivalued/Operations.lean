@@ -69,7 +69,7 @@ theorem pullback_zeroSet
     (φ.pullback f).zeroSet =
       (fun z : Y × SignedInterval => (f z.1, z.2)) ⁻¹' φ.zeroSet := by
   ext z
-  simp only [zeroSet, Set.mem_setOf_eq, Set.mem_preimage, zero_iff, pullback_eval]
+  simp only [zeroSet, Set.mem_ofPred_eq, Set.mem_preimage, zero_iff, pullback_eval]
 
 /-- The canonical nice multivalued function attached to a bounded continuous observable `f` with
 `|f x| < 1`: it evaluates by `(t : ℝ) - f x`, so its zero set is the graph `t = f x`. -/
@@ -116,7 +116,7 @@ theorem scale_zeroSet
     (φ : NiceMV X) (c : ℝ) (hc : 0 < c) :
     (φ.scale c hc).zeroSet = φ.zeroSet := by
   ext z
-  simp only [zeroSet, Set.mem_setOf_eq, zero_iff, scale_eval, mul_eq_zero, hc.ne', false_or]
+  simp only [zeroSet, Set.mem_ofPred_eq, zero_iff, scale_eval, mul_eq_zero, hc.ne', false_or]
 
 /-- Reflect a nice multivalued function through interval negation: `reflect` negates both the
 observable and the interval coordinate. It preserves the zero relation under `SignedInterval.neg`,

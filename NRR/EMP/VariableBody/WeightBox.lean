@@ -36,7 +36,7 @@ interval `Set.Icc (-M) M`. -/
 theorem setOf_eq_pi :
     {w : Fin n → ℝ | ∀ i, |w i| ≤ M} = Set.pi Set.univ (fun _ : Fin n => Set.Icc (-M) M) := by
   ext w
-  simp only [Set.mem_setOf_eq, Set.mem_pi, Set.mem_univ, forall_true_left, Set.mem_Icc]
+  simp only [Set.mem_ofPred_eq, Set.mem_pi, Set.mem_univ, forall_true_left, Set.mem_Icc]
   exact ⟨fun h i => abs_le.mp (h i), fun h i => abs_le.mpr (h i)⟩
 
 /-- The defining set of the weight box is compact, being a finite product of compact intervals. -/
@@ -60,7 +60,7 @@ def valContinuous (n : ℕ) (M : ℝ) : C(WeightBox n M, Fin n → ℝ) :=
 theorem range_val :
     (Set.range fun w : WeightBox n M => (w : Fin n → ℝ)) = {w : Fin n → ℝ | ∀ i, |w i| ≤ M} := by
   ext w
-  simp only [Set.mem_range, Set.mem_setOf_eq, Subtype.exists]
+  simp only [Set.mem_range, Set.mem_ofPred_eq, Subtype.exists]
   exact ⟨fun ⟨v, hv, hvw⟩ => hvw ▸ hv, fun h => ⟨w, h, rfl⟩⟩
 
 /-- The range of the coordinate projection is closed (it is a finite product of closed intervals). -/

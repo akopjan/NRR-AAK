@@ -1,5 +1,6 @@
 import NRR.PrimePolyhedron.FoxNeuwirth.RelativeSubdivisionOneStepCells
 import NRR.PrimePolyhedron.FoxNeuwirth.EndpointFaceRefinement
+set_option backward.isDefEq.respectTransparency false
 
 /-!
 # Endpoint facets of the one-step relative subdivision cylinder
@@ -49,10 +50,12 @@ private theorem localPoint_lower_vertex
       RelativeSubdivisionCylinderCombinatorics.lowerBoundaryVertex n i := by
   unfold RelativeSubdivisionOneStepCells.localPoint
   rw [localWeight_vertex_succ hp i]
-  simpa only [Nat.add_sub_cancel] using
-    (RelativeSubdivisionCylinderCombinatorics.chart_vertex n
-      (RelativeSubdivisionCylinderCombinatorics.lowerCell n) i.succ).trans
-      (RelativeSubdivisionCylinderCombinatorics.vertex_succ_lower n i)
+  change RelativeSubdivisionCylinderCombinatorics.chart n
+      (RelativeSubdivisionCylinderCombinatorics.lowerCell n)
+      (stdSimplex.vertex (S := Real) i.succ) = _
+  exact (RelativeSubdivisionCylinderCombinatorics.chart_vertex n
+    (RelativeSubdivisionCylinderCombinatorics.lowerCell n) i.succ).trans
+    (RelativeSubdivisionCylinderCombinatorics.vertex_succ_lower n i)
 
 private theorem localPoint_upper_vertex
     {n : Nat} (hp : Nat.Prime (n + 1))
@@ -63,10 +66,12 @@ private theorem localPoint_upper_vertex
       RelativeSubdivisionCylinderCombinatorics.upperBoundaryVertex n pi i := by
   unfold RelativeSubdivisionOneStepCells.localPoint
   rw [localWeight_vertex_succ hp i]
-  simpa only [Nat.add_sub_cancel] using
-    (RelativeSubdivisionCylinderCombinatorics.chart_vertex n
-      (RelativeSubdivisionCylinderCombinatorics.upperCell n pi) i.succ).trans
-      (RelativeSubdivisionCylinderCombinatorics.vertex_succ_upper n pi i)
+  change RelativeSubdivisionCylinderCombinatorics.chart n
+      (RelativeSubdivisionCylinderCombinatorics.upperCell n pi)
+      (stdSimplex.vertex (S := Real) i.succ) = _
+  exact (RelativeSubdivisionCylinderCombinatorics.chart_vertex n
+    (RelativeSubdivisionCylinderCombinatorics.upperCell n pi) i.succ).trans
+    (RelativeSubdivisionCylinderCombinatorics.vertex_succ_upper n pi i)
 
 /-- Split a level-`N + 1` top cell into its level-`N` prefix and final subdivision permutation. -/
 noncomputable def splitTopCellEquiv

@@ -84,6 +84,28 @@ noncomputable def sidePoint
     Delta (d + 1) × Set.Icc (0 : Real) 1 :=
   (stdSimplex.map (S := Real) k.succAbove z.1, z.2)
 
+@[simp] theorem sidePoint_spatial_succAbove
+    (d : Nat) (k : Fin (d + 2))
+    (z : Delta d × Set.Icc (0 : Real) 1) (i : Fin (d + 1)) :
+    (sidePoint d k z).1 (k.succAbove i) = z.1 i := by
+  unfold sidePoint
+  change (stdSimplex.map (S := Real) k.succAbove z.1 : Fin (d + 2) → Real) (k.succAbove i) = z.1 i
+  rw [stdSimplex.map_coe, FunOnFinite.linearMap_apply_apply]
+  have h_filter : (Finset.univ.filter (fun j => k.succAbove j = k.succAbove i)) = {i} := by
+    ext j
+    simp [Fin.succAbove_right_injective.eq_iff]
+  rw [h_filter, Finset.sum_singleton]
+
+@[simp] theorem sidePoint_spatial_deleted
+    (d : Nat) (k : Fin (d + 2))
+    (z : Delta d × Set.Icc (0 : Real) 1) :
+    (sidePoint d k z).1 k = 0 := by
+  change (stdSimplex.map (S := Real) k.succAbove z.1 : Fin (d + 2) → Real) k = 0
+  rw [stdSimplex.map_coe, FunOnFinite.linearMap_apply_apply]
+  apply Finset.sum_eq_zero
+  intro i hi
+  exact (Fin.succAbove_ne k i (Finset.mem_filter.mp hi).2).elim
+
 /-- Ordered vertices of a recursive cylinder cell. -/
 noncomputable def vertex :
     (d : Nat) → Cell d → Fin (d + 2) → Delta d × Set.Icc (0 : Real) 1
@@ -240,11 +262,9 @@ theorem chart_time_affine
     (w : Delta (d + 2)) :
     spatialPoint (d + 1) (sideCell d k q) w k =
       w 0 * deltaBarycenter (d + 1) k := by
-  convert Finset.sum_eq_single_of_mem ( 0 : Fin ( d + 3 ) ) ( Finset.mem_univ _ ) _ using 1;
-  intro b hb; induction b using Fin.inductionOn <;> simp_all +decide [ vertex ] ;
-  unfold sideCell; simp +decide [ sidePoint ] ;
-  unfold FunOnFinite.linearMap; simp +decide [ Fin.succAbove ] ;
-  simp +decide [ Finsupp.mapDomain ]
+  change (∑ i : Fin (d + 3), w i * (vertex (d + 1) (sideCell d k q) i).1 k) = _
+  rw [Fin.sum_univ_succ]
+  simp [vertex_zero, vertex_succ_side, apex, sidePoint_spatial_deleted]
 
 /-- The lower cone simplex is nondegenerate. -/
 theorem chart_lower_injective (d : Nat) :
@@ -271,18 +291,27 @@ theorem chart_upper_injective
   intro x y hxy
   have ht := congrArg (fun z : Delta d × Set.Icc (0 : Real) 1 => z.2.1) hxy
   have h0 : x 0 = y 0 := by
-    simp_all +decide [ chart, timePoint_upper ];
-    have := congr_arg Subtype.val hxy.2; norm_num [ timePoint_upper ] at this; linarith;
-  apply Subtype.ext;
-  have h_tail : (AffineSubdivisionDeterminant.stepVertexMatrix d pi).mulVec (x ∘ Fin.succ) = (AffineSubdivisionDeterminant.stepVertexMatrix d pi).mulVec (y ∘ Fin.succ) := by
-    have h_tail : ∀ c : Fin (d + 1), spatialPoint d (upperCell d pi) x c = spatialPoint d (upperCell d pi) y c := by
-      exact fun c => congr_arg ( fun z : Delta d × Set.Icc ( 0 : ℝ ) 1 => z.1 c ) hxy;
-    ext c; specialize h_tail c; simp_all +decide [ spatialPoint_upper_coord, Matrix.mulVec, dotProduct ] ;
-    convert h_tail using 1 <;> simp +decide [ AffineSubdivisionDeterminant.stepVertexMatrix, mul_comm ];
+    simp only [chart, timePoint_upper] at ht
+    linarith
+  apply Subtype.ext
+  have h_tail : (AffineSubdivisionDeterminant.stepVertexMatrix d pi).mulVec (x ∘ Fin.succ) =
+                (AffineSubdivisionDeterminant.stepVertexMatrix d pi).mulVec (y ∘ Fin.succ) := by
+    ext c
+    have hc := congrArg (fun z : Delta d × Set.Icc (0 : Real) 1 => z.1 c) hxy
+    dsimp [chart] at hc
+    rw [spatialPoint_upper_coord, spatialPoint_upper_coord] at hc
+    rw [h0] at hc
+    have h_sub := add_left_cancel hc
+    dsimp [AffineSubdivisionDeterminant.stepVertexMatrix, Matrix.mulVec, dotProduct]
+    show ∑ i, prefixBarycenter d pi i c * x i.succ = ∑ i, prefixBarycenter d pi i c * y i.succ
+    simp_rw [mul_comm (prefixBarycenter _ _ _ _)]
+    exact h_sub
   have h_tail_eq : x ∘ Fin.succ = y ∘ Fin.succ := by
-    apply_fun fun z => (AffineSubdivisionDeterminant.stepVertexMatrix d pi)⁻¹.mulVec z at h_tail;
-    simp_all +decide [ ← Matrix.mul_assoc, isUnit_iff_ne_zero, AffineSubdivisionDeterminant.det_stepVertexMatrix_ne_zero ];
-  exact funext fun i => Fin.cases h0 ( fun i => congr_fun h_tail_eq i ) i
+    have hdet := AffineSubdivisionDeterminant.det_stepVertexMatrix_ne_zero d pi
+    have h_inv : Invertible (AffineSubdivisionDeterminant.stepVertexMatrix d pi) :=
+      Matrix.invertibleOfIsUnitDet _ (isUnit_iff_ne_zero.mpr hdet)
+    exact Matrix.mulVec_injective_of_invertible (AffineSubdivisionDeterminant.stepVertexMatrix d pi) h_tail
+  exact funext fun i => Fin.cases h0 (fun i => congr_fun h_tail_eq i) i
 
 /-- Pairwise distinct vertices follow from injectivity of the affine chart. -/
 theorem vertex_injective_of_chart_injective
@@ -419,24 +448,7 @@ noncomputable def coneTail
     coneTail w i = w i.succ / (1 - w 0) := by
   unfold coneTail; aesop;
 
-@[simp] theorem sidePoint_spatial_succAbove
-    (d : Nat) (k : Fin (d + 2))
-    (z : Delta d × Set.Icc (0 : Real) 1) (i : Fin (d + 1)) :
-    (sidePoint d k z).1 (k.succAbove i) = z.1 i := by
-  unfold sidePoint; simp +decide [ Finset.sum_ite, Finset.filter_lt_eq_Ioi, Finset.filter_gt_eq_Iio ] ;
-  simp +decide [ FunOnFinite.linearMap, Finset.sum_ite, Finset.filter_lt_eq_Ioi, Finset.filter_gt_eq_Iio ];
-  simp +decide [ Finsupp.mapDomain, Finsupp.single_apply ];
-  exact fun h => h.symm
 
-@[simp] theorem sidePoint_spatial_deleted
-    (d : Nat) (k : Fin (d + 2))
-    (z : Delta d × Set.Icc (0 : Real) 1) :
-    (sidePoint d k z).1 k = 0 := by
-  change (stdSimplex.map (S := Real) k.succAbove z.1 : Fin (d + 2) → Real) k = 0
-  rw [stdSimplex.map_coe, FunOnFinite.linearMap_apply_apply]
-  apply Finset.sum_eq_zero
-  intro i hi
-  exact (Fin.succAbove_ne k i (Finset.mem_filter.mp hi).2).elim
 
 @[simp] theorem sidePoint_time
     (d : Nat) (k : Fin (d + 2))
@@ -452,15 +464,16 @@ theorem spatialPoint_side_succAbove_decompose
     spatialPoint (d + 1) (sideCell d k q) w (k.succAbove c) =
       w 0 * deltaBarycenter (d + 1) (k.succAbove c) +
         (1 - w 0) * spatialPoint d q (coneTail w) c := by
-  have h_split_sum : ∑ j : Fin (d + 3), w j * (vertex (d + 1) (sideCell d k q) j).1 (k.succAbove c) = w 0 * (deltaBarycenter (d + 1)) (k.succAbove c) + ∑ j : Fin (d + 2), w j.succ * (vertex d q j).1 c := by
-    rw [ Fin.sum_univ_succ ];
-    simp +decide [ vertex_zero, vertex_succ_side, sidePoint_spatial_succAbove ];
-    exact Or.inl rfl;
-  have h_split_sum : ∑ j : Fin (d + 2), w j.succ * (vertex d q j).1 c = (1 - w 0) * ∑ j : Fin (d + 2), (coneTail w j) * (vertex d q j).1 c := by
-    rw [ Finset.mul_sum _ _ _ ] ; refine' Finset.sum_congr rfl fun i hi => _ ; rw [ coneTail_apply ] ; ring;
-    · grind;
-    · exact hw;
-  unfold spatialPoint; aesop;
+  change (∑ j : Fin (d + 3), w j * (vertex (d + 1) (sideCell d k q) j).1 (k.succAbove c)) = _
+  rw [Fin.sum_univ_succ]
+  simp only [vertex_zero, vertex_succ_side, apex, sidePoint_spatial_succAbove]
+  congr 1
+  show (∑ j : Fin (d + 2), w j.succ * (vertex d q j).1 c) = (1 - w 0) * ∑ i : Fin (d + 2), (coneTail w) i * (vertex d q i).1 c
+  rw [Finset.mul_sum]
+  apply Finset.sum_congr rfl
+  intro i _
+  have h_cone : (coneTail w) i = w i.succ / (1 - w 0) := coneTail_apply w hw i
+  rw [h_cone, div_mul_eq_mul_div, mul_div_cancel₀ _ (sub_ne_zero.mpr (Ne.symm hw))]
 
 /-
 Away from the apex, a side time chart is the affine cone on its base chart.
@@ -483,25 +496,56 @@ theorem chart_side_injective
     Function.Injective (chart (d + 1) (sideCell d k q)) := by
   intro x y hxy
   have h0 : x 0 = y 0 := by
-    have := congr_arg ( fun z : Delta ( d + 1 ) × Set.Icc ( 0 : ℝ ) 1 => z.1 k ) hxy; norm_num [ spatialPoint_side_missing_coord ] at this;
-    unfold chart at this; simp +decide [ spatialPoint_side_missing_coord, deltaBarycenter ] at this;
-    simp_all +decide [ stdSimplex.barycenter ];
-    exact this.resolve_right ( ne_of_gt ( inv_pos.mpr ( by linarith ) ) );
-  by_cases hx : x 0 = 1 <;> by_cases hy : y 0 = 1 <;> simp_all +decide [ Finset.sum_range_succ', Finset.sum_range_zero ];
-  · have h_tail_zero : ∀ i : Fin (d + 2), x i.succ = 0 ∧ y i.succ = 0 := by
-      intro i; exact ⟨succ_eq_zero_of_zero_eq_one (d + 1) x hx i, succ_eq_zero_of_zero_eq_one (d + 1) y hy i⟩;
-    ext i; induction i using Fin.inductionOn <;> aesop;
-  · have h_tail : chart d q (coneTail x) = chart d q (coneTail y) := by
-      apply Prod.ext;
-      · apply_fun fun z => z.1 ∘ (k.succAbove) at hxy;
-        ext i; replace hxy := congr_fun hxy i; simp_all +decide [ spatialPoint_side_succAbove_decompose ] ;
-        unfold chart at *; simp_all +decide [ spatialPoint_side_succAbove_decompose ] ;
-        exact hxy.resolve_right ( sub_ne_zero_of_ne <| Ne.symm hy );
-      · apply_fun fun z => z.2 at hxy; simp_all +decide [ chart, timePoint_side_decompose ] ;
-        grind +suggestions;
-    have := hq h_tail;
-    ext i; induction i using Fin.inductionOn <;> simp_all +decide [ coneTail ] ;
-    have := congr_fun this ‹_›; rw [ div_eq_div_iff ] at this <;> cases lt_or_gt_of_ne hy <;> nlinarith [ stdSimplex.sum_eq_one x, stdSimplex.sum_eq_one y, stdSimplex.zero_le x 0, stdSimplex.zero_le y 0 ] ;
+    have hc := congrArg (fun z : Delta (d + 1) × Set.Icc (0 : Real) 1 => z.1 k) hxy
+    dsimp [chart] at hc
+    rw [spatialPoint_side_missing_coord, spatialPoint_side_missing_coord] at hc
+    dsimp [deltaBarycenter, stdSimplex.barycenter] at hc
+    have h_pos : (Fintype.card (Fin (d + 2)) : Real)⁻¹ ≠ 0 := ne_of_gt (inv_pos.mpr (by positivity))
+    exact mul_right_cancel₀ h_pos hc
+  by_cases hx : x 0 = 1
+  · have hy : y 0 = 1 := by rw [← h0, hx]
+    apply Subtype.ext
+    ext i
+    refine Fin.cases h0 (fun j => ?_) i
+    have hx_zero := succ_eq_zero_of_zero_eq_one (d + 1) x hx j
+    have hy_zero := succ_eq_zero_of_zero_eq_one (d + 1) y hy j
+    change x j.succ = y j.succ
+    rw [hx_zero, hy_zero]
+  · have hy : y 0 ≠ 1 := by rw [← h0]; exact hx
+    have h_tail : chart d q (coneTail x) = chart d q (coneTail y) := by
+      apply Prod.ext
+      · ext c
+        have hc := congrArg (fun z : Delta (d + 1) × Set.Icc (0 : Real) 1 => z.1 (k.succAbove c)) hxy
+        dsimp [chart] at hc
+        rw [spatialPoint_side_succAbove_decompose _ _ _ _ hx,
+            spatialPoint_side_succAbove_decompose _ _ _ _ hy] at hc
+        rw [h0] at hc
+        have h_sub := add_left_cancel hc
+        have h1 : 1 - y 0 ≠ 0 := sub_ne_zero.mpr (Ne.symm hy)
+        exact mul_left_cancel₀ h1 h_sub
+      · apply Subtype.ext
+        have ht := congrArg (fun z : Delta (d + 1) × Set.Icc (0 : Real) 1 => z.2.1) hxy
+        dsimp [chart] at ht
+        rw [timePoint_side_decompose _ _ _ _ hx,
+            timePoint_side_decompose _ _ _ _ hy] at ht
+        rw [h0] at ht
+        have h_sub := add_left_cancel ht
+        have h1 : 1 - y 0 ≠ 0 := sub_ne_zero.mpr (Ne.symm hy)
+        exact mul_left_cancel₀ h1 h_sub
+    have h_eq := hq h_tail
+    have h_tail_val := congr_arg Subtype.val h_eq
+    have h_tail_fun := congr_fun h_tail_val
+    apply Subtype.ext
+    ext i
+    refine Fin.cases h0 (fun j => ?_) i
+    have hj := h_tail_fun j
+    have hx_c : (coneTail x) j = x j.succ / (1 - x 0) := coneTail_apply x hx j
+    have hy_c : (coneTail y) j = y j.succ / (1 - y 0) := coneTail_apply y hy j
+    change (coneTail x) j = (coneTail y) j at hj
+    rw [hx_c, hy_c] at hj
+    rw [h0] at hj
+    have hy_sub : 1 - y 0 ≠ 0 := sub_ne_zero.mpr (Ne.symm hy)
+    exact (div_left_inj' hy_sub).mp hj
 
 /-- Every recursive one-step cylinder chart is injective. -/
 theorem chart_injective_all :
@@ -634,15 +678,17 @@ theorem baseFacetPairing_zero
     (R : Type) [CommRing R]
     (W : (Fin 1 → Delta 0 × Set.Icc (0 : Real) 1) → R) :
     baseFacetPairing R 0 W = lowerPairing R 0 W + upperPairing R 0 W := by
-  unfold baseFacetPairing lowerPairing upperPairing; simp +decide [ Fin.sum_univ_succ ] ; ring;
-  erw [ Finset.sum_eq_add_sum_diff_singleton <| Finset.mem_univ <| Sum.inl () ];
-  rw [ Finset.sum_eq_single ( Sum.inr 1 ) ] <;> simp +decide [ coefficient, baseFacetVertex, lowerBoundaryVertex, upperBoundaryVertex ];
-  · rfl;
-  · exact fun b hb => False.elim <| hb <| Subsingleton.elim _ _
+  dsimp [baseFacetPairing, lowerPairing, upperPairing, Cell]
+  rw [Fintype.sum_sum_type]
+  rw [Fintype.sum_unique, Fintype.sum_unique]
+  dsimp [coefficient, permSignCoeff]
+  have h_low : baseFacetVertex 0 (Sum.inl ()) = lowerBoundaryVertex 0 := by
+    funext i; fin_cases i; rfl
+  have h_upp : baseFacetVertex 0 (Sum.inr 1) = upperBoundaryVertex 0 1 := by
+    funext i; fin_cases i; rfl
+  rw [h_low, h_upp]
+  simp [Equiv.Perm.sign_one]
 
-/-
-In positive dimension the base splits into lower, upper, and recursive sides.
--/
 theorem baseFacetPairing_succ
     (R : Type) [CommRing R]
     (d : Nat)
@@ -650,10 +696,20 @@ theorem baseFacetPairing_succ
     baseFacetPairing R (d + 1) W =
       lowerPairing R (d + 1) W + upperPairing R (d + 1) W +
         sidePairing R d W := by
-  simp +decide [ baseFacetPairing, lowerPairing, upperPairing, sidePairing ];
-  erw [ Fintype.sum_sum_type ] ; ring!;
-  erw [ Finset.sum_eq_single ( ) ] <;> simp +decide [ coefficient, baseFacetVertex, lowerBoundaryVertex, upperBoundaryVertex ] ; ring!;
-  erw [ Finset.sum_product ] ; ring!;
+  dsimp [baseFacetPairing, lowerPairing, upperPairing, sidePairing, Cell]
+  rw [Fintype.sum_sum_type]
+  rw [Fintype.sum_unique]
+  rw [Fintype.sum_sum_type]
+  rw [Fintype.sum_prod_type]
+  have h_low : baseFacetVertex (d + 1) (Sum.inl ()) = lowerBoundaryVertex (d + 1) := by
+    funext i; rfl
+  have h_upp : ∀ pi, baseFacetVertex (d + 1) (Sum.inr (Sum.inl pi)) = upperBoundaryVertex (d + 1) pi := by
+    intro pi; funext i; rfl
+  have h_side : ∀ k q, baseFacetVertex (d + 1) (Sum.inr (Sum.inr (k, q))) = fun i => sidePoint d k (vertex d q i) := by
+    intro k q; funext i; rfl
+  simp_rw [h_low, h_upp, h_side]
+  dsimp [coefficient]
+  simp [add_assoc, mul_assoc]
 
 end Oriented
 

@@ -72,9 +72,15 @@ theorem exists_uniformSiteSeparation
       exact hx_p x_p |>.2.symm ▸ h_dist_pos;
     -- Set `δ := min over p ∈ P of m p`, e.g. `Finset.univ.inf' (nonempty) m`.
     obtain ⟨δ, hδ⟩ : ∃ δ : ℝ, 0 < δ ∧ ∀ p : P, δ ≤ m p := by
-      by_cases hP_empty : Nonempty P;
-      · exact ⟨ Finset.min' ( Finset.univ.image m ) ⟨ _, Finset.mem_image_of_mem m ( Finset.mem_univ hP_empty.some ) ⟩, by have := Finset.min'_mem ( Finset.univ.image m ) ⟨ _, Finset.mem_image_of_mem m ( Finset.mem_univ hP_empty.some ) ⟩ ; aesop, fun p => Finset.min'_le _ _ ( Finset.mem_image_of_mem m ( Finset.mem_univ p ) ) ⟩;
-      · exact ⟨ 1, zero_lt_one, fun p => False.elim <| hP_empty ⟨ p ⟩ ⟩;
+      by_cases hP_empty : Nonempty P
+      · have hne : (Finset.univ.image m).Nonempty :=
+          ⟨m hP_empty.some, Finset.mem_image_of_mem m (Finset.mem_univ hP_empty.some)⟩
+        refine ⟨Finset.min' (Finset.univ.image m) hne, ?_, fun p => Finset.min'_le _ _ (Finset.mem_image_of_mem m (Finset.mem_univ p))⟩
+        have hmem := Finset.min'_mem (Finset.univ.image m) hne
+        rcases Finset.mem_image.mp hmem with ⟨p, -, hp⟩
+        rw [← hp]
+        exact h_pos p
+      · exact ⟨1, zero_lt_one, fun p => False.elim (hP_empty ⟨p⟩)⟩
     exact ⟨ δ, hδ.1, fun x i j hij => le_trans ( hδ.2 ⟨ ( i, j ), hij ⟩ ) ( hm ⟨ ( i, j ), hij ⟩ |> Classical.choose_spec |> fun h => h x |> And.left ) ⟩;
   · exact ⟨ 1, zero_lt_one, fun x => False.elim <| hX ⟨ x ⟩ ⟩
 

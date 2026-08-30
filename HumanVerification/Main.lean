@@ -44,7 +44,7 @@ theorem equalAreaEqualPerimeterPartition
       IsConvexPartition F pieces ∧
       (∀ i j, (pieces i).area = (pieces j).area) ∧
       (∀ i j, (pieces i).perimeter = (pieces j).perimeter) := by
-  letI : NRR.HumanExport.ConvexFigureModel ConvexFigure :=
+  let model : NRR.HumanExport.ConvexFigureModel ConvexFigure :=
     { carrier := ConvexFigure.carrier
       isConvex := ConvexFigure.isConvex
       isCompact := ConvexFigure.isCompact
@@ -57,7 +57,7 @@ theorem equalAreaEqualPerimeterPartition
       carrier_ofBody := by
         intro K
         rfl }
-  exact equalAreaEqualPerimeterPartitionWrapper F n hn
+  exact @equalAreaEqualPerimeterPartitionWrapper ConvexFigure model F n hn
 
 #print axioms HumanVerification.equalAreaEqualPerimeterPartition
 

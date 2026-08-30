@@ -62,11 +62,27 @@ theorem barycentricSubdivisionLinearMap_commutes_boundary
     (R : Type) [CommRing R] (X : TopCat.{0}) (n : ℕ) :
     barycentricSubdivisionLinearMap R X (n + 1) ≫ singularBoundary R X n
       = singularBoundary R X n ≫ barycentricSubdivisionLinearMap R X n := by
-  symm
+  suffices h : singularBoundary R X n ≫ barycentricSubdivisionLinearMap R X n
+      = barycentricSubdivisionLinearMap R X (n + 1) ≫ singularBoundary R X n from h.symm
   apply Sigma.hom_ext
   intro σ
-  ext
-  convert (boundary_barycentricSubdivision_generator R X n σ).symm using 1
+  -- Two morphisms from ModuleCat.of R R (free rank 1) agree iff they agree on 1.
+  have hval : ∀ (f g : ModuleCat.of R R ⟶ singularChainGroup R X n),
+      f.hom (1 : R) = g.hom (1 : R) → f = g := by
+    intro f g h
+    apply ModuleCat.hom_ext
+    apply LinearMap.ext
+    intro x
+    have hf := f.hom.map_smul x (1 : R)
+    have hg := g.hom.map_smul x (1 : R)
+    simp at hf hg
+    rw [hf, hg, h]
+  apply hval
+  -- Reduce (ι σ ≫ f).hom 1 to f.hom (chainGenerator σ) via erw to handle
+  -- the definitional equality between ∐ and singularChainGroup.
+  erw [ModuleCat.hom_comp, ModuleCat.hom_comp, ModuleCat.hom_comp, ModuleCat.hom_comp,
+       LinearMap.comp_apply, LinearMap.comp_apply, LinearMap.comp_apply, LinearMap.comp_apply]
+  exact (boundary_barycentricSubdivision_generator R X n σ).symm
 
 /-- **Pointwise boundary commutation.** For every singular chain `c`,
 ```text
@@ -82,7 +98,10 @@ theorem boundary_barycentricSubdivision_apply
       =
     (barycentricSubdivisionLinearMap R X n).hom
         ((singularBoundary R X n).hom c) := by
-  convert congr_arg ( fun f => f.hom c ) ( barycentricSubdivisionLinearMap_commutes_boundary R X n ) using 1
+  have h := barycentricSubdivisionLinearMap_commutes_boundary R X n
+  have := congrArg (fun (m : singularChainGroup R X (n + 1) ⟶ singularChainGroup R X n) => m.hom c) h
+  simp only [ModuleCat.hom_comp, LinearMap.comp_apply] at this
+  exact this
 
 end AffineBarycentricSubdivision
 end SphereOddDegree

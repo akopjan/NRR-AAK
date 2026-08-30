@@ -1,5 +1,6 @@
 import NRR.PrimePolyhedron.FoxNeuwirth.RelativeCollarMiddlePrismBoundary
 import NRR.PrimePolyhedron.FoxNeuwirth.RelativeCollarMiddlePrismEndpointsCore
+set_option backward.isDefEq.respectTransparency false
 
 /-!
 # Canonical horizontal facets of the common-level middle prism
@@ -188,7 +189,7 @@ theorem lowerBoundaryPairing_eq_split
             (lowerEndpointMap (endpointSpatialMap hp N L q eta)) * W s := by
       simp_rw [Finset.mul_sum, Finset.sum_mul]
       rw [Finset.sum_comm]
-      ring
+      ring_nf
     _ = _ := by
       congr 1
       apply Finset.sum_congr rfl
@@ -225,7 +226,7 @@ theorem upperBoundaryPairing_eq_split
             (upperEndpointMap (endpointSpatialMap hp N L q eta)) * W s := by
       simp_rw [Finset.mul_sum, Finset.sum_mul]
       rw [Finset.sum_comm]
-      ring
+      ring_nf
     _ = _ := by
       congr 1
       apply Finset.sum_congr rfl
@@ -456,14 +457,18 @@ theorem horizontalFacetExhaustive_zero
     refine Quotient.inductionOn s (fun o ho => ?_) hs
     obtain ⟨q, hq⟩ := lowerOccurrence_classification_zero hp N o ho
     refine ⟨endpointTopCell hp N 0 q (emptyEndpointRefinementWord p), ?_⟩
-    simpa only [lowerFacet, splitTopCellEquiv_endpointTopCell,
-      Prod.fst, Prod.snd] using hq.symm
+    simp only [lowerFacet, splitTopCellEquiv_endpointTopCell, Prod.fst, Prod.snd]
+    calc
+      _ = (RelativeCollarMiddlePrism.cellSystem hp N 0).facetClass o := hq.symm
+      _ = Quotient.mk _ o := rfl
   · intro s hs
     refine Quotient.inductionOn s (fun o ho => ?_) hs
     obtain ⟨q, hq⟩ := upperOccurrence_classification_zero hp N o ho
     refine ⟨endpointTopCell hp N 0 q (emptyEndpointRefinementWord p), ?_⟩
-    simpa only [upperFacet, splitTopCellEquiv_endpointTopCell,
-      Prod.fst, Prod.snd] using hq.symm
+    simp only [upperFacet, splitTopCellEquiv_endpointTopCell, Prod.fst, Prod.snd]
+    calc
+      _ = (RelativeCollarMiddlePrism.cellSystem hp N 0).facetClass o := hq.symm
+      _ = Quotient.mk _ o := rfl
 
 /-- Horizontal-facet exhaustiveness makes the common-level middle prism a genuine
 endpoint-identified relative affine collar.  All incidence, chain-pairing, and endpoint-geometry

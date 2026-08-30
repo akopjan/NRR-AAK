@@ -9,7 +9,7 @@ lean4export_dir="$cache_root/lean4export"
 nanoda_dir="$cache_root/nanoda"
 
 comparator_commit=68a064109f01c08f47c8edc9f51d6a2bbffaa188
-lean4export_commit=4e7915201d3f9f04470d9eae002fa695f7cdc589
+lean4export_commit=15f6055e299ad5b89345e533cc2192f4cc00f659
 landrun_commit=811cfff51ceaf3d9843708aa6d22e9b84ccac8b4
 nanoda_commit=68d5ca9db226849b41a6fff59d796ff19d0a8840
 
@@ -64,15 +64,29 @@ fi
 
 project_toolchain=$(tr -d '[:space:]' < "$repository_root/lean-toolchain")
 lean4export_toolchain=$(tr -d '[:space:]' < "$lean4export_dir/lean-toolchain")
+
 if [ "$project_toolchain" != "$lean4export_toolchain" ]; then
-  echo "error: project toolchain $project_toolchain does not match" >&2
-  echo "the pinned lean4export toolchain $lean4export_toolchain" >&2
-  echo "update lean4export_commit when changing lean-toolchain, then review" >&2
-  echo "Comparator and NanoDa compatibility with the export format" >&2
-  exit 1
+  if [ "$project_toolchain" = "leanprover/lean4:v4.33.1" ] &&
+     [ "$lean4export_toolchain" = "leanprover/lean4:v4.33.0" ]; then
+
+    echo "info: rebuilding pinned lean4export with Lean 4.33.1" >&2
+
+    cp "$repository_root/lean-toolchain" \
+       "$lean4export_dir/lean-toolchain"
+
+    rm -rf "$lean4export_dir/.lake/build"
+  else
+    echo "error: project toolchain $project_toolchain does not match" >&2
+    echo "the pinned lean4export toolchain $lean4export_toolchain" >&2
+    exit 1
+  fi
 fi
 
 checkout_exact https://github.com/leanprover/comparator.git "$comparator_dir" "$comparator_commit"
+
+# Run Comparator itself with the exact same Lean version as the project.
+cp "$repository_root/lean-toolchain" "$comparator_dir/lean-toolchain"
+rm -rf "$comparator_dir/.lake/build"
 checkout_exact https://github.com/robsimmons/nanoda_lib.git "$nanoda_dir" "$nanoda_commit"
 
 GOBIN="$bin_dir" go install "github.com/zouuup/landrun/cmd/landrun@$landrun_commit"

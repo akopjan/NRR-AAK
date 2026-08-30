@@ -74,7 +74,6 @@ theorem toSSetObjEquiv_map_op_naturality (X : TopCat.{0}) (n m : ℕ)
           (SimplexCategory.toTop₀.map g).hom := by
   apply ContinuousMap.ext
   intro x
-  simp only [TopCat.toSSetObjEquiv, TopCat.toSSet, Equiv.trans_apply, ContinuousMap.comp_apply]
   rfl
 
 /-- The topological coface map `Δⁿ → Δⁿ⁺¹` deleting the `k`-th vertex, as the
@@ -125,6 +124,7 @@ theorem faceSimplex_continuousMap (X : TopCat.{0}) (n : ℕ) (k : Fin (n + 2))
   rw [singularSimplexAsContinuousMap, singularSimplexAsContinuousMap,
     AlexanderWhitney.faceSimplex,
     toSSetObjEquiv_map_op_naturality X n (n + 1) (SimplexCategory.δ k) σ, cofaceTop_eq]
+  rfl
 
 /-! ## 2. Singular-simplex equality and the subdivision summand as a map -/
 
@@ -170,7 +170,7 @@ theorem faceSimplex_internal_swap_eq (X : TopCat.{0}) (n : ℕ)
 theorem extendLastPerm_castSucc {n : ℕ} (ρ : Equiv.Perm (Fin (n + 1))) (t : Fin (n + 1)) :
     extendLastPerm ρ (Fin.castSucc t) = Fin.castSucc (ρ t) := by
   have h := Equiv.Perm.viaFintypeEmbedding_apply_image ρ Fin.castSuccOrderEmb.toEmbedding t
-  simpa [extendLastPerm] using h
+  exact h
 
 /-- `extendLastPerm ρ` fixes the last vertex. -/
 theorem extendLastPerm_lastVertex {n : ℕ} (ρ : Equiv.Perm (Fin (n + 1))) :
@@ -184,7 +184,7 @@ theorem extendLastPerm_lastVertex {n : ℕ} (ρ : Equiv.Perm (Fin (n + 1))) :
     omega
   have h := Equiv.Perm.viaFintypeEmbedding_apply_notMem_range ρ
     Fin.castSuccOrderEmb.toEmbedding hmem
-  simpa [extendLastPerm] using h
+  exact h
 
 /-- The image of `(j, ρ)` under the last-face decomposition sends the last vertex
 to `j`. -/

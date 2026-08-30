@@ -56,6 +56,6 @@ theorem powerDist_le_iff_halfspace (s : Fin n → E2) (w : Fin n → ℝ)
 theorem cell_eq_iInter_halfspace (s : Fin n → E2) (w : Fin n → ℝ) (i : Fin n) :
     cell s w i = ⋂ j, NRR.Halfspace.of (sepNormal s i j) (sepOffset s w i j) := by
   ext x
-  simp only [cell, Set.mem_setOf_eq, Set.mem_iInter, powerDist_le_iff_halfspace]
+  simp only [cell, Set.mem_ofPred_eq, Set.mem_iInter, powerDist_le_iff_halfspace]
 
 end NRR.PowerDiagram

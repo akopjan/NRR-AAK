@@ -114,12 +114,12 @@ theorem coordinate_eq_zero_iff (hn : 0 < n) (v : Fin n → ℝ) :
     v = 0 ↔ coordinateDeviation hn v = 0 ∧ coordinateMean hn v = 0 := by
   constructor
   · rintro rfl
-    simp
+    exact ⟨map_zero (coordinateDeviation hn), map_zero (coordinateMean hn)⟩
   · rintro ⟨hdev, hmean⟩
     apply (coordinateDecomposition hn).injective
     change (coordinateDeviation hn v, coordinateMean hn v) =
       (coordinateDeviation hn 0, coordinateMean hn 0)
-    simp [hdev, hmean]
+    rw [hdev, hmean, map_zero, map_zero]
 
 /-- Permutations preserve the coordinate mean. -/
 theorem coordinateMean_relabel

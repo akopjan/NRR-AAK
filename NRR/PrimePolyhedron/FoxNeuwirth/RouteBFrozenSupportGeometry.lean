@@ -1,5 +1,6 @@
 import NRR.PrimePolyhedron.FoxNeuwirth.EndpointStackIteratedAffinePullback
 import NRR.PrimePolyhedron.FoxNeuwirth.RouteBSmallGenericPerturbation
+set_option backward.isDefEq.respectTransparency false
 
 /-!
 # Frozen positive-support safety for endpoint stacks and composed collars
@@ -67,7 +68,7 @@ def UpperPositiveSupportRaySafe
 theorem exists_positive_coordinate (w : StandardSimplex p) :
     ∃ k : Fin (p + 1), 0 < w k := by
   by_contra h
-  push_neg at h
+  push Not at h
   have hz : ∀ k : Fin (p + 1), w k = 0 := by
     intro k
     exact le_antisymm (h k) (w.nonneg k)
@@ -128,7 +129,7 @@ theorem lowerSpatialWeight_not_interior
       _ ≤ d := hcard
   have hmissing : ∃ c : Fin (d + 1), c ∉ image := by
     by_contra h
-    push_neg at h
+    push Not at h
     have hall : (Finset.univ : Finset (Fin (d + 1))) ⊆ image := by
       intro c hc
       exact h c
@@ -173,10 +174,13 @@ theorem oneStep_lowerPositiveSupportRaySafe
     apply lowerSpatialWeight_not_interior m q.2
       (RelativeSubdivisionOneStepCells.localWeight hp (StandardSimplex.toDelta w)) i j
     · exact hij
-    · simpa [CompatibleChartMapOneStep.localWeight_succ] using hzeros
+    · change (w : Fin (m + 1 + 1) → Real) i = 0 ∧
+          (w : Fin (m + 1 + 1) → Real) j = 0
+      exact hzeros
     · intro k hk
       have htime := hsupport k (by
-        simpa [CompatibleChartMapOneStep.localWeight_succ] using hk)
+        change 0 < (StandardSimplex.toDelta w) k
+        exact hk)
       simpa [RelativeSubdivisionOneStepCells.cellSystem,
         RelativeSubdivisionOneStepCells.vertex, RelativeSubdivisionOneStepCells.chart,
         RelativeSubdivisionOneStepCells.liftPoint,
@@ -299,7 +303,10 @@ theorem build_lowerPositiveSupportRaySafe
         (positiveWitness hp A.toRegularApproximation.level k).collar.cells
         (build hp A.toRegularApproximation k).assignment
   | 0 => by
-      simpa [positiveWitness] using
+      simpa [positiveWitness, EndpointStackIteratedAffinePullback.build,
+        RelativeSubdivisionEndpointCollar.oneStepWitness,
+        RelativeSubdivisionOneStepCollar.endpointIdentifiedCollar,
+        RelativeSubdivisionOneStepCollar.relativeCollar] using
         oneStep_lowerPositiveSupportRaySafe hp A
   | k + 1 => by
       let D0 := build hp A.toRegularApproximation k
@@ -308,14 +315,24 @@ theorem build_lowerPositiveSupportRaySafe
       let E := (RelativeSubdivisionEndpointCollar.oneStepWitness hp
         (A.toRegularApproximation.level + (k + 1))).collar
       let b : Assignment hp E.cells := by
-        simpa [E] using CompatibleChartMapOneStep.assignment hp (K.refine (k + 1))
+        simpa [E, RelativeSubdivisionEndpointCollar.oneStepWitness,
+          RelativeSubdivisionOneStepCollar.endpointIdentifiedCollar,
+          RelativeSubdivisionOneStepCollar.relativeCollar] using
+          CompatibleChartMapOneStep.assignment hp (K.refine (k + 1))
       have hbRep : ChartMapCollarRepresentation.Represents E.cells K
           (vectorValue hp E.cells b) := by
-        simpa [E, b] using oneStepAssignment_represents_base hp K (k + 1)
+        simpa [E, b, RelativeSubdivisionEndpointCollar.oneStepWitness,
+          RelativeSubdivisionOneStepCollar.endpointIdentifiedCollar,
+          RelativeSubdivisionOneStepCollar.relativeCollar] using
+          oneStepAssignment_represents_base hp K (k + 1)
       let hseam := ChartMapCollarRepresentation.seamCompatible C0.cells E.cells K
         (vectorValue hp C0.cells D0.assignment) (vectorValue hp E.cells b)
         D0.represents hbRep
-      simpa [positiveWitness, C0, E, b, hseam] using
+      simpa [positiveWitness, EndpointStackIteratedAffinePullback.build,
+        C0, E, b, hseam,
+        RelativeSubdivisionEndpointCollar.composeWitness,
+        ExplicitAffineRelativeCollarCompose.endpointIdentifiedCollar,
+        ExplicitAffineRelativeCollarCompose.relativeCollar] using
         lowerSafe_combined_left hp C0.cells E.cells D0.assignment b hseam
           (build_lowerPositiveSupportRaySafe A k)
 

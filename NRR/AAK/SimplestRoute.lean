@@ -56,10 +56,12 @@ Fox--Neuwirth incidence convention is assumed. -/
 theorem simplestRoute_topIncidenceStage
     (p : Nat) (hp : Nat.Prime p) :
     FoxNeuwirth.topIncidenceBoundary
-        (FoxNeuwirth.orientedTopChain hp) = 0 ∧
+        (FoxNeuwirth.orientedTopChain hp) =
+          (fun _ => (0 : ZMod p)) ∧
       FoxNeuwirth.zeroFacetBoundary
         (FoxNeuwirth.topIncidenceBoundary
-          (FoxNeuwirth.orientedTopChain hp)) = 0 := by
+          (FoxNeuwirth.orientedTopChain hp)) =
+            (fun _ => (0 : ZMod p)) := by
   constructor
   · exact FoxNeuwirth.topIncidenceBoundary_orientedTopChain_eq_zero hp
   · exact FoxNeuwirth.zeroFacetBoundary_comp_topIncidenceBoundary _

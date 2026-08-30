@@ -1,16 +1,8 @@
 import NRR.OddSphereDegree.AlgebraicTopology.SubChainSubspaceBridge
 import NRR.OddSphereDegree.AlgebraicTopology.BarycentricSubdivisionCone
 
-/-!
-# Zeroth singular homology of path-connected spaces
-
-We build the classical computation `H₀(X; ℤ) ≅ ℤ` for a nonempty path-connected
-space `X`, via the augmentation `ε : C₀(X) → ℤ` (sum of coefficients). The key
-geometric input is that for points joined by a path, the difference of the two
-`0`-simplices is a boundary (`chainGenerator_sub_mem_range_of_path`).
--/
-
 open CategoryTheory AlgebraicTopology Limits
+open SphereOddDegree
 open SphereOddDegree.AffineBarycentricSubdivision
 
 noncomputable section
@@ -30,128 +22,130 @@ noncomputable def pathSimplex {a b : X} (p : Path a b) : singularSimplices X 1 :
       (⟨stdSimplexHomeomorphUnitInterval, stdSimplexHomeomorphUnitInterval.continuous⟩ :
         C(Delta 1, unitInterval)))
 
-/-
-The boundary of the path `1`-simplex is the difference of its endpoint
-`0`-simplices.
--/
+theorem test_coface0 (x : Delta 0) : cofaceTop 0 0 x = ⟨Pi.single 1 1, single_mem_stdSimplex ℝ 1⟩ := by
+  ext i
+  fin_cases i <;> simp [cofaceTop, delta0_subsingleton x (stdSimplex.vertex 0)]
+
+theorem test_coface1 (x : Delta 0) : cofaceTop 0 1 x = ⟨Pi.single 0 1, single_mem_stdSimplex ℝ 0⟩ := by
+  ext i
+  fin_cases i <;> simp [cofaceTop, delta0_subsingleton x (stdSimplex.vertex 0)]
+
+theorem faceSimplex_pathSimplex_0 {a b : X} (p : Path a b) :
+    AlexanderWhitney.faceSimplex X 0 0 (pathSimplex p) = pointSimplex X b := by
+  apply (X.toSSetObjEquiv (Opposite.op (SimplexCategory.mk 0))).injective
+  ext x
+  change p (stdSimplexHomeomorphUnitInterval (cofaceTop 0 0 x)) = b
+  rw [test_coface0 x, stdSimplexHomeomorphUnitInterval_one]
+  exact p.target
+
+theorem faceSimplex_pathSimplex_1 {a b : X} (p : Path a b) :
+    AlexanderWhitney.faceSimplex X 0 1 (pathSimplex p) = pointSimplex X a := by
+  apply (X.toSSetObjEquiv (Opposite.op (SimplexCategory.mk 0))).injective
+  ext x
+  change p (stdSimplexHomeomorphUnitInterval (cofaceTop 0 1 x)) = a
+  rw [test_coface1 x, stdSimplexHomeomorphUnitInterval_zero]
+  exact p.source
+
 theorem boundary_pathSimplex {a b : X} (p : Path a b) :
     (singularBoundary ℤ X 0).hom (chainGenerator ℤ X 1 (pathSimplex p))
       = chainGenerator ℤ X 0 (pointSimplex X b) - chainGenerator ℤ X 0 (pointSimplex X a) := by
-  simp +decide [ singularBoundary_chainGenerator_formula ];
-  rw [ show AlexanderWhitney.faceSimplex X 0 0 ( pathSimplex p ) = pointSimplex X b from ?_, show AlexanderWhitney.faceSimplex X 0 1 ( pathSimplex p ) = pointSimplex X a from ?_ ] ; abel1;
-  · apply singularSimplices_ext;
-    ext x;
-    convert congr_arg ( fun x => ( p.toContinuousMap.comp ( stdSimplexHomeomorphUnitInterval ) ) x ) ( show ( cofaceTop 0 1 x ) = ( ⟨ _, single_mem_stdSimplex ℝ 0 ⟩ : Delta 1 ) from ?_ ) using 1;
-    · convert p.source.symm using 1;
-    · convert delta0_subsingleton x ( stdSimplex.vertex 0 );
-      constructor <;> intro h <;> simp_all +decide [ cofaceTop ];
-      convert delta0_subsingleton x ( stdSimplex.vertex 0 );
-  · apply singularSimplices_ext;
-    ext x;
-    convert congr_arg p ( stdSimplexHomeomorphUnitInterval_one ) using 1;
-    · convert congr_arg p ( show stdSimplexHomeomorphUnitInterval ( cofaceTop 0 0 x ) = 1 from ?_ ) using 1;
-      convert stdSimplexHomeomorphUnitInterval_one using 1;
-      congr;
-      ext i; fin_cases i ; simp +decide [ cofaceTop ] ;
-      · simp +decide [ FunOnFinite.linearMap ];
-        simp +decide [ Finsupp.mapDomain ];
-      · simp +decide [ cofaceTop ];
-        simp +decide [ FunOnFinite.linearMap ];
-        simp +decide [ Finsupp.mapDomain, Finsupp.linearEquivFunOnFinite ];
-        simp +decide [ Finsupp.sum_fintype, Finsupp.single_apply ];
-    · convert p.target.symm using 1
+  have key := singularBoundary_chainGenerator_formula ℤ X 0 (pathSimplex p)
+  rw [Fin.sum_univ_two, faceSimplex_pathSimplex_0, faceSimplex_pathSimplex_1] at key
+  simp only [Fin.val_zero, pow_zero, Fin.val_one, pow_one, neg_smul] at key
+  rw [sub_eq_add_neg]
+  convert key using 2
+  · exact (@one_smul ℤ (singularChainGroup ℤ X 0) _ (singularChainGroup ℤ X 0).isModule.toMulAction _).symm
+  · congr 1
+    exact (@one_smul ℤ (singularChainGroup ℤ X 0) _ (singularChainGroup ℤ X 0).isModule.toMulAction _).symm
 
-/-- For points joined by a path, the difference of the corresponding `0`-simplex
-generators is a boundary. -/
 theorem chainGenerator_sub_mem_range_of_path {a b : X} (p : Path a b) :
     chainGenerator ℤ X 0 (pointSimplex X b) - chainGenerator ℤ X 0 (pointSimplex X a)
       ∈ LinearMap.range (singularBoundary ℤ X 0).hom :=
   ⟨chainGenerator ℤ X 1 (pathSimplex p), boundary_pathSimplex p⟩
 
-/-
-For points in the same (path-)connected space, the difference of their
-`0`-simplex generators is a boundary.
--/
+theorem pointSimplex_singularSimplex (σ : singularSimplices X 0) :
+    pointSimplex X ((singularSimplexAsContinuousMap X 0 σ) (stdSimplex.vertex 0)) = σ := by
+  apply (X.toSSetObjEquiv (Opposite.op (SimplexCategory.mk 0))).injective
+  ext x
+  have : x = stdSimplex.vertex 0 := delta0_subsingleton x (stdSimplex.vertex 0)
+  rw [this]
+  rfl
+
 theorem chainGenerator_sub_mem_range [PathConnectedSpace X] (σ τ : singularSimplices X 0) :
     chainGenerator ℤ X 0 σ - chainGenerator ℤ X 0 τ
       ∈ LinearMap.range (singularBoundary ℤ X 0).hom := by
-        have h_simplices : ∃ a b : X, σ = pointSimplex X a ∧ τ = pointSimplex X b := by
-          refine' ⟨ _, _, _, _ ⟩;
-          exact ( singularSimplexAsContinuousMap X 0 σ ) ( stdSimplex.vertex 0 );
-          exact ( singularSimplexAsContinuousMap X 0 τ ) ( stdSimplex.vertex 0 );
-          · apply singularSimplices_ext;
-            ext x;
-            convert congr_arg ( fun y => ( singularSimplexAsContinuousMap X 0 σ ) y ) ( delta0_subsingleton x ( stdSimplex.vertex 0 ) ) using 1;
-          · apply singularSimplices_ext;
-            exact ContinuousMap.ext fun x => by rw [ show x = stdSimplex.vertex 0 from delta0_subsingleton _ _ ] ; rfl;
-        obtain ⟨ a, b, rfl, rfl ⟩ := h_simplices;
-        have := chainGenerator_sub_mem_range_of_path ( PathConnectedSpace.somePath b a ) ; aesop;
+  let a := (singularSimplexAsContinuousMap X 0 σ) (stdSimplex.vertex 0)
+  let b := (singularSimplexAsContinuousMap X 0 τ) (stdSimplex.vertex 0)
+  have hσ : σ = pointSimplex X a := (pointSimplex_singularSimplex σ).symm
+  have hτ : τ = pointSimplex X b := (pointSimplex_singularSimplex τ).symm
+  rw [hσ, hτ]
+  have := chainGenerator_sub_mem_range_of_path (PathConnectedSpace.somePath b a)
+  exact this
 
-/-! ## The augmentation -/
-
-/-- The augmentation `ε : C₀(X; ℤ) → ℤ` summing the coefficients (each `0`-simplex
-generator maps to `1`). -/
 noncomputable def aug (X : TopCat.{0}) : singularChainGroup ℤ X 0 ⟶ ModuleCat.of ℤ ℤ :=
   Limits.Sigma.desc (fun _ => 𝟙 (ModuleCat.of ℤ ℤ))
 
 @[simp] theorem aug_generator (σ : singularSimplices X 0) :
     (aug X).hom (chainGenerator ℤ X 0 σ) = 1 := by
-      convert congr_arg ( fun f : ModuleCat.of ℤ ℤ ⟶ ModuleCat.of ℤ ℤ => ( ModuleCat.Hom.hom f ) 1 ) ( show ( Limits.Sigma.ι ( fun _ => ModuleCat.of ℤ ℤ ) σ ≫ Limits.Sigma.desc ( fun _ => 𝟙 ( ModuleCat.of ℤ ℤ ) ) : ModuleCat.of ℤ ℤ ⟶ ModuleCat.of ℤ ℤ ) = 𝟙 ( ModuleCat.of ℤ ℤ ) from ?_ ) using 1;
-      simp +decide [ CategoryTheory.Limits.colimit.ι_desc ]
+  have key : (Sigma.ι (fun _ : singularSimplices X 0 => ModuleCat.of ℤ ℤ) σ) ≫ (aug X) = 𝟙 _ :=
+    Sigma.ι_desc _ _
+  have := DFunLike.congr_fun (congrArg ModuleCat.Hom.hom key) (1 : ℤ)
+  erw [ModuleCat.hom_comp, LinearMap.comp_apply] at this
+  exact this
 
 theorem aug_boundary (c : singularChainGroup ℤ X 1) :
     (aug X).hom ((singularBoundary ℤ X 0).hom c) = 0 := by
-      refine' Submodule.span_induction _ _ _ _ ( show c ∈ Submodule.span ℤ ( Set.range ( fun τ : singularSimplices X 1 => chainGenerator ℤ X 1 τ ) ) from _ );
-      · exact Submodule.mem_sInf.mpr (by
-        intro p hp;
-        convert p.span_le.mpr hp ( show c ∈ Submodule.span ℤ ( Set.range fun τ : singularSimplices X 1 => chainGenerator ℤ X 1 τ ) from ?_ ) using 1;
-        convert Submodule.mem_top;
-        grind +suggestions);
-      · intro x hx
-        obtain ⟨τ, rfl⟩ := hx
-        have h_sum : (aug X).hom ((singularBoundary ℤ X 0).hom (chainGenerator ℤ X 1 τ)) = 0 := by
-          rw [ singularBoundary_chainGenerator_formula ] ; simp +decide [ Fin.sum_univ_two ] ;
-          rw [ aug_generator, aug_generator ] ; norm_num
-        exact h_sum;
-      · aesop;
-      · aesop;
-      · simp +contextual [ map_smul ]
+  let f : singularChainGroup ℤ X 1 ⟶ ModuleCat.of ℤ ℤ :=
+    singularBoundary ℤ X 0 ≫ aug X
+  have hf : f = 0 := by
+    apply Limits.colimit.hom_ext
+    intro τ
+    apply ModuleCat.hom_ext
+    apply LinearMap.ext_ring
+    show (aug X).hom ((singularBoundary ℤ X 0).hom (chainGenerator ℤ X 1 τ.as)) = 0
+    have key := singularBoundary_chainGenerator_formula ℤ X 0 τ.as
+    rw [Fin.sum_univ_two] at key
+    simp only [Fin.val_zero, pow_zero, Fin.val_one, pow_one, neg_smul] at key
+    have h_bnd : (singularBoundary ℤ X 0).hom (chainGenerator ℤ X 1 τ.as) =
+        chainGenerator ℤ X 0 (AlexanderWhitney.faceSimplex X 0 0 τ.as) -
+        chainGenerator ℤ X 0 (AlexanderWhitney.faceSimplex X 0 1 τ.as) := by
+      rw [sub_eq_add_neg]
+      convert key using 2
+      · exact (@one_smul ℤ (singularChainGroup ℤ X 0) _ (singularChainGroup ℤ X 0).isModule.toMulAction _).symm
+      · congr 1
+        exact (@one_smul ℤ (singularChainGroup ℤ X 0) _ (singularChainGroup ℤ X 0).isModule.toMulAction _).symm
+    rw [h_bnd, map_sub, aug_generator, aug_generator, sub_self]
+  have hc := DFunLike.congr_fun (congrArg ModuleCat.Hom.hom hf) c
+  exact hc
 
-/-
-Every `0`-chain is, modulo boundaries, `ε(c)` copies of a fixed basepoint
-`0`-simplex.
--/
 theorem sub_aug_smul_basept_mem_range [PathConnectedSpace X] (b : X)
     (c : singularChainGroup ℤ X 0) :
     c - (aug X).hom c • chainGenerator ℤ X 0 (pointSimplex X b)
       ∈ LinearMap.range (singularBoundary ℤ X 0).hom := by
-        -- Work additively: the basis chains generate the chain group as an additive
-        -- subgroup, so we may induct over `AddSubgroup.closure`, avoiding the
-        -- scalar-action instance diamond on the `ModuleCat ℤ` carrier.
-        have h_span : c ∈ AddSubgroup.closure (Set.range (chainGenerator ℤ X 0)) := by
-          have hc0 : c ∈ Submodule.span ℤ (Set.range (chainGenerator ℤ X 0)) := by
-            rw [chainGenerator_span_top]; exact Submodule.mem_top
-          induction hc0 using Submodule.span_induction with
-          | mem y hy => exact AddSubgroup.subset_closure hy
-          | zero => exact zero_mem _
-          | add p q _ _ hp hq => exact add_mem hp hq
-          | smul r a _ ha => convert zsmul_mem ha r using 1; exact int_smul_eq_zsmul _ r a
-        induction h_span using AddSubgroup.closure_induction with
-        | mem c hc =>
-            obtain ⟨σ, rfl⟩ := hc
-            rw [aug_generator, one_zsmul]
-            exact chainGenerator_sub_mem_range σ (pointSimplex X b)
-        | zero => simp
-        | add x y _ _ hx hy =>
-            have h : x + y - (aug X).hom (x + y) • chainGenerator ℤ X 0 (pointSimplex X b)
-                = (x - (aug X).hom x • chainGenerator ℤ X 0 (pointSimplex X b))
-                  + (y - (aug X).hom y • chainGenerator ℤ X 0 (pointSimplex X b)) := by
-              rw [map_add, add_zsmul]; abel
-            rw [h]; exact Submodule.add_mem _ hx hy
-        | neg x _ hx =>
-            have h : -x - (aug X).hom (-x) • chainGenerator ℤ X 0 (pointSimplex X b)
-                = -(x - (aug X).hom x • chainGenerator ℤ X 0 (pointSimplex X b)) := by
-              rw [map_neg, neg_zsmul]; abel
-            rw [h]; exact Submodule.neg_mem _ hx
+  have h_span : c ∈ AddSubgroup.closure (Set.range (chainGenerator ℤ X 0)) := by
+    have hc0 : c ∈ Submodule.span ℤ (Set.range (chainGenerator ℤ X 0)) := by
+      rw [chainGenerator_span_top]; exact Submodule.mem_top
+    induction hc0 using Submodule.span_induction with
+    | mem y hy => exact AddSubgroup.subset_closure hy
+    | zero => exact zero_mem _
+    | add p q _ _ hp hq => exact add_mem hp hq
+    | smul r a _ ha => convert zsmul_mem ha r using 1; exact int_smul_eq_zsmul _ r a
+  induction h_span using AddSubgroup.closure_induction with
+  | mem c hc =>
+      obtain ⟨σ, rfl⟩ := hc
+      rw [aug_generator, one_zsmul]
+      exact chainGenerator_sub_mem_range σ (pointSimplex X b)
+  | zero => simp
+  | add x y _ _ hx hy =>
+      have h : x + y - (aug X).hom (x + y) • chainGenerator ℤ X 0 (pointSimplex X b)
+          = (x - (aug X).hom x • chainGenerator ℤ X 0 (pointSimplex X b))
+            + (y - (aug X).hom y • chainGenerator ℤ X 0 (pointSimplex X b)) := by
+        rw [map_add, add_zsmul]; abel
+      rw [h]; exact Submodule.add_mem _ hx hy
+  | neg x _ hx =>
+      have h : -x - (aug X).hom (-x) • chainGenerator ℤ X 0 (pointSimplex X b)
+          = -(x - (aug X).hom x • chainGenerator ℤ X 0 (pointSimplex X b)) := by
+        rw [map_neg, neg_zsmul]; abel
+      rw [h]; exact Submodule.neg_mem _ hx
 
 end SphereOddDegree

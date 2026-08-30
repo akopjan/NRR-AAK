@@ -207,8 +207,12 @@ noncomputable instance (a : BarredPermutation p) : DecidableEq (TopExtension a) 
 @[simp] theorem card_topExtension (a : BarredPermutation p) :
     Fintype.card (TopExtension a) = topExtensionMultiplicity a := by
   classical
-  unfold TopExtension topExtensionMultiplicity topExtensions
-  rw [Fintype.card_subtype]
+  let e : TopExtension a ≃ {c // c ∈ topExtensions a} :=
+    { toFun := fun c => ⟨c.1, (mem_topExtensions_iff a c.1).2 c.2⟩
+      invFun := fun c => ⟨c.1, (mem_topExtensions_iff a c.1).1 c.2⟩
+      left_inv := fun c => by cases c; rfl
+      right_inv := fun c => by cases c; rfl }
+  rw [topExtensionMultiplicity, Fintype.card_congr e, Fintype.card_coe]
 
 /-- Positions occupied by the first block inside a candidate top-cell order. -/
 noncomputable def firstBlockPositions

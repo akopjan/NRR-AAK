@@ -130,11 +130,12 @@ theorem prefixVertex_comp (n : ℕ) (π τ : Equiv.Perm (Fin (n + 1)))
 /-- The first prefix barycenter is the first permuted vertex. -/
 theorem prefixBarycenter_zero (n : ℕ) (π : Equiv.Perm (Fin (n + 1))) :
     prefixBarycenter n π 0 = stdSimplex.vertex (S := ℝ) (π 0) := by
-  have hb : (stdSimplex.barycenter (X := Fin 1) (𝕜 := ℝ)) = stdSimplex.vertex (0 : Fin 1) := by
-    apply stdSimplex.ext
-    funext i
-    fin_cases i
-    simp [stdSimplex.barycenter, stdSimplex.vertex]
+  have h1 : (0 : Fin (n + 1)).val + 1 = 1 := rfl
+  have : Unique (Fin ((0 : Fin (n + 1)).val + 1)) := by
+    rw [h1]
+    infer_instance
+  have hb : (stdSimplex.barycenter (X := Fin ((0 : Fin (n + 1)).val + 1)) (𝕜 := ℝ)) =
+      stdSimplex.vertex 0 := Subsingleton.elim _ _
   rw [prefixBarycenter, hb, stdSimplex.map_vertex]
   rfl
 

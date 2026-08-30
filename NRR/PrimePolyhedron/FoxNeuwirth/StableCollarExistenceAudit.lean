@@ -1,4 +1,5 @@
 import NRR.PrimePolyhedron.FoxNeuwirth.StableCollarComparison
+set_option backward.isDefEq.respectTransparency false
 set_option linter.unusedSectionVars false
 set_option linter.unusedSimpArgs false
 set_option linter.unnecessarySimpa false
@@ -36,6 +37,13 @@ open FoxNeuwirthOrderComplex
 
 namespace FoxNeuwirthOrderComplex
 namespace EquivariantPrismStableRelativeBoundary
+
+private theorem facetCoordinateIndex_eq_endpointIndex_audit
+    (hp : Nat.Prime p) (i : Fin p) :
+    AffinePositiveRayBoundary.VertexMap.facetCoordinateIndex i =
+      Fin.cast (Nat.sub_add_cancel hp.pos).symm i := by
+  apply Fin.ext
+  rfl
 
 open EquivariantCoordinateHomotopy
 open EquivariantPrismGenericPerturbation
@@ -107,6 +115,7 @@ theorem endpointInterpolant_deviationSkeletonFree
     rw [
       ExplicitAffineRelativeCollar.refinedVertexIndex_eq_facetCoordinateIndex
     ]
+    rw [facetCoordinateIndex_eq_endpointIndex_audit hp i]
     symm
     simpa [
       prismCell,
@@ -115,6 +124,8 @@ theorem endpointInterpolant_deviationSkeletonFree
       endpointSpatialMap_eq_chart,
       AffinePositiveRayBoundary.VertexMap.facetValue,
       AffinePositiveRayBoundary.VertexMap.facetCoordinateIndex,
+      EquivariantPrismGenericityPolynomials.localVertexMap,
+      EquivariantPrismVertexParameters.localVertexValue,
       RefinedAffineMap.vertexValue,
       RefinedAffineMap.vertex
     ] using
@@ -212,6 +223,11 @@ theorem lower_value_eq
   congr 1
   have hsample := C.boundaryFixed.2.2.1 q₀ eta
     ((ExplicitAffineRelativeCollar.refinedVertexEquiv hp).symm i)
+  have hindex : Fin.cast (Nat.sub_add_cancel hp.pos).symm
+      ((ExplicitAffineRelativeCollar.refinedVertexEquiv hp).symm i) = i := by
+    apply Fin.ext
+    rfl
+  rw [hindex] at hsample
   exact congrFun (by
     simpa [RefinedAffineMap.vertex, endpointSpatialMap_eq_chart] using hsample) j
 
@@ -237,6 +253,11 @@ theorem upper_value_eq
   congr 1
   have hsample := C.boundaryFixed.2.2.2 q₀ eta
     ((ExplicitAffineRelativeCollar.refinedVertexEquiv hp).symm i)
+  have hindex : Fin.cast (Nat.sub_add_cancel hp.pos).symm
+      ((ExplicitAffineRelativeCollar.refinedVertexEquiv hp).symm i) = i := by
+    apply Fin.ext
+    rfl
+  rw [hindex] at hsample
   exact congrFun (by
     simpa [RefinedAffineMap.vertex, endpointSpatialMap_eq_chart] using hsample) j
 

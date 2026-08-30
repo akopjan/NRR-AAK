@@ -96,14 +96,22 @@ theorem isFace_relabel_iff
             a.relabel (sigma.symm * sigma) := by
               symm
               exact relabel_mul sigma.symm sigma a
-        _ = a := by simp
+        _ = a := by
+          rw [show sigma.symm * sigma = 1 by
+            ext i
+            exact congrArg Fin.val (sigma.symm_apply_apply i)]
+          exact relabel_one a
     have hb : (b.relabel sigma).relabel sigma.symm = b := by
       calc
         (b.relabel sigma).relabel sigma.symm =
             b.relabel (sigma.symm * sigma) := by
               symm
               exact relabel_mul sigma.symm sigma b
-        _ = b := by simp
+        _ = b := by
+          rw [show sigma.symm * sigma = 1 by
+            ext i
+            exact congrArg Fin.val (sigma.symm_apply_apply i)]
+          exact relabel_one b
     simpa [ha, hb] using h'
   · intro h
     exact isFace_relabel h sigma
@@ -121,14 +129,22 @@ theorem isFacet_relabel_iff
             a.relabel (sigma.symm * sigma) := by
               symm
               exact relabel_mul sigma.symm sigma a
-        _ = a := by simp
+        _ = a := by
+          rw [show sigma.symm * sigma = 1 by
+            ext i
+            exact congrArg Fin.val (sigma.symm_apply_apply i)]
+          exact relabel_one a
     have hb : (b.relabel sigma).relabel sigma.symm = b := by
       calc
         (b.relabel sigma).relabel sigma.symm =
             b.relabel (sigma.symm * sigma) := by
               symm
               exact relabel_mul sigma.symm sigma b
-        _ = b := by simp
+        _ = b := by
+          rw [show sigma.symm * sigma = 1 by
+            ext i
+            exact congrArg Fin.val (sigma.symm_apply_apply i)]
+          exact relabel_one b
     simpa [ha, hb] using h'
   · intro h
     exact isFacet_relabel h sigma

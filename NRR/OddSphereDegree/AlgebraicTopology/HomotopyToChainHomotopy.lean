@@ -40,8 +40,7 @@ theorem singularHomologyMap_eq_of_singularChainHomotopy
     {X Y : TopCat.{0}} {f g : X ⟶ Y}
     (H : Homotopy (singularChainℤ.map f) (singularChainℤ.map g)) (n : ℕ) :
     (singularHomologyℤ n).map f = (singularHomologyℤ n).map g := by
-  have h := H.homologyMap_eq n
-  simpa [singularHomologyℤ, singularChainℤ, singularHomologyFunctor,
-    HomologicalComplex.homologyFunctor_map] using h
+  dsimp [singularHomologyℤ, singularHomologyFunctor, HomologicalComplex.homologyFunctor]
+  exact H.homologyMap_eq n
 
 end SphereOddDegree

@@ -67,7 +67,7 @@ def translate (K : ConvexBody E) (v : E) : ConvexBody E where
   · rintro ⟨y, hy, rfl⟩
     simpa using hy
   · intro hx
-    exact ⟨x - v, hx, by abel⟩
+    exact ⟨x - v, hx, by abel_nf⟩
 
 @[simp] theorem translate_zero (K : ConvexBody E) :
     K.translate 0 = K := by

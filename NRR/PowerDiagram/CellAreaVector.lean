@@ -71,16 +71,19 @@ theorem sum_areaVec_eq_area [NeZero n]
     (K : Geometry.ConvexBody Plane) (s : Fin n → Plane) (w : Fin n → ℝ)
     (hs : Function.Injective s) :
     ∑ i, areaVec K s w i = K.area := by
-  -- The area of a body is the Lebesgue measure of the body.
-  have h_bodyArea : K.area = (volume (K : Set Plane)).toReal := rfl
-  rw [ h_bodyArea, show K.carrier = ⋃ i, bodyCellSet K s w i from ?_ ];
-  · convert ENNReal.toReal_sum ( fun i => ?_ ) |> Eq.symm using 1;
-    · rw [ MeasureTheory.measure_iUnion₀ ];
-      · rw [ tsum_fintype ];
-      · exact fun i j hij => MeasureTheory.measure_mono_null ( fun x hx => by aesop ) ( bodyCellSet_inter_null K s w hs hij );
-      · exact fun i => IsCompact.nullMeasurableSet ( bodyCellSet_isCompact K s w i );
-    · exact fun _ => ne_of_lt ( lt_of_le_of_lt ( MeasureTheory.measure_mono ( bodyCellSet_subset K s w i ) ) ( K.isCompact.measure_lt_top ) );
-  · -- Apply the fact that the union of the body cells is equal to K.
-    apply Eq.symm; exact iUnion_bodyCellSet K s w
+  have h_union : (K : Set Plane) = ⋃ i, bodyCellSet K s w i := (iUnion_bodyCellSet K s w).symm
+  have h_meas : ∀ i, NullMeasurableSet (bodyCellSet K s w i) volume :=
+    fun i => (bodyCellSet_isCompact K s w i).nullMeasurableSet
+  have h_disj : Pairwise fun i j => volume (bodyCellSet K s w i ∩ bodyCellSet K s w j) = 0 :=
+    fun i j hij => bodyCellSet_inter_null K s w hs hij
+  have h_sum : volume (K : Set Plane) = ∑ i, volume (bodyCellSet K s w i) := by
+    rw [h_union, MeasureTheory.measure_iUnion₀ h_disj h_meas, tsum_fintype]
+  have h_finite : ∀ i ∈ Finset.univ, volume (bodyCellSet K s w i) ≠ ⊤ := by
+    intro i _
+    exact ne_top_of_le_ne_top K.isCompact.measure_lt_top.ne
+      (MeasureTheory.measure_mono (bodyCellSet_subset K s w i))
+  have h_real := ENNReal.toReal_sum h_finite
+  change ∑ i, (volume (bodyCellSet K s w i)).toReal = (volume (K : Set Plane)).toReal
+  rw [← h_real, ← h_sum]
 
 end NRR.PowerDiagram

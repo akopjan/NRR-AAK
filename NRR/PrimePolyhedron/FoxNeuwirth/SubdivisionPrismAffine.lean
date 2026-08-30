@@ -152,8 +152,8 @@ theorem chart_spatial_eq_linear
   have hspatial :
       spatialWeight hp q.1.2
           ⟨affineCompLinear p L q.2 w.1, by
-            simpa [affineCompMap_coe] using
-              (affineCompMap p L q.2 w).property⟩ =
+            rw [← affineCompMap_coe]
+            exact (affineCompMap p L q.2 w).property⟩ =
         maximalCoordinateReindexLinear hp
           (staircaseSpatialLinear hp q.1.2
             (affineCompLinear p L q.2 w.1)) := by
@@ -168,6 +168,11 @@ theorem chart_spatial_eq_linear
     Simplex.chartWeight, staircasePoint, spatialPoint, spatialWeight,
     StandardSimplex.toDelta, StandardSimplex.ofDelta, affineCompMap_coe,
     Fin.ext_iff, Fin.val_cast, hspatial]
+  change (ReferenceAffineOrbitCount.topRepr hp q.1.1.1).chartWeight
+      (StandardSimplex.ofDelta (affineCompMap (p - 1) N
+        (fun k => Simplex.refinementIndexPerm (q.1.1.2 k)) _)) c = _
+  unfold Simplex.chartWeight StandardSimplex.ofDelta
+  rw [affineCompMap_coe]
 
 /-- The interval coordinate of the refined prism chart is the corresponding explicit linear
 functional of the source barycentric coordinate vector. -/

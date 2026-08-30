@@ -1,5 +1,6 @@
 import NRR.PrimePolyhedron.FoxNeuwirth.ChartMapCollarRepresentation
 import NRR.PrimePolyhedron.FoxNeuwirth.RelativeSubdivisionEndpointCollar
+set_option backward.isDefEq.respectTransparency false
 set_option linter.unusedVariables false
 set_option linter.unusedSectionVars false
 set_option linter.unnecessarySeqFocus false
@@ -42,6 +43,11 @@ open ExplicitAffineRelativeCollar.Polynomials
 
 
 variable {p : Nat}
+
+theorem chartMap_refine_zero
+    (hp : Nat.Prime p) {N : Nat} (K : ChartMap hp N) : K.refine 0 = K := by
+  cases K
+  rfl
 
 /-- A nonempty forward stack with `k+1` one-step layers. -/
 noncomputable def positiveWitness
@@ -141,18 +147,28 @@ noncomputable def build
       let K := baseOriginalPLMap hp A
       exact {
         assignment := by
-          simpa [positiveWitness, K] using
+          simpa [positiveWitness, K, oneStepWitness,
+            RelativeSubdivisionOneStepCollar.endpointIdentifiedCollar,
+            RelativeSubdivisionOneStepCollar.relativeCollar] using
             CompatibleChartMapOneStep.assignment hp K
         represents := by
-          simpa [positiveWitness, K] using
+          rw [← chartMap_refine_zero hp K]
+          simpa [positiveWitness, K, oneStepWitness,
+            RelativeSubdivisionOneStepCollar.endpointIdentifiedCollar,
+            RelativeSubdivisionOneStepCollar.relativeCollar] using
             oneStepAssignment_represents_base hp K 0
         avoidsOrigin := by
           intro q
-          simpa [positiveWitness, K] using
+          simpa [positiveWitness, K, oneStepWitness,
+            RelativeSubdivisionOneStepCollar.endpointIdentifiedCollar,
+            RelativeSubdivisionOneStepCollar.relativeCollar] using
             CompatibleChartMapOneStep.assignment_avoidsOrigin hp K
               (baseOriginalPLMap_isAffine hp A) q
         lowerFixed := by
-          simpa [positiveWitness, K] using oneStep_originalPL_lowerFixed hp A
+          simpa [positiveWitness, K, oneStepWitness,
+            RelativeSubdivisionOneStepCollar.endpointIdentifiedCollar,
+            RelativeSubdivisionOneStepCollar.relativeCollar] using
+            oneStep_originalPL_lowerFixed hp A
       }
   | k + 1 => by
       let D := build hp A k
@@ -160,29 +176,46 @@ noncomputable def build
       let C := (positiveWitness hp A.level k).collar
       let E := (oneStepWitness hp (A.level + (k + 1))).collar
       let b : Assignment hp E.cells := by
-        simpa [E] using
+        simpa [E, oneStepWitness,
+          RelativeSubdivisionOneStepCollar.endpointIdentifiedCollar,
+          RelativeSubdivisionOneStepCollar.relativeCollar] using
           CompatibleChartMapOneStep.assignment hp (K.refine (k + 1))
       have hbRep : Represents E.cells K (vectorValue hp E.cells b) := by
-        simpa [E, b] using oneStepAssignment_represents_base hp K (k + 1)
+        simpa [E, b, oneStepWitness,
+          RelativeSubdivisionOneStepCollar.endpointIdentifiedCollar,
+          RelativeSubdivisionOneStepCollar.relativeCollar] using
+          oneStepAssignment_represents_base hp K (k + 1)
       let hseam := seamCompatible C.cells E.cells K
         (vectorValue hp C.cells D.assignment) (vectorValue hp E.cells b)
         D.represents hbRep
       let a := combinedAssignment C.cells E.cells D.assignment b hseam
       exact {
         assignment := by
-          simpa [positiveWitness, C, E] using a
+          simpa [positiveWitness, composeWitness, C, E,
+            ExplicitAffineRelativeCollarCompose.endpointIdentifiedCollar,
+            ExplicitAffineRelativeCollarCompose.relativeCollar] using a
         represents := by
-          simpa [positiveWitness, C, E, a, hseam] using
+          simpa [positiveWitness, composeWitness, C, E, a, hseam,
+            ExplicitAffineRelativeCollarCompose.endpointIdentifiedCollar,
+            ExplicitAffineRelativeCollarCompose.relativeCollar] using
             combinedAssignment_represents C.cells E.cells K
               D.assignment b D.represents hbRep
         avoidsOrigin := by
           intro q
-          simpa [positiveWitness, C, E, a, hseam] using
-            combinedAssignment_avoidsOrigin C.cells E.cells
-              D.assignment b hseam D.avoidsOrigin
-              (fun r => CompatibleChartMapOneStep.assignment_avoidsOrigin hp
+          have hbAvoid : ∀ r : E.cells.Cell,
+              AvoidsOrigin (localVertexMap hp E.cells b r) := by
+            intro r
+            simpa [E, b, oneStepWitness,
+              RelativeSubdivisionOneStepCollar.endpointIdentifiedCollar,
+              RelativeSubdivisionOneStepCollar.relativeCollar] using
+              CompatibleChartMapOneStep.assignment_avoidsOrigin hp
                 (K.refine (k + 1))
-                ((baseOriginalPLMap_isAffine hp A).refine (k + 1)) r) q
+                ((baseOriginalPLMap_isAffine hp A).refine (k + 1)) r
+          simpa [positiveWitness, composeWitness, C, E, a, hseam,
+            ExplicitAffineRelativeCollarCompose.endpointIdentifiedCollar,
+            ExplicitAffineRelativeCollarCompose.relativeCollar] using
+            combinedAssignment_avoidsOrigin C.cells E.cells
+              D.assignment b hseam D.avoidsOrigin hbAvoid q
         lowerFixed := by
           rintro ⟨q, i⟩ htime
           cases q with
@@ -190,9 +223,10 @@ noncomputable def build
               have hleft : (C.cells.vertex q i).time.1 = 0 := by
                 change (C.cells.vertex q i).time.1 / 2 = 0 at htime
                 linarith
-              simpa [positiveWitness, C, E, a, hseam,
-                RelativeAffineCellSystem.slotPoint, combinedCells] using
-                D.lowerFixed (q, i) hleft
+              change vectorValue hp C.cells D.assignment
+                  (sampleVertex hp C.cells (q, i)) =
+                A.map (C.cells.slotPoint (q, i)).spatial
+              exact D.lowerFixed (q, i) hleft
           | inr q =>
               have hnonneg := (E.cells.vertex q i).time.2.1
               change (1 + (E.cells.vertex q i).time.1) / 2 = 0 at htime
@@ -238,9 +272,11 @@ theorem reverse_build_upperFixed
     simpa [ExplicitAffineRelativeCollarReverse.reverseCells,
       RelativeAffineCellSystem.slotPoint,
       ExplicitAffineRelativeCollarReverse.reflectPoint] using hs
-  simpa [reverseAssignment, ExplicitAffineRelativeCollarReverse.reverseCells,
-    ExplicitAffineRelativeCollarReverse.reflectPoint] using
-    (build hp A k).lowerFixed s h0
+  change vectorValue hp (positiveWitness hp A.level k).collar.cells
+      (build hp A k).assignment
+      (sampleVertex hp (positiveWitness hp A.level k).collar.cells s) =
+    A.map ((positiveWitness hp A.level k).collar.cells.slotPoint s).spatial
+  exact (build hp A k).lowerFixed s h0
 
 end EndpointStackIteratedAffinePullback
 end EquivariantPrismStableRelativeBoundary

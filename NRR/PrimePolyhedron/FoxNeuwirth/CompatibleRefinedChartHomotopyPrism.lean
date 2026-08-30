@@ -1,6 +1,7 @@
 import NRR.PrimePolyhedron.FoxNeuwirth.CompatibleChartMapOneStep
 import NRR.PrimePolyhedron.FoxNeuwirth.RelativeCollarMiddlePrismEndpoints
 import NRR.PrimePolyhedron.FoxNeuwirth.EquivariantPrismSubdivisionMargin
+set_option backward.isDefEq.respectTransparency false
 set_option linter.unusedVariables false
 set_option linter.unusedSectionVars false
 set_option linter.unusedSimpArgs false
@@ -55,7 +56,7 @@ instance compactSpace_standardSimplex (d : Nat) : CompactSpace (StandardSimplex 
     exact ⟨fun _ => Set.mem_univ _,
       fun _ => ⟨StandardSimplex.toDelta w, StandardSimplex.ofDelta_toDelta w⟩⟩
   letI : CompactSpace (Delta d) :=
-    isCompact_iff_compactSpace.mp (isCompact_stdSimplex (Fin (d + 1)))
+    isCompact_iff_compactSpace.mp (isCompact_stdSimplex Real (Fin (d + 1)))
   refine isCompact_univ_iff.mp ?_
   have := isCompact_range (continuous_ofDelta (d := d))
   rwa [hrange] at this
@@ -80,7 +81,7 @@ theorem continuous_staircasePoint (hp : Nat.Prime p) (k : Fin p) :
           w j else 0
     apply continuous_pi
     intro i
-    apply continuous_finset_sum
+    apply continuous_finsetSum
     intro j _
     split_ifs
     · exact (continuous_apply j).comp continuous_subtype_val
@@ -88,7 +89,7 @@ theorem continuous_staircasePoint (hp : Nat.Prime p) (k : Fin p) :
   · apply Continuous.subtype_mk
     change Continuous fun w : StandardSimplex p =>
       ∑ j : Fin (p + 1), if staircaseTime k j = 1 then w j else 0
-    apply continuous_finset_sum
+    apply continuous_finsetSum
     intro j _
     split_ifs
     · exact (continuous_apply j).comp continuous_subtype_val
@@ -173,7 +174,8 @@ theorem decoratedVector_eq_of_coverPoint_eq
       a.1 • RefinedAffineMap.chart hp N a.2.1.1.1 (StandardSimplex.toDelta za.1) =
       b.1 • RefinedAffineMap.chart hp N b.2.1.1.1 (StandardSimplex.toDelta zb.1) := by
     simpa [wa, wb, za, zb, coverPoint,
-      RelativeAffineCellSystem.slotPoint, RelativeCollarMiddlePrism.vertex,
+      RelativeAffineCellSystem.slotPoint, RelativeCollarMiddlePrism.cellSystem,
+      RelativeCollarMiddlePrism.vertex,
       SubdivisionPrismCharts.vertex, SubdivisionPrismCharts.chart,
       EquivariantPrismVertexParameters.CylinderPoint.ofProd] using hspatial
   have hztime : za.2 = zb.2 := by
@@ -423,7 +425,8 @@ theorem lower_boundary_value
             (stdSimplex.vertex (S := Real) s.2)))).2 =
         (⟨0, by simp⟩ : Set.Icc (0 : Real) 1) := by
     apply Subtype.ext
-    simpa [RelativeAffineCellSystem.slotPoint, RelativeCollarMiddlePrism.vertex,
+    simpa [RelativeAffineCellSystem.slotPoint, RelativeCollarMiddlePrism.cellSystem,
+      RelativeCollarMiddlePrism.vertex,
       SubdivisionPrismCharts.vertex, SubdivisionPrismCharts.chart,
       EquivariantPrismVertexParameters.CylinderPoint.ofProd] using hs
   rw [ht]
@@ -457,7 +460,8 @@ theorem upper_boundary_value
             (stdSimplex.vertex (S := Real) s.2)))).2 =
         (⟨1, by simp⟩ : Set.Icc (0 : Real) 1) := by
     apply Subtype.ext
-    simpa [RelativeAffineCellSystem.slotPoint, RelativeCollarMiddlePrism.vertex,
+    simpa [RelativeAffineCellSystem.slotPoint, RelativeCollarMiddlePrism.cellSystem,
+      RelativeCollarMiddlePrism.vertex,
       SubdivisionPrismCharts.vertex, SubdivisionPrismCharts.chart,
       EquivariantPrismVertexParameters.CylinderPoint.ofProd] using hs
   rw [ht]

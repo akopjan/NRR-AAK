@@ -1,6 +1,7 @@
 import NRR.PrimePolyhedron.FoxNeuwirth.RelativeSubdivisionCylinderCombinatorics
 import NRR.PrimePolyhedron.FoxNeuwirth.RelativeCollarMiddlePrism
 import NRR.PrimePolyhedron.FoxNeuwirth.SubdivisionPrismAffine
+set_option backward.isDefEq.respectTransparency false
 set_option linter.unusedVariables false
 set_option linter.unusedSectionVars false
 set_option linter.unnecessarySeqFocus false
@@ -110,7 +111,14 @@ theorem refinedChart_barycentric
   rw [refinedChart_coordinate_eq_linear]
   have hxvec : x.1 = ∑ i : Fin (p + 1), w i • (v i).1 := by
     funext r
-    simpa [Pi.smul_apply, smul_eq_mul] using hx r
+    simp only [Finset.sum_apply, Pi.smul_apply, smul_eq_mul]
+    convert hx r using 1
+    · change x.1 r = x.1 r
+      rfl
+    · apply Finset.sum_congr rfl
+      intro i hi
+      change w i * (v i).1 r = w i * (v i).1 r
+      rfl
   rw [hxvec, map_sum]
   apply Finset.sum_congr rfl
   intro i hi
@@ -178,12 +186,14 @@ theorem chart_injective
   have hspatial := congrArg CylinderPoint.spatial hxy
   have hlocalSpatial : (localPoint hp q.2 x).1 = (localPoint hp q.2 y).1 := by
     apply refined_chart_injective hp N q.1
-    simpa [chart, liftPoint] using hspatial
+    simpa [chart, liftPoint,
+      EquivariantPrismVertexParameters.CylinderPoint.ofProd] using hspatial
   have htime := congrArg (fun z : CylinderPoint p => z.time) hxy
   have hlocal : localPoint hp q.2 x = localPoint hp q.2 y := by
     apply Prod.ext
     · exact hlocalSpatial
-    · simpa [chart, liftPoint] using htime
+    · simpa [chart, liftPoint,
+        EquivariantPrismVertexParameters.CylinderPoint.ofProd] using htime
   have hw : localWeight hp x = localWeight hp y :=
     RelativeSubdivisionCylinderCombinatorics.chart_injective_all (p - 1) q.2 hlocal
   simpa [localWeight, Nat.sub_add_cancel hp.pos] using hw
@@ -213,7 +223,8 @@ theorem vertex_orbit_injective
   have hg : g = 1 := refinedChart_orbit_separated hp N q.1
     (localPoint hp q.2 (stdSimplex.vertex (S := Real) i)).1
     (localPoint hp q.2 (stdSimplex.vertex (S := Real) j)).1 g (by
-      simpa [vertex, chart, liftPoint] using hspatial)
+      simpa [vertex, chart, liftPoint,
+        EquivariantPrismVertexParameters.CylinderPoint.ofProd] using hspatial)
   subst g
   exact ⟨rfl, vertex_injective hp N q (by simpa using h)⟩
 

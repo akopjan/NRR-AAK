@@ -214,7 +214,7 @@ def lowerCumulativeMatrix (n : Nat) : Matrix (Fin n) (Fin n) Int :=
 theorem det_lowerCumulativeMatrix (n : Nat) :
     Matrix.det (lowerCumulativeMatrix n) = 1 := by
   classical
-  rw [Matrix.det_of_lowerTriangular (lowerCumulativeMatrix n) (by
+  rw [Matrix.det_of_isLowerTriangular (lowerCumulativeMatrix n) (by
     intro i j hij
     have hlt : i < j := by simpa using hij
     have hval : i.1 < j.1 := hlt
@@ -255,7 +255,7 @@ theorem coordinateLabel_range
   ext x
   constructor
   · rintro ⟨r, rfl⟩
-    simp only [coordinateLabel, lastLabel, Set.mem_setOf_eq, ne_eq, Fin.mk.injEq]
+    simp only [coordinateLabel, lastLabel, Set.mem_ofPred_eq, ne_eq, Fin.mk.injEq]
     have := r.2; omega
   · intro hx
     refine ⟨⟨x.1, ?_⟩, Fin.ext rfl⟩
@@ -394,6 +394,8 @@ theorem selected_stageBlock_sum_rank
     | zero =>
         intro hm
         simp [stageBlock, selectedCode]
+        change 0 = 0
+        rfl
     | succ m ih =>
         intro hm
         have hm0 : m < p := by omega
@@ -421,7 +423,8 @@ theorem selected_stageBlock_sum_rank
           rw [e1, e0] at h
           rw [h]
           have hval : ((selectedCode sigma).removal.symm r).1 = r.1 := by
-            simp [selectedCode_removal]
+            change ((1 : Equiv.Perm (Fin (p - 1))).symm r).1 = r.1
+            rfl
           simp only [hval, stageIndex_val, Fin.le_def, Fin.val_castSucc]
         have hsumdiff :
             (∑ j : Fin (p - 1),
@@ -508,7 +511,7 @@ theorem det_cutBasisMatrix
       have hji' : j ≠ i := by intro h; rw [h] at hji2; exact lt_irrefl _ hji2
       rw [if_neg hji', if_neg hjlast]
   have hdetT : Matrix.det T = 1 := by
-    rw [Matrix.det_of_upperTriangular hTtri]
+    rw [Matrix.det_of_isUpperTriangular hTtri]
     simp [T]
   have hA : A = Equiv.Perm.permMatrix Int sigma * lowerCumulativeMatrix p := by
     ext i j
@@ -604,7 +607,6 @@ theorem det_cutBasisMatrix
     rw [Matrix.mul_apply]
     simp only [T, Matrix.of_apply, if_neg hlast]
     have hkey := key (coordinateLabel hp r) (fun x => A x (e (Fin.succ k))) hlast
-    simp only [] at hkey
     rw [hkey]
     simp only [A, Matrix.of_apply, cutBasisMatrix, hval]
     split_ifs <;> omega
@@ -670,6 +672,7 @@ theorem selectedSimplex_smul
     congr 1 ;
       simp [stageKey, stageBlock, selectedCode, sigma', tau, retainedBars,
         removedBefore]
+    rfl
   · rfl
 
 theorem isSelected_toSimplex_iff
@@ -830,7 +833,7 @@ theorem exists_common_positive_sign_neighborhood
     (0 < f i x ↔ 0 < f i 0) ∧ (f i x < 0 ↔ f i 0 < 0)}
   have hUopen : IsOpen U := by
     unfold U
-    simp only [Set.setOf_forall]
+    simp only [Set.ofPred_forall]
     apply isOpen_iInter_of_finite
     intro i
     rcases lt_or_gt_of_ne (h0 i) with hneg | hpos
@@ -838,7 +841,7 @@ theorem exists_common_positive_sign_neighborhood
           {x | (0 < f i x ↔ 0 < f i 0) ∧ (f i x < 0 ↔ f i 0 < 0)} =
             {x | f i x < 0} := by
         ext x
-        simp only [Set.mem_setOf_eq]
+        simp only [Set.mem_ofPred_eq]
         constructor
         · rintro ⟨_, h2⟩; exact h2.2 hneg
         · intro hx
@@ -850,7 +853,7 @@ theorem exists_common_positive_sign_neighborhood
           {x | (0 < f i x ↔ 0 < f i 0) ∧ (f i x < 0 ↔ f i 0 < 0)} =
             {x | 0 < f i x} := by
         ext x
-        simp only [Set.mem_setOf_eq]
+        simp only [Set.mem_ofPred_eq]
         constructor
         · rintro ⟨h1, _⟩; exact h1.2 hpos
         · intro hx
@@ -939,7 +942,9 @@ theorem zero_barycentric_unique
       rw [hcast, hw q, hv q]
       simp
   have hdet : Matrix.det ((referenceMap hp).augmentedMatrix s) ≠ 0 := by
-    simpa [AffineVertexMap.determinant] using referenceMap_regular hp s
+    have hreg := referenceMap_regular hp s
+    change Matrix.det ((referenceMap hp).augmentedMatrix s) ≠ 0 at hreg
+    exact hreg
   have hd : d = 0 :=
     eq_zero_of_mulVec_eq_zero_of_det_ne_zero
       ((referenceMap hp).augmentedMatrix s) hdet hmul
@@ -1556,8 +1561,14 @@ noncomputable def selectedOrbitEquivTopSupport
         g • topRepr hp (toTop (Quotient.mk'' c)) =
             (coveringTopCell_eq hp) ▸
               (g • Quotient.out (toTop (Quotient.mk'' c))) := by
-          simpa [topRepr] using
-            smul_castDim hp g hd (Quotient.out (toTop (Quotient.mk'' c)))
+          change g • ((coveringTopCell_eq hp) ▸
+              Quotient.out (toTop (Quotient.mk'' c))) =
+            (coveringTopCell_eq hp) ▸
+              (g • Quotient.out (toTop (Quotient.mk'' c)))
+          have hproof : congrArg (Simplex p) hd = coveringTopCell_eq hp :=
+            Subsingleton.elim _ _
+          rw [← hproof]
+          exact smul_castDim hp g hd (Quotient.out (toTop (Quotient.mk'' c)))
         _ = (coveringTopCell_eq hp) ▸
               ((coveringTopCell_eq hp).symm ▸ selectedFlagOfTopCell hp c) := by
           exact congrArg
@@ -1591,7 +1602,9 @@ noncomputable def selectedOrbitEquivTopSupport
         g • ((coveringTopCell_eq hp).symm ▸ selectedFlagOfTopCell hp b) =
           (coveringTopCell_eq hp).symm ▸
             (g • selectedFlagOfTopCell hp b) := by
-      simpa using smul_castDim hp g hd' (selectedFlagOfTopCell hp b)
+      change g • (congrArg (Simplex p) hd' ▸ selectedFlagOfTopCell hp b) =
+        congrArg (Simplex p) hd' ▸ (g • selectedFlagOfTopCell hp b)
+      exact smul_castDim hp g hd' (selectedFlagOfTopCell hp b)
     have hback :
         (coveringTopCell_eq hp).symm ▸
             (g • selectedFlagOfTopCell hp b) =
@@ -1601,12 +1614,22 @@ noncomputable def selectedOrbitEquivTopSupport
         g • selectedFlagOfTopCell hp b = selectedFlagOfTopCell hp a := by
       exact (Equiv.cast (coveringTopCell_eq hp).symm).injective hback
     apply Subtype.ext
+    have hterminal (c : BarredPermutation.TopCell p) :
+        selectedFlagOfTopCell hp c (Fin.last (p - 1)) = c.1 := by
+      change stageCell (selectedCode c.1.rank)
+        (stageIndex hp (Fin.last (p - 1))) = c.1
+      rw [stageIndex_last, stageCell_last]
+      apply BarredPermutation.ext
+      · simp
+      · simpa [BarredPermutation.IsTop] using c.2.symm
     have htop := congrArg
       (fun s : Simplex p (p - 1) => s (Fin.last (p - 1))) hflags
+    change g • selectedFlagOfTopCell hp b (Fin.last (p - 1)) =
+      selectedFlagOfTopCell hp a (Fin.last (p - 1)) at htop
+    rw [hterminal b, hterminal a] at htop
     have hrank := congrArg BarredPermutation.rank htop
     apply BarredPermutation.ext
-    · simpa [selectedFlagOfTopCell, selectedSimplex, toSimplex_apply,
-        stageIndex_last, stageCell, stageRank_last hp] using hrank
+    · exact hrank
     · exact b.2.trans a.2.symm
   · rintro ⟨q, hq⟩
     rcases hq with ⟨sigma, hsigma⟩
@@ -1619,7 +1642,8 @@ noncomputable def selectedOrbitEquivTopSupport
     apply Quotient.sound
     have hrepr :
         (coveringTopCell_eq hp) ▸ Quotient.out q = selectedFlagOfTopCell hp c := by
-      simpa [topRepr, c, selectedFlagOfTopCell] using hsigma
+      simpa [topRepr, PrimeOrbitCycle.topRepresentative,
+        FiniteIncidenceCycle.topRepresentative, c, selectedFlagOfTopCell] using hsigma
     have hback :
         Quotient.out q =
           (coveringTopCell_eq hp).symm ▸ selectedFlagOfTopCell hp c := by
@@ -1698,8 +1722,10 @@ theorem orbitCycle_coefficient_eq
           (PrimeOrbitCycle.topRepresentative hp q) := rfl
   have hcast : Equiv.cast (congrArg (Simplex p) hdim) (topRepr hp q)
       = PrimeOrbitCycle.topRepresentative hp q := by
-    rw [Equiv.cast_eq_iff_heq, topRepr]
-    exact cast_heq _ _
+    apply eq_of_heq
+    exact (cast_heq (congrArg (Simplex p) hdim) (topRepr hp q)).trans
+      (cast_heq (coveringTopCell_eq hp)
+        (PrimeOrbitCycle.topRepresentative hp q))
   rw [h1, ← hcast, transport_chain_apply hdim TopFlagSubdivision.chain (topRepr hp q),
     TopFlagSubdivision.chain_apply]
   congr 1
@@ -1776,7 +1802,7 @@ namespace AAK
 signed orbit count. -/
 theorem simplestRoute_referenceAffineCount_complete :
     ∀ {p : Nat} (hp : Nat.Prime p),
-      Nonempty (FiniteOrbitZeroCountModel.{0, 0} hp) :=
+      Nonempty (FiniteOrbitZeroCountModel hp) :=
   fun hp => ⟨FoxNeuwirthOrderComplex.ReferenceAffineOrbitCount.model hp⟩
 
 end AAK

@@ -1,5 +1,7 @@
 import NRR.PrimePolyhedron.FoxNeuwirth.ExplicitAffineRelativeCollarReverse
 
+set_option backward.isDefEq.respectTransparency false
+
 /-!
 # Composition of endpoint-identified relative affine collars
 
@@ -481,7 +483,8 @@ theorem lowerFacet_exhaustive
       have hcq : C.cells.IsLowerFacet (C.cells.facetClass oc) := hc
       obtain ⟨q, hq⟩ := C.lowerFacet_exhaustive _ hcq
       refine ⟨q, ?_⟩
-      simpa [oc] using congrArg (Combined.leftFacet C.cells D.cells) hq
+      rw [hq]
+      rfl
   | inr cell =>
       let i : Fin p := ⟨0, hp.pos⟩
       have hi := ho i
@@ -514,7 +517,8 @@ theorem upperFacet_exhaustive
       have hdq : D.cells.IsUpperFacet (D.cells.facetClass od) := hd
       obtain ⟨q, hq⟩ := D.upperFacet_exhaustive _ hdq
       refine ⟨q, ?_⟩
-      simpa [od] using congrArg (Combined.rightFacet C.cells D.cells) hq
+      rw [hq]
+      rfl
 
 /-- Chain-level lower endpoint identity for the composed collar. -/
 theorem lowerBoundaryPairing_eq
@@ -568,11 +572,13 @@ theorem lowerFacetOccurrenceVertex_eq
       let oc : C.cells.FacetOccurrence := (cell, k)
       have hc : C.cells.facetClass oc = C.lowerFacet q := by
         apply Combined.leftFacet_injective C.cells D.cells
-        simpa [oc] using ho
+        simpa [oc, Combined.leftOccurrence] using ho
       obtain ⟨g, hg⟩ := C.lowerFacetOccurrenceVertex_eq q oc hc
       refine ⟨g, ?_⟩
       intro i
-      simpa [oc] using congrArg leftPoint (hg i)
+      simpa [oc, combinedCells, Combined.leftOccurrence,
+        ExplicitAffineRelativeCollar.RelativeAffineCellSystem.facetSignature] using
+        congrArg leftPoint (hg i)
   | inr cell =>
       have hlower : (combinedCells C.cells D.cells).IsLowerFacet
           ((combinedCells C.cells D.cells).facetClass (Sum.inr cell, k)) := by
@@ -616,11 +622,13 @@ theorem upperFacetOccurrenceVertex_eq
       let od : D.cells.FacetOccurrence := (cell, k)
       have hd : D.cells.facetClass od = D.upperFacet q := by
         apply Combined.rightFacet_injective C.cells D.cells
-        simpa [od] using ho
+        simpa [od, Combined.rightOccurrence] using ho
       obtain ⟨g, hg⟩ := D.upperFacetOccurrenceVertex_eq q od hd
       refine ⟨g, ?_⟩
       intro i
-      simpa [od] using congrArg rightPoint (hg i)
+      simpa [od, combinedCells, Combined.rightOccurrence,
+        ExplicitAffineRelativeCollar.RelativeAffineCellSystem.facetSignature] using
+        congrArg rightPoint (hg i)
 
 /-- Pointwise composed relative collar. -/
 noncomputable def relativeCollar :

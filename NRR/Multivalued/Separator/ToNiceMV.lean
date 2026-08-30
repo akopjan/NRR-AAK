@@ -52,7 +52,7 @@ theorem zeroSet_toNiceMV
     (S : TopBottomSeparator X) :
     S.toNiceMV.zeroSet = S.carrier := by
   ext z
-  simp only [NiceMV.zeroSet, Set.mem_setOf_eq, NiceMV.zero_iff, toNiceMV_eval]
+  simp only [NiceMV.zeroSet, Set.mem_ofPred_eq, NiceMV.zero_iff, toNiceMV_eval]
   exact S.signedDistance_eq_zero_iff z
 
 end ToNiceMV

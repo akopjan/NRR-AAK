@@ -48,7 +48,7 @@ noncomputable def topIncidenceBoundary
 
 /-- The next differential in the minimal two-term obstruction complex. -/
 def zeroFacetBoundary
-    (_chain : FacetChain p R) : PUnit → R :=
+    (_chain : FacetChain p R) : PUnit.{0} → R :=
   fun _ => 0
 
 @[simp] theorem zeroFacetBoundary_apply
@@ -60,7 +60,7 @@ def zeroFacetBoundary
 finite Stokes: the composite with the following zero differential vanishes. -/
 theorem zeroFacetBoundary_comp_topIncidenceBoundary
     (chain : TopCellChain p R) :
-    zeroFacetBoundary (topIncidenceBoundary chain) = 0 := by
+    zeroFacetBoundary (topIncidenceBoundary chain) = (fun _ => (0 : R)) := by
   funext u
   rfl
 
@@ -90,7 +90,8 @@ structure PrimeTopIncidenceData (hp : Nat.Prime p) where
   topChain : TopCellChain p (ZMod p)
   topChain_eq : topChain = orientedTopChain hp
   boundary_zero : topIncidenceBoundary topChain = 0
-  boundary_squared : zeroFacetBoundary (topIncidenceBoundary topChain) = 0
+  boundary_squared : zeroFacetBoundary (topIncidenceBoundary topChain) =
+    (fun _ => (0 : ZMod p))
 
 /-- Canonical top incidence data produced by the facet--shuffle calculation. -/
 noncomputable def primeTopIncidenceData

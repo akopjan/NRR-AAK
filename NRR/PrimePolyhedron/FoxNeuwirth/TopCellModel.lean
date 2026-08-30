@@ -116,7 +116,9 @@ def relabel (σ : Equiv.Perm (Fin p))
     relabel 1 w = w := by
   apply Subtype.ext
   funext i
-  simp [relabel]
+  have hi : (1 : Equiv.Perm (Fin p)).symm i = i :=
+    (1 : Equiv.Perm (Fin p)).symm_apply_apply i
+  exact congrArg (fun j => (w j : ℝ)) hi
 
 theorem relabel_mul
     (σ τ : Equiv.Perm (Fin p)) (w : FoxNeuwirthWeights p) :
@@ -155,7 +157,7 @@ def FoxNeuwirthTopCellModelPoint (p : ℕ) :=
 namespace FoxNeuwirthTopCellModelPoint
 
 noncomputable instance : CompactSpace (FoxNeuwirthWeights p) :=
-  isCompact_iff_compactSpace.mp (isCompact_stdSimplex (Fin p))
+  isCompact_iff_compactSpace.mp (isCompact_stdSimplex ℝ (Fin p))
 
 noncomputable instance : CompactSpace (FoxNeuwirthTopCell p) :=
   Finite.compactSpace
@@ -166,7 +168,7 @@ noncomputable instance : MetricSpace (FoxNeuwirthTopCellModelPoint p) :=
 noncomputable instance : CompactSpace (FoxNeuwirthTopCellModelPoint p) :=
   inferInstanceAs (CompactSpace (FoxNeuwirthTopCell p × FoxNeuwirthWeights p))
 
-instance (hp : Nat.Prime p) : Nonempty (FoxNeuwirthTopCellModelPoint p) :=
+theorem nonempty (hp : Nat.Prime p) : Nonempty (FoxNeuwirthTopCellModelPoint p) :=
   ⟨FoxNeuwirthTopCell.identity p,
     ⟨fun _ => (p : ℝ)⁻¹, by
       constructor

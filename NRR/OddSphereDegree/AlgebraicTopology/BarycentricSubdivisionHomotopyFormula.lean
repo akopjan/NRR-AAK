@@ -2,27 +2,6 @@ import NRR.OddSphereDegree.AlgebraicTopology.BarycentricSubdivisionChainMap
 import NRR.OddSphereDegree.AlgebraicTopology.BarycentricSubdivisionHomotopyOperator
 import Mathlib
 
-/-!
-# The barycentric subdivision chain-homotopy formula `∂H + H∂ = id - sd`
-
-This file proves the degree-wise chain-homotopy identity between the identity and
-the barycentric subdivision chain map, on singular chains of an arbitrary space.
-
-The homotopy operator `H = barycentricSubdivisionHomotopyLinearMap` and the
-subdivision operator `sd = barycentricSubdivisionLinearMap` were defined in
-earlier files; here we prove
-
-```text
-∂ H(c) + H(∂ c) = c - sd(c)
-```
-
-first on a basis generator `[σ]` and then on all chains.
-
-Because the library indexes the boundary `∂ : C_{n+1} → C_n` as
-`singularBoundary R X n`, the term `H(∂ c)` is only meaningful in positive
-degree; in degree `0` it is `0`. This is packaged by `homotopyBoundaryTerm`.
--/
-
 open scoped BigOperators
 open CategoryTheory AlgebraicTopology Simplicial SimplexCategory Limits
 open Finset
@@ -32,20 +11,15 @@ namespace AffineBarycentricSubdivision
 
 /-! ## 0. Functoriality of the pushforward on singular chains -/
 
-/-- The pushforward along the identity is the identity. -/
 theorem singularChainMap_id (R : Type) [CommRing R] (X : TopCat.{0}) (n : ℕ) :
     singularChainMap R (𝟙 X) n = 𝟙 (singularChainGroup R X n) := by
   simp [singularChainMap]
 
-/-- The pushforward is functorial in the continuous map. -/
 theorem singularChainMap_comp (R : Type) [CommRing R] {X Y Z : TopCat.{0}}
     (f : X ⟶ Y) (g : Y ⟶ Z) (n : ℕ) :
     singularChainMap R (f ≫ g) n = singularChainMap R f n ≫ singularChainMap R g n := by
   simp [singularChainMap]
 
-/-- **Post-composition naturality of `toSSetObjEquiv`.** The pushforward of a
-singular simplex along `f`, viewed as a continuous map, is the post-composition
-with the continuous map underlying `f`. -/
 theorem pushSimplex_continuousMap {X Y : TopCat.{0}} (f : X ⟶ Y) (n : ℕ)
     (σ : singularSimplices X n) :
     singularSimplexAsContinuousMap Y n (pushSimplex f n σ)
@@ -53,12 +27,11 @@ theorem pushSimplex_continuousMap {X Y : TopCat.{0}} (f : X ⟶ Y) (n : ℕ)
   apply ContinuousMap.ext
   intro x
   simp only [pushSimplex, singularSimplexAsContinuousMap, TopCat.toSSetObjEquiv, TopCat.toSSet,
-    Equiv.trans_apply, ContinuousMap.comp_apply]
+    ContinuousMap.comp_apply]
   rfl
 
 /-! ## 1. `∂∂ = 0` -/
 
-/-- The square of the singular boundary vanishes. -/
 theorem singularBoundary_boundary_zero (R : Type) [CommRing R] (X : TopCat.{0}) (n : ℕ)
     (c : singularChainGroup R X (n + 2)) :
     (singularBoundary R X n).hom ((singularBoundary R X (n + 1)).hom c) = 0 := by
@@ -71,14 +44,12 @@ theorem singularBoundary_boundary_zero (R : Type) [CommRing R] (X : TopCat.{0}) 
 
 /-! ## 2. Subdivision in degree `0` is the identity -/
 
-/-- The standard `0`-simplex `Δ⁰` is a subsingleton. -/
 theorem delta0_subsingleton (a b : Delta 0) : a = b := by
   apply Subtype.ext; funext i
   have ha := a.2.2; have hb := b.2.2
   have hi : i = 0 := by omega
   subst hi; rw [Fin.sum_univ_one] at ha hb; rw [ha, hb]
 
-/-- Barycentric subdivision in degree `0` is the identity on a basis generator. -/
 theorem barycentricSubdivisionGenerator_zero (R : Type) [CommRing R] (X : TopCat.{0})
     (σ : singularSimplices X 0) :
     barycentricSubdivisionGenerator R X 0 σ = chainGenerator R X 0 σ := by
@@ -96,7 +67,6 @@ theorem barycentricSubdivisionGenerator_zero (R : Type) [CommRing R] (X : TopCat
   rw [huniq]
   simp [hsimp, permSignCoeff]
 
-/-- The universal homotopy chain in degree `0` is zero. -/
 theorem barycentricHomotopyUniversal_zero (R : Type) [CommRing R] :
     barycentricHomotopyUniversal R 0 = 0 := by
   rw [barycentricHomotopyUniversal, barycentricSubdivisionLinearMap_generator,
@@ -104,7 +74,6 @@ theorem barycentricHomotopyUniversal_zero (R : Type) [CommRing R] :
 
 /-! ## 3. Naturality of subdivision and homotopy under pushforward -/
 
-/-- The pushforward of the identity singular simplex along `σ` is `σ` itself. -/
 theorem pushSimplex_stdSimplexId (X : TopCat.{0}) (n : ℕ) (σ : singularSimplices X n) :
     pushSimplex (TopCat.ofHom (singularSimplexAsContinuousMap X n σ)) n
         (stdSimplexIdSingularSimplex n) = σ := by
@@ -116,7 +85,6 @@ theorem pushSimplex_stdSimplexId (X : TopCat.{0}) (n : ℕ) (σ : singularSimpli
     Equiv.apply_symm_apply, TopCat.hom_ofHom]
   ext x; rfl
 
-/-- The pushforward of a subdivision summand simplex. -/
 theorem pushSimplex_barycentricSubdivSimplex {X Y : TopCat.{0}} (f : X ⟶ Y) (n : ℕ)
     (π : Equiv.Perm (Fin (n + 1))) (σ : singularSimplices X n) :
     pushSimplex f n (barycentricSubdivSimplex X n π σ)
@@ -126,7 +94,6 @@ theorem pushSimplex_barycentricSubdivSimplex {X Y : TopCat.{0}} (f : X ⟶ Y) (n
     barycentricSubdivSimplex_continuousMap, pushSimplex_continuousMap]
   rfl
 
-/-- **Naturality of subdivision on a generator.** -/
 theorem singularChainMap_barycentricSubdivision_generator (R : Type) [CommRing R]
     {X Y : TopCat.{0}} (f : X ⟶ Y) (n : ℕ) (σ : singularSimplices X n) :
     (singularChainMap R f n).hom (barycentricSubdivisionGenerator R X n σ)
@@ -134,7 +101,6 @@ theorem singularChainMap_barycentricSubdivision_generator (R : Type) [CommRing R
   simp only [barycentricSubdivisionGenerator, map_sum, map_smul, singularChainMap_generator,
     pushSimplex_barycentricSubdivSimplex]
 
-/-- **Naturality of subdivision on chains.** -/
 theorem singularChainMap_barycentricSubdivision (R : Type) [CommRing R]
     {X Y : TopCat.{0}} (f : X ⟶ Y) (n : ℕ) (c : singularChainGroup R X n) :
     (singularChainMap R f n).hom ((barycentricSubdivisionLinearMap R X n).hom c)
@@ -152,7 +118,6 @@ theorem singularChainMap_barycentricSubdivision (R : Type) [CommRing R]
   have h2 := DFunLike.congr_fun (congrArg ModuleCat.Hom.hom key) c
   simpa [ModuleCat.hom_comp, LinearMap.comp_apply] using h2
 
-/-- **Naturality of the homotopy operator on a generator.** -/
 theorem singularChainMap_barycentricHomotopy_generator (R : Type) [CommRing R]
     {X Y : TopCat.{0}} (f : X ⟶ Y) (n : ℕ) (σ : singularSimplices X n) :
     (singularChainMap R f (n + 1)).hom
@@ -164,7 +129,6 @@ theorem singularChainMap_barycentricHomotopy_generator (R : Type) [CommRing R]
       ← ModuleCat.comp_apply, ← singularChainMap_comp]
   congr 2
 
-/-- **Naturality of the homotopy operator on chains.** -/
 theorem singularChainMap_barycentricHomotopy (R : Type) [CommRing R]
     {X Y : TopCat.{0}} (f : X ⟶ Y) (n : ℕ) (c : singularChainGroup R X n) :
     (singularChainMap R f (n + 1)).hom
@@ -183,7 +147,6 @@ theorem singularChainMap_barycentricHomotopy (R : Type) [CommRing R]
 
 /-! ## 4. The recursion equation for the universal chain -/
 
-/-- The defining recursion of the universal homotopy chain in positive degree. -/
 theorem barycentricHomotopyUniversal_succ_eq (R : Type) [CommRing R] (m : ℕ) :
     barycentricHomotopyUniversal R (m+1)
       = (coneLinearMap R (m + 1) (m + 1) (deltaBarycenter (m + 1))).hom
@@ -194,36 +157,27 @@ theorem barycentricHomotopyUniversal_succ_eq (R : Type) [CommRing R] (m : ℕ) :
             - (barycentricSubdivisionHomotopyLinearMap R (TopCat.of (Delta (m + 1))) m).hom
                 ((singularBoundary R (TopCat.of (Delta (m + 1))) m).hom
                   (chainGenerator R (TopCat.of (Delta (m + 1))) (m + 1)
-                    (stdSimplexIdSingularSimplex (m + 1))))) := by
-  rw [barycentricHomotopyUniversal]
-  rfl
+                    (stdSimplexIdSingularSimplex (m + 1))))) := rfl
 
 /-! ## 5. The boundary term and the chain-homotopy formula -/
 
-/-- The degree-`n` "`H ∘ ∂`" term of the homotopy formula. In degree `0` it is `0`
-(there is no boundary out of degree `0`); in degree `m+1` it is
-`H_m(∂_m c)`, i.e. `barycentricSubdivisionHomotopyLinearMap R X m` applied to
-`singularBoundary R X m c`. This is exactly `H_{n-1}(∂_{n-1} c)` with the library's
-index convention. -/
-noncomputable def homotopyBoundaryTerm (R : Type) [CommRing R] (X : TopCat.{0}) :
-    (n : ℕ) → singularChainGroup R X n → singularChainGroup R X n
-  | 0, _ => 0
-  | (m+1), c => (barycentricSubdivisionHomotopyLinearMap R X m).hom
+noncomputable def homotopyBoundaryTerm (R : Type) [CommRing R] (X : TopCat.{0}) (n : ℕ)
+    (c : singularChainGroup R X n) : singularChainGroup R X n :=
+  match n with
+  | 0 => 0
+  | m + 1 => (barycentricSubdivisionHomotopyLinearMap R X m).hom
       ((singularBoundary R X m).hom c)
 
-/-- Value of `homotopyBoundaryTerm` in positive degree. -/
 theorem homotopyBoundaryTerm_succ (R : Type) [CommRing R] (X : TopCat.{0}) (m : ℕ)
     (c : singularChainGroup R X (m+1)) :
     homotopyBoundaryTerm R X (m+1) c
       = (barycentricSubdivisionHomotopyLinearMap R X m).hom
           ((singularBoundary R X m).hom c) := rfl
 
-/-- Value of `homotopyBoundaryTerm` in degree `0`. -/
 theorem homotopyBoundaryTerm_zero (R : Type) [CommRing R] (X : TopCat.{0})
     (c : singularChainGroup R X 0) :
     homotopyBoundaryTerm R X 0 c = 0 := rfl
 
-/-- **Naturality of the boundary, pointwise.** -/
 theorem singularChainMap_boundary_apply (R : Type) [CommRing R] {X Y : TopCat.{0}}
     (f : X ⟶ Y) (n : ℕ) (c : singularChainGroup R X (n+1)) :
     (singularBoundary R Y n).hom ((singularChainMap R f (n+1)).hom c)
@@ -232,7 +186,6 @@ theorem singularChainMap_boundary_apply (R : Type) [CommRing R] {X Y : TopCat.{0
   have h2 := DFunLike.congr_fun (congrArg ModuleCat.Hom.hom h) c
   simpa [ModuleCat.hom_comp, LinearMap.comp_apply] using h2
 
-/-- The boundary term applied to a boundary vanishes (via `∂∂ = 0`). -/
 theorem homotopyBoundaryTerm_singularBoundary_eq_zero (R : Type) [CommRing R] (X : TopCat.{0})
     (n : ℕ) (c : singularChainGroup R X (n+1)) :
     homotopyBoundaryTerm R X n ((singularBoundary R X n).hom c) = 0 := by
@@ -243,17 +196,6 @@ theorem homotopyBoundaryTerm_singularBoundary_eq_zero (R : Type) [CommRing R] (X
 
 /-! ## 6. The chain-homotopy formula `∂H + H∂ = id - sd` -/
 
-/-- **The barycentric subdivision chain-homotopy formula, on all chains.**
-
-For every singular chain `c ∈ C_n(X; R)`,
-```text
-∂ H(c) + H(∂ c) = c - sd(c),
-```
-where `H = barycentricSubdivisionHomotopyLinearMap`, `sd =
-barycentricSubdivisionLinearMap`, `∂ = singularBoundary`, and the term `H(∂ c)` is
-`homotopyBoundaryTerm R X n c` (which is `H_{n-1}(∂_{n-1} c)` in positive degree and
-`0` in degree `0`, matching the library's index convention `∂ : C_{n+1} → C_n =
-singularBoundary R X n`). -/
 theorem barycentricSubdivisionHomotopy_boundary_formula (R : Type) [CommRing R]
     (X : TopCat.{0}) (n : ℕ) (c : singularChainGroup R X n) :
     (singularBoundary R X n).hom
@@ -275,8 +217,19 @@ theorem barycentricSubdivisionHomotopy_boundary_formula (R : Type) [CommRing R]
     rw [homotopyBoundaryTerm_zero, add_zero]
     have key : barycentricSubdivisionHomotopyLinearMap R X 0 ≫ singularBoundary R X 0
         = 𝟙 _ - barycentricSubdivisionLinearMap R X 0 := by
-      apply Sigma.hom_ext; intro σ; ext
-      simp only [ModuleCat.hom_comp, LinearMap.comp_apply, ModuleCat.hom_sub, LinearMap.sub_apply]
+      apply Sigma.hom_ext; intro σ
+      erw [Preadditive.comp_sub, Category.comp_id]
+      have hval : ∀ (f g : ModuleCat.of R R ⟶ singularChainGroup R X 0),
+          f.hom (1 : R) = g.hom (1 : R) → f = g := by
+        intro f g h
+        apply ModuleCat.hom_ext; apply LinearMap.ext; intro x
+        have hf := f.hom.map_smul x (1 : R); have hg := g.hom.map_smul x (1 : R)
+        simp at hf hg; rw [hf, hg, h]
+      apply hval
+      erw [ModuleCat.hom_comp, LinearMap.comp_apply,
+           ModuleCat.hom_comp, LinearMap.comp_apply,
+           ModuleCat.hom_sub, LinearMap.sub_apply,
+           ModuleCat.hom_comp, LinearMap.comp_apply]
       exact gen X σ
     have h2 := DFunLike.congr_fun (congrArg ModuleCat.Hom.hom key) c
     simpa [ModuleCat.hom_comp, LinearMap.comp_apply, ModuleCat.hom_sub, LinearMap.sub_apply,
@@ -350,22 +303,27 @@ theorem barycentricSubdivisionHomotopy_boundary_formula (R : Type) [CommRing R]
     have key : barycentricSubdivisionHomotopyLinearMap R X (m+1) ≫ singularBoundary R X (m+1)
         + singularBoundary R X m ≫ barycentricSubdivisionHomotopyLinearMap R X m
         = 𝟙 _ - barycentricSubdivisionLinearMap R X (m+1) := by
-      apply Sigma.hom_ext; intro σ; ext
-      simp only [ModuleCat.hom_comp, LinearMap.comp_apply, ModuleCat.hom_add, LinearMap.add_apply,
-        ModuleCat.hom_sub, LinearMap.sub_apply]
+      apply Sigma.hom_ext; intro σ
+      erw [Preadditive.comp_add, Preadditive.comp_sub, Category.comp_id]
+      have hval : ∀ (f g : ModuleCat.of R R ⟶ singularChainGroup R X (m + 1)),
+          f.hom (1 : R) = g.hom (1 : R) → f = g := by
+        intro f g h
+        apply ModuleCat.hom_ext; apply LinearMap.ext; intro x
+        have hf := f.hom.map_smul x (1 : R); have hg := g.hom.map_smul x (1 : R)
+        simp at hf hg; rw [hf, hg, h]
+      apply hval
+      erw [ModuleCat.hom_add, LinearMap.add_apply,
+           ModuleCat.hom_comp, LinearMap.comp_apply,
+           ModuleCat.hom_comp, LinearMap.comp_apply,
+           ModuleCat.hom_comp, LinearMap.comp_apply,
+           ModuleCat.hom_comp, LinearMap.comp_apply,
+           ModuleCat.hom_sub, LinearMap.sub_apply,
+           ModuleCat.hom_comp, LinearMap.comp_apply]
       exact gen X σ
     have h2 := DFunLike.congr_fun (congrArg ModuleCat.Hom.hom key) c
     simpa [ModuleCat.hom_comp, LinearMap.comp_apply, ModuleCat.hom_add, LinearMap.add_apply,
       ModuleCat.hom_sub, LinearMap.sub_apply, ModuleCat.hom_id, LinearMap.id_apply] using h2
 
-/-- **The barycentric subdivision chain-homotopy formula, on a generator.**
-
-For a singular simplex `σ`,
-```text
-∂ H([σ]) + H(∂[σ]) = [σ] - sd([σ]).
-```
-The `H(∂[σ])` term is `homotopyBoundaryTerm R X n [σ]`, i.e. `H_{n-1}(∂_{n-1}[σ])`
-in positive degree and `0` in degree `0`. -/
 theorem barycentricSubdivisionHomotopy_generator_boundary_formula (R : Type) [CommRing R]
     (X : TopCat.{0}) (n : ℕ) (σ : singularSimplices X n) :
     (singularBoundary R X n).hom

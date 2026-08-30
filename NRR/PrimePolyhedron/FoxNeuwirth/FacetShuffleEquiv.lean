@@ -167,7 +167,8 @@ theorem shuffleTopCell_isFacet
   refine ⟨?_, ?_⟩
   · refine ⟨?_, ?_, ?_⟩
     · intro i j hij
-      simp [BarredPermutation.blockIndex, BarredPermutation.TopCell.ofPerm]
+      change 0 ≤ 0
+      exact le_rfl
     · intro i j hij
       simpa [c] using shuffleRank_preserves_sameBlock_order hp a ha s i j hij
     · rw [ha, BarredPermutation.TopCell.dimension hp c]
@@ -206,13 +207,13 @@ theorem firstBlockPositions_shuffleToTopExtension
     · rintro ⟨i, rfl⟩
       exact ⟨⟨(a.rank i.1).1, i.2⟩, (shuffleRank_apply_left hp a ha s i.1 i.2).symm⟩
     · rintro ⟨j, rfl⟩
-      use (firstBlockEquivFin hp a ha).symm j
-      have hij : (a.rank ((firstBlockEquivFin hp a ha).symm j).1).1 < facetLeftSize hp a ha := by
-        simp [firstBlockEquivFin]
-      rw [shuffleRank_apply_left hp a ha s ((firstBlockEquivFin hp a ha).symm j).1 hij]
-      simp [firstBlockEquivFin]
+      let i := (firstBlockEquivFin hp a ha).symm j
+      use i
+      rw [shuffleRank_apply_left hp a ha s i.1 i.2]
+      change s.1.orderEmbOfFin s.2 ((firstBlockEquivFin hp a ha) i) = _
+      rw [(firstBlockEquivFin hp a ha).apply_symm_apply j]
   have hcard : Fintype.card (Fin (facetLeftSize hp a ha)) = s.1.card := by
-    simp [Fintype.card_fin]
+    simpa using s.2.symm
   have hfinal : Finset.image (fun j : Fin (facetLeftSize hp a ha) =>
       s.1.orderEmbOfFin s.2 j) Finset.univ = s.1 := by
     apply Finset.eq_of_subset_of_card_le
@@ -328,7 +329,15 @@ theorem topExtension_left_rank_eq_orderEmb
       (card_firstBlockPositions hp a ha c.1)
       (topExtensionLeftOrderEmb_mem hp a ha c)
   have happ := congrArg (fun e => e ⟨(a.rank i).1, hi⟩) hemb
-  simpa [topExtensionLeftOrderEmb] using happ
+  have hlabel :
+      a.rank.symm ⟨(a.rank i).1, lt_trans hi (facetLeftSize_lt hp a ha)⟩ = i := by
+    apply a.rank.injective
+    apply Fin.ext
+    simp
+  change ((c.1 : BarredPermutation p).rank
+      (a.rank.symm ⟨(a.rank i).1, lt_trans hi (facetLeftSize_lt hp a ha)⟩)) = _ at happ
+  rw [hlabel] at happ
+  exact happ
 
 /-- The complement of the first-block position set has the size of the second block. -/
 theorem card_compl_firstBlockPositions
@@ -457,7 +466,20 @@ theorem topExtension_right_rank_eq_orderEmb
       omega⟩
   have happ := congrArg (fun e => e r) hemb
   have hge : facetLeftSize hp a ha ≤ (a.rank i).1 := Nat.le_of_not_gt hi
-  simpa [topExtensionRightOrderEmb, r, Nat.add_sub_of_le hge] using happ
+  have hlabel :
+      a.rank.symm ⟨facetLeftSize hp a ha + ((a.rank i).1 - facetLeftSize hp a ha), by
+        have hirank := (a.rank i).2
+        omega⟩ = i := by
+    apply a.rank.injective
+    apply Fin.ext
+    simp [Nat.add_sub_of_le hge]
+  change ((c.1 : BarredPermutation p).rank
+      (a.rank.symm ⟨facetLeftSize hp a ha + r.1, by
+        have hr := r.2
+        omega⟩)) = _ at happ
+  dsimp [r] at happ
+  rw [hlabel] at happ
+  exact happ
 
 /-- Two extensions with the same first-block position set are equal. -/
 theorem topExtensionToShuffle_injective
@@ -469,15 +491,18 @@ theorem topExtensionToShuffle_injective
     intro c
     apply Subtype.ext
     apply BarredPermutation.TopCell.equivPerm.injective
-    simp [BarredPermutation.TopCell.equivPerm]
+    change shuffleRank hp a ha (topExtensionToShuffle hp a ha c) =
+      ((c.1 : BarredPermutation.TopCell p) : BarredPermutation p).rank
     ext i
     by_cases hi : (a.rank i).1 < facetLeftSize hp a ha
-    · simp only [shuffleToTopExtension, topExtensionToShuffle, BarredPermutation.TopCell.ofPerm_rank,
-        shuffleRank_apply_left hp a ha _ i hi,
-        topExtension_left_rank_eq_orderEmb hp a ha c i hi]
-    · simp only [shuffleToTopExtension, topExtensionToShuffle, BarredPermutation.TopCell.ofPerm_rank,
-        shuffleRank_apply_right hp a ha _ i hi,
-        topExtension_right_rank_eq_orderEmb hp a ha c i hi]
+    · apply congrArg Fin.val
+      exact (shuffleRank_apply_left hp a ha
+        (topExtensionToShuffle hp a ha c) i hi).trans
+        (topExtension_left_rank_eq_orderEmb hp a ha c i hi).symm
+    · apply congrArg Fin.val
+      exact (shuffleRank_apply_right hp a ha
+        (topExtensionToShuffle hp a ha c) i hi).trans
+        (topExtension_right_rank_eq_orderEmb hp a ha c i hi).symm
   intro c c' h
   rw [← hcomp c, ← hcomp c', congrArg (shuffleToTopExtension hp a ha) h]
 

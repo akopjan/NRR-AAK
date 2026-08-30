@@ -1,6 +1,7 @@
 import NRR.PrimePolyhedron.FoxNeuwirth.RouteBCanonicalCoordinateSplit
 import Mathlib.Topology.Maps.Proper.Basic
 import Mathlib.MeasureTheory.Measure.Prod
+set_option backward.isDefEq.respectTransparency false
 
 /-!
 # Route B: measurability of the complete mixed-face bad set
@@ -62,7 +63,7 @@ theorem continuous_jointAffineCoordinate
     Continuous (fun z : MovableParameterSpace hp C × StandardSimplex p =>
       jointAffineCoordinate hp C base κ z j) := by
   unfold jointAffineCoordinate affineValue
-  exact continuous_finset_sum _ fun i _ => by
+  exact continuous_finsetSum _ fun i _ => by
     have hw : Continuous (fun z : MovableParameterSpace hp C × StandardSimplex p =>
         (z.2 : Fin (p + 1) → Real) i) :=
       (continuous_apply i).comp (continuous_induced_dom.comp continuous_snd)
@@ -71,7 +72,11 @@ theorem continuous_jointAffineCoordinate
           (localParameter hp C κ.cell i j)) :=
       (continuous_assignmentOfMovableParameters_apply hp C base
         (localParameter hp C κ.cell i j)).comp continuous_fst
-    simpa [localVertexMap_value_apply_eq_assignment_localParameter] using hw.mul ha
+    simp only [localVertexMap_value_apply_eq_assignment_localParameter]
+    change Continuous ((fun z : MovableParameterSpace hp C × StandardSimplex p => z.2 i) *
+      fun z => assignmentOfMovableParameters hp C base z.1
+        (localParameter hp C κ.cell i j))
+    exact hw.mul ha
 
 /-- Joint deviations are continuous. -/
 theorem continuous_jointDeviation
@@ -92,7 +97,7 @@ theorem continuous_jointMean
     Continuous (fun z : MovableParameterSpace hp C × StandardSimplex p =>
       jointMean hp C base κ z) := by
   unfold jointMean mean coordinateMean
-  exact (continuous_finset_sum _ fun j _ =>
+  exact (continuous_finsetSum _ fun j _ =>
     continuous_jointAffineCoordinate hp C base κ j).div_const (p : Real)
 
 /-- Closed threshold relation.  The natural numbers replace the two strict
@@ -161,7 +166,7 @@ theorem isClosed_mixedFaceThresholdBadSet
       · intro _
         exact ⟨StandardSimplex.toDelta w, StandardSimplex.ofDelta_toDelta w⟩
     letI : CompactSpace (SphereOddDegree.AffineBarycentricSubdivision.Delta p) :=
-      isCompact_iff_compactSpace.mp (isCompact_stdSimplex (Fin (p + 1)))
+      isCompact_iff_compactSpace.mp (isCompact_stdSimplex ℝ (Fin (p + 1)))
     simpa [hrange] using (isCompact_range hf)
   letI : CompactSpace (StandardSimplex p) :=
     isCompact_univ_iff.mp hcompact
@@ -184,7 +189,7 @@ theorem mixedFaceBadSet_eq_iUnion_threshold
     refine ⟨n, Set.mem_iUnion.mpr ⟨m, ?_⟩⟩
     refine ⟨(x, w), ?_, rfl⟩
     simp only [mixedFaceThresholdRelation, Set.mem_inter_iff,
-      Set.mem_setOf_eq, Set.mem_iInter]
+      Set.mem_ofPred_eq, Set.mem_iInter]
     exact ⟨⟨⟨⟨h0, h1⟩, le_of_lt hn⟩, hdev⟩, le_of_lt hm⟩
   · intro hx
     rcases Set.mem_iUnion.mp hx with ⟨n, hx⟩
@@ -192,7 +197,7 @@ theorem mixedFaceBadSet_eq_iUnion_threshold
     rcases hx with ⟨z, hz, rfl⟩
     rcases z with ⟨x, w⟩
     simp only [mixedFaceThresholdRelation, Set.mem_inter_iff,
-      Set.mem_setOf_eq, Set.mem_iInter] at hz
+      Set.mem_ofPred_eq, Set.mem_iInter] at hz
     rcases hz with ⟨⟨⟨⟨h0, h1⟩, hret⟩, hdev⟩, hmean⟩
     have hnpos : 0 < 1 / ((n : Real) + 1) := by positivity
     have hmpos : 0 < 1 / ((m : Real) + 1) := by positivity

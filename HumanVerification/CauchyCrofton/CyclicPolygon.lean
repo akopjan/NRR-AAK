@@ -94,12 +94,12 @@ theorem exists_index (t : ℝ) : ∃ j : ℤ, A.θ j ≤ t ∧ t < A.θ (j + 1) 
   have hbdd : ∀ z ∈ {z : ℤ | A.θ z ≤ t}, z ≤ j1 := by
     intro z hz
     by_contra hcon
-    push_neg at hcon
+    push Not at hcon
     exact absurd (le_trans (le_of_lt (A.strictMono hcon)) hz) (not_le.2 hj1)
   obtain ⟨j, hj, hjmax⟩ := Int.exists_greatest_of_bdd ⟨j1, hbdd⟩ ⟨j0, hj0⟩
   refine ⟨j, hj, ?_⟩
   by_contra hcon
-  push_neg at hcon
+  push Not at hcon
   exact absurd (hjmax (j + 1) hcon) (by omega)
 
 /-- Every real number lies in one of the sample intervals with index in the base window. -/
@@ -108,13 +108,13 @@ theorem exists_index_mem_range (t : ℝ) (ht : t ∈ Set.Ico (A.θ 0) (A.θ 0 + 
   obtain ⟨j, hj1, hj2⟩ := A.exists_index t
   refine ⟨j, ?_, ?_, hj1, hj2⟩
   · by_contra hcon
-    push_neg at hcon
+    push Not at hcon
     have : j + 1 ≤ 0 := by omega
     have hle : A.θ (j + 1) ≤ A.θ 0 := A.strictMono.monotone this
     have := ht.1
     linarith
   · by_contra hcon
-    push_neg at hcon
+    push Not at hcon
     have hle : A.θ (A.m : ℤ) ≤ A.θ j := A.strictMono.monotone hcon
     have hper : A.θ ((A.m : ℤ)) = A.θ 0 + 2 * Real.pi := by
       have := A.period 0
@@ -209,7 +209,7 @@ theorem polySet_subset (h0 : (0 : Point2) ∈ (K : Set Point2)) :
   · exact vtx_mem h0 _
 
 theorem isCompact_polySet : IsCompact (polySet K A) :=
-  (finite_polyVerts).isCompact_convexHull
+  (finite_polyVerts (K := K) (A := A)).isCompact_convexHull (𝕜 := ℝ)
 
 theorem convex_polySet : Convex ℝ (polySet K A) := convex_convexHull _ _
 
@@ -332,7 +332,7 @@ theorem inner_vtx_le_of_consecutive_eq
   · rw [← heq2, h2]
   -- now `j + 1 < k' < j + m`
   by_contra hcon
-  push_neg at hcon
+  push Not at hcon
   have hper : A.θ (j + A.m) = A.θ j + 2 * Real.pi := A.period j
   have hper1 : A.θ (j + 1 + A.m) = A.θ (j + 1) + 2 * Real.pi := A.period (j + 1)
   have hvper : vtx K A (j + A.m) = vtx K A j := vtx_periodic j
@@ -343,7 +343,7 @@ theorem inner_vtx_le_of_consecutive_eq
       (by omega) hlt2 hspread (le_of_eq h1.symm) hcon
     rw [h2] at this
     exact lt_irrefl d this
-  · push_neg at hspread
+  · push Not at hspread
     -- the complementary arc is short
     have hshort : A.θ (j + A.m) - A.θ k' ≤ Real.pi := by
       rw [hper]; linarith
@@ -604,7 +604,7 @@ theorem edge_subset_frontier (h0 : (0 : Point2) ∈ interior (K : Set Point2)) (
     rw [hy, inner_add_left, real_inner_smul_left, hxinner, real_inner_self_eq_norm_sq]
     field_simp
   have hle := polySet_subset_halfspace h0 j hyP
-  simp only [Set.mem_setOf_eq, hyinner] at hle
+  simp only [Set.mem_ofPred_eq, hyinner] at hle
   nlinarith
 
 /-- **Boundary decomposition.** The boundary of the polygon is the union of its `m` edges. -/
@@ -633,7 +633,7 @@ theorem frontier_polySet (h0 : (0 : Point2) ∈ interior (K : Set Point2)) :
       edge_subset_polySet j (rayPt_mem_edge h0 hj1 hj2.le)
     have hxle : ‖x‖ ≤ μ := by
       have hle := polySet_subset_halfspace h0 j hxP
-      simp only [Set.mem_setOf_eq] at hle
+      simp only [Set.mem_ofPred_eq] at hle
       rw [hxt, real_inner_smul_left] at hle
       rw [hμdef, le_div_iff₀ hc]
       exact hle

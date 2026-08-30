@@ -40,7 +40,7 @@ theorem exists_mem_fiber
     (S : TopBottomSeparator X) (x : X) :
     ∃ y : SignedInterval, (x, y) ∈ S.carrier := by
   by_contra h
-  push_neg at h
+  push Not at h
   -- Pull the two regions back along the vertical embedding.
   set v : SignedInterval → X × SignedInterval := SignedInterval.vertical X x with hv
   set L : Set SignedInterval := v ⁻¹' S.lower with hLdef

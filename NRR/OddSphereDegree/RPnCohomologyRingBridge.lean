@@ -106,7 +106,6 @@ theorem rpAlpha_power_eq_zero_iff {n : ℕ} (e : RPnCohomologyRingModelEmbedding
   constructor
   · intro h
     by_contra hc
-    push_neg at hc
     exact rpAlpha_power_ne_zero e.toRPnCohomologyToModelHom (by omega) h
   · intro h
     apply e.injective k

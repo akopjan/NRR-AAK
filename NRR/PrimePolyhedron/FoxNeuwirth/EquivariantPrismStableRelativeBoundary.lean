@@ -4,6 +4,7 @@ import NRR.PrimePolyhedron.FoxNeuwirth.RelativeCollarMiddlePrismEndpoints
 import NRR.PrimePolyhedron.FoxNeuwirth.ExplicitAffineRelativeCollarStokes
 import NRR.PrimePolyhedron.FoxNeuwirth.EquivariantPrismSubdivisionMargin
 import NRR.PrimePolyhedron.FoxNeuwirth.RegularApproximationStability
+set_option backward.isDefEq.respectTransparency false
 set_option linter.unusedSectionVars false
 set_option linter.unnecessarySeqFocus false
 set_option linter.unusedTactic false
@@ -215,7 +216,7 @@ private theorem continuous_rawEndpointInterpolant
     (a : Assignment hp N L) :
     Continuous (rawEndpointInterpolant hp N L s a) := by
   unfold rawEndpointInterpolant
-  apply continuous_finset_sum
+  apply continuous_finsetSum
   intro v hv
   exact (continuous_endpointCardinalWeight hp N L s v).smul continuous_const
 
@@ -232,7 +233,7 @@ noncomputable def endpointInterpolant
     have hsum : Continuous fun x : Realization p =>
         ∑ g : PrimeSymmetry hp,
           g⁻¹ • rawEndpointInterpolant hp N L s a (g • x) := by
-      apply continuous_finset_sum
+      apply continuous_finsetSum
       intro g hg
       have hraw : Continuous fun x : Realization p =>
           rawEndpointInterpolant hp N L s a (g • x) :=
@@ -240,9 +241,17 @@ noncomputable def endpointInterpolant
           (Realization.continuous_smul hp g)
       apply continuous_pi
       intro j
-      simpa [PrimeSymmetry.smul_coordinate_apply] using
-        (continuous_apply ((PrimeSymmetry.toPerm hp g⁻¹).symm j)).comp hraw
-    exact continuous_const.smul hsum
+      change Continuous fun x =>
+        rawEndpointInterpolant hp N L s a (g • x)
+          ((PrimeSymmetry.toPerm hp g⁻¹).symm j)
+      exact (continuous_apply ((PrimeSymmetry.toPerm hp g⁻¹).symm j)).comp hraw
+    change Continuous fun x =>
+      (Fintype.card (PrimeSymmetry hp) : Real)⁻¹ •
+        ∑ g : PrimeSymmetry hp,
+          g⁻¹ • rawEndpointInterpolant hp N L s a (g • x)
+    have hconst : Continuous fun _ : Realization p =>
+        (Fintype.card (PrimeSymmetry hp) : Real)⁻¹ := continuous_const
+    exact hconst.smul hsum
 
 /-- The symmetrized endpoint interpolant is prime-equivariant. -/
 theorem endpointInterpolant_equivariant
@@ -342,6 +351,13 @@ noncomputable def endpointOccurrence
     (q : TopCell hp N) (eta : RefinementWord p L) : FacetOccurrence hp N L :=
   (endpointPrismCell hp N L s q eta, endpointOmittedIndex L s)
 
+private theorem facetCoordinateIndex_eq_endpointIndex
+    (hp : Nat.Prime p) (i : Fin p) :
+    AffinePositiveRayBoundary.VertexMap.facetCoordinateIndex i =
+      Fin.cast (Nat.sub_add_cancel hp.pos).symm i := by
+  apply Fin.ext
+  rfl
+
 /-- The canonical endpoint occurrence has exactly the expected refined endpoint vertices. -/
 theorem endpointOccurrence_facetSignature
     (hp : Nat.Prime p) (N L : Nat) (s : EndpointSide)
@@ -358,16 +374,8 @@ theorem endpointOccurrence_facetSignature
             (endpointTopCell hp N L q eta)
             (Fin.cast (Nat.sub_add_cancel hp.pos).symm i)) := by
   cases s
-  · simpa [endpointOccurrence, endpointPrismCell, endpointOmittedIndex,
-      RelativeCollarMiddlePrism.cellSystem,
-      ExplicitAffineRelativeCollar.RelativeAffineCellSystem.facetSignature,
-      ExplicitAffineRelativeCollar.RelativeAffineCellSystem.slotPoint] using
-      lowerOccurrence_facetSignature hp N L q eta i
-  · simpa [endpointOccurrence, endpointPrismCell, endpointOmittedIndex,
-      RelativeCollarMiddlePrism.cellSystem,
-      ExplicitAffineRelativeCollar.RelativeAffineCellSystem.facetSignature,
-      ExplicitAffineRelativeCollar.RelativeAffineCellSystem.slotPoint] using
-      upperOccurrence_facetSignature hp N L q eta i
+  · exact lowerOccurrence_facetSignature hp N L q eta i
+  · exact upperOccurrence_facetSignature hp N L q eta i
 
 /-- Boundary samples of an assignment agree with the corresponding endpoint interpolant. -/
 theorem endpointInterpolant_vertexValue
@@ -387,11 +395,18 @@ theorem endpointInterpolant_vertexValue
   have hsig := endpointOccurrence_facetSignature hp N L s q eta i
   have hendpoint : IsEndpointVertex hp N L s
       (sampleVertex hp N L (o.1, o.2.succAbove i)) := by
-    cases s <;>
-      simpa [IsEndpointVertex, o, globalPoint_sampleVertex, slotPoint,
-        facetSignature, EndpointSide.time,
-        ExplicitAffineRelativeCollar.lowerCylinderPoint,
-        ExplicitAffineRelativeCollar.upperCylinderPoint] using
+    cases s
+    · unfold IsEndpointVertex
+      rw [globalPoint_sampleVertex]
+      change ((RelativeCollarMiddlePrism.cellSystem hp N L).facetSignature
+        (endpointOccurrence hp N L EndpointSide.lower q eta) i).time.1 = 0
+      simpa [ExplicitAffineRelativeCollar.lowerCylinderPoint] using
+        congrArg (fun z : CylinderPoint p => z.time.1) hsig
+    · unfold IsEndpointVertex
+      rw [globalPoint_sampleVertex]
+      change ((RelativeCollarMiddlePrism.cellSystem hp N L).facetSignature
+        (endpointOccurrence hp N L EndpointSide.upper q eta) i).time.1 = 1
+      simpa [ExplicitAffineRelativeCollar.upperCylinderPoint] using
         congrArg (fun z : CylinderPoint p => z.time.1) hsig
   let v : EndpointVertex hp N L s :=
     ⟨sampleVertex hp N L (o.1, o.2.succAbove i), hendpoint⟩
@@ -399,11 +414,22 @@ theorem endpointInterpolant_vertexValue
       endpointSpatialMap hp N L q eta
         (stdSimplex.vertex (S := Real)
             (Fin.cast (Nat.sub_add_cancel hp.pos).symm i)) := by
-    cases s <;>
-      simpa [v, o, endpointSpatialPoint, globalPoint_sampleVertex, slotPoint,
-        facetSignature, endpointSpatialMap_eq_chart,
+    cases s
+    · unfold endpointSpatialPoint
+      rw [globalPoint_sampleVertex]
+      change ((RelativeCollarMiddlePrism.cellSystem hp N L).facetSignature
+        (endpointOccurrence hp N L EndpointSide.lower q eta) i).spatial = _
+      simpa [endpointSpatialMap_eq_chart,
         ExplicitAffineRelativeCollar.lowerCylinderPoint,
-        ExplicitAffineRelativeCollar.upperCylinderPoint] using
+        RefinedAffineMap.vertex] using
+        congrArg (fun z : CylinderPoint p => z.spatial) hsig
+    · unfold endpointSpatialPoint
+      rw [globalPoint_sampleVertex]
+      change ((RelativeCollarMiddlePrism.cellSystem hp N L).facetSignature
+        (endpointOccurrence hp N L EndpointSide.upper q eta) i).spatial = _
+      simpa [endpointSpatialMap_eq_chart,
+        ExplicitAffineRelativeCollar.upperCylinderPoint,
+        RefinedAffineMap.vertex] using
         congrArg (fun z : CylinderPoint p => z.spatial) hsig
   rw [← hspatial]
   simpa [v, o] using endpointInterpolant_sample hp N L s a v
@@ -431,11 +457,15 @@ theorem endpointInterpolant_regular
           (ExplicitAffineRelativeCollar.refinedVertexIndex hp i) := by
     intro i
     rw [ExplicitAffineRelativeCollar.refinedVertexIndex_eq_facetCoordinateIndex]
+    rw [facetCoordinateIndex_eq_endpointIndex hp i]
     symm
-    simpa [prismCell, omitted, endpointOccurrence, endpointSpatialMap_eq_chart,
-      AffinePositiveRayBoundary.VertexMap.facetValue,
-      AffinePositiveRayBoundary.VertexMap.facetCoordinateIndex,
-      RefinedAffineMap.vertexValue, RefinedAffineMap.vertex] using
+    change endpointInterpolant hp N L s a
+        (RefinedAffineMap.vertex hp (N + L) (endpointTopCell hp N L q₀ eta)
+          (Fin.cast (Nat.sub_add_cancel hp.pos).symm i)) =
+      vectorValue hp N L a (sampleVertex hp N L
+        ((endpointOccurrence hp N L s q₀ eta).1,
+          (endpointOccurrence hp N L s q₀ eta).2.succAbove i))
+    simpa [endpointSpatialMap_eq_chart, RefinedAffineMap.vertex] using
       endpointInterpolant_vertexValue hp N L s a q₀ eta i
   rw [← ExplicitAffineRelativeCollar.facetDeterminant_eq_refinedDeterminant
     hp (localVertexMap hp N L a prismCell) omitted (N + L)
@@ -473,10 +503,14 @@ theorem endpointInterpolant_skeletonFree
     intro i hi
     congr 1
     rw [ExplicitAffineRelativeCollar.refinedVertexIndex_eq_facetCoordinateIndex]
+    rw [facetCoordinateIndex_eq_endpointIndex hp i]
     symm
     simpa [prismCell, omitted, endpointOccurrence, endpointSpatialMap_eq_chart,
       AffinePositiveRayBoundary.VertexMap.facetValue,
       AffinePositiveRayBoundary.VertexMap.facetCoordinateIndex,
+      EquivariantPrismGenericityPolynomials.localVertexMap,
+      EquivariantPrismVertexParameters.localVertexValue,
+      ExplicitAffineRelativeCollar.refinedVertexIndex,
       RefinedAffineMap.vertexValue, RefinedAffineMap.vertex] using
       congrFun (endpointInterpolant_vertexValue hp N L s a q₀ eta i) j
   have hfullDev : ∀ r : Fin (p - 1),
@@ -844,12 +878,22 @@ theorem endpointInterpolant_homotopyAssignment_value
             (endpointOccurrence hp N L EndpointSide.lower q₀ eta).2.succAbove i')) =
           (endpointSpatialMap hp N L q₀ eta
             (stdSimplex.vertex (Fin.cast (Nat.sub_add_cancel hp.pos).symm i')), 0) := by
-      simpa [CylinderPoint.toProd, RelativeCollarMiddlePrism.cellSystem,
-        ExplicitAffineRelativeCollar.RelativeAffineCellSystem.facetSignature,
-        ExplicitAffineRelativeCollar.RelativeAffineCellSystem.slotPoint,
-        slotPoint, endpointSpatialMap_eq_chart,
-        ExplicitAffineRelativeCollar.lowerCylinderPoint] using
-        congrArg CylinderPoint.toProd hsig
+      apply Prod.ext
+      · simpa [slotPoint, RelativeCollarMiddlePrism.cellSystem,
+          RelativeCollarMiddlePrism.vertex,
+          ExplicitAffineRelativeCollar.RelativeAffineCellSystem.facetSignature,
+          EquivariantPrismVertexParameters.CylinderPoint.ofProd,
+          CylinderPoint.toProd,
+          endpointSpatialMap_eq_chart, ExplicitAffineRelativeCollar.lowerCylinderPoint,
+          RefinedAffineMap.vertex] using
+          congrArg (fun z : CylinderPoint p => z.spatial) hsig
+      · simpa [slotPoint, RelativeCollarMiddlePrism.cellSystem,
+          RelativeCollarMiddlePrism.vertex,
+          ExplicitAffineRelativeCollar.RelativeAffineCellSystem.facetSignature,
+          EquivariantPrismVertexParameters.CylinderPoint.ofProd,
+          CylinderPoint.toProd,
+          ExplicitAffineRelativeCollar.lowerCylinderPoint] using
+          congrArg (fun z : CylinderPoint p => z.time) hsig
     rw [vectorValue_homotopyAssignment, globalPoint_sampleVertex, hpoint]
     exact congrFun (H.map_zero _) j
   · have hsig := endpointOccurrence_facetSignature hp N L EndpointSide.upper q₀ eta i'
@@ -859,12 +903,22 @@ theorem endpointInterpolant_homotopyAssignment_value
             (endpointOccurrence hp N L EndpointSide.upper q₀ eta).2.succAbove i')) =
           (endpointSpatialMap hp N L q₀ eta
             (stdSimplex.vertex (Fin.cast (Nat.sub_add_cancel hp.pos).symm i')), 1) := by
-      simpa [CylinderPoint.toProd, RelativeCollarMiddlePrism.cellSystem,
-        ExplicitAffineRelativeCollar.RelativeAffineCellSystem.facetSignature,
-        ExplicitAffineRelativeCollar.RelativeAffineCellSystem.slotPoint,
-        slotPoint, endpointSpatialMap_eq_chart,
-        ExplicitAffineRelativeCollar.upperCylinderPoint] using
-        congrArg CylinderPoint.toProd hsig
+      apply Prod.ext
+      · simpa [slotPoint, RelativeCollarMiddlePrism.cellSystem,
+          RelativeCollarMiddlePrism.vertex,
+          ExplicitAffineRelativeCollar.RelativeAffineCellSystem.facetSignature,
+          EquivariantPrismVertexParameters.CylinderPoint.ofProd,
+          CylinderPoint.toProd,
+          endpointSpatialMap_eq_chart, ExplicitAffineRelativeCollar.upperCylinderPoint,
+          RefinedAffineMap.vertex] using
+          congrArg (fun z : CylinderPoint p => z.spatial) hsig
+      · simpa [slotPoint, RelativeCollarMiddlePrism.cellSystem,
+          RelativeCollarMiddlePrism.vertex,
+          ExplicitAffineRelativeCollar.RelativeAffineCellSystem.facetSignature,
+          EquivariantPrismVertexParameters.CylinderPoint.ofProd,
+          CylinderPoint.toProd,
+          ExplicitAffineRelativeCollar.upperCylinderPoint] using
+          congrArg (fun z : CylinderPoint p => z.time) hsig
     rw [vectorValue_homotopyAssignment, globalPoint_sampleVertex, hpoint]
     exact congrFun (H.map_one _) j
 
@@ -1008,22 +1062,19 @@ private theorem lower_realizedFacetWeight_eq_localIndex
     rw [
       ExplicitAffineRelativeCollar.refinedVertexIndex_eq_facetCoordinateIndex
     ]
+    rw [facetCoordinateIndex_eq_endpointIndex hp i]
     symm
     have h :=
       (hfix i).trans
         (endpointInterpolant_vertexValue
           hp N L EndpointSide.lower a q eta i)
-    simpa [
-      o,
-      endpointOccurrence,
-      endpointPrismCell,
-      endpointOmittedIndex,
-      endpointSpatialMap_eq_chart,
-      AffinePositiveRayBoundary.VertexMap.facetValue,
-      AffinePositiveRayBoundary.VertexMap.facetCoordinateIndex,
-      RefinedAffineMap.vertexValue,
-      RefinedAffineMap.vertex
-    ] using h
+    change F (RefinedAffineMap.vertex hp (N + L)
+        (endpointTopCell hp N L q eta)
+        (Fin.cast (Nat.sub_add_cancel hp.pos).symm i)) =
+      vectorValue hp N L a (sampleVertex hp N L
+        ((endpointOccurrence hp N L EndpointSide.lower q eta).1,
+          (endpointOccurrence hp N L EndpointSide.lower q eta).2.succAbove i))
+    simpa [endpointSpatialMap_eq_chart, RefinedAffineMap.vertex] using h
 
   have haffine : ∀ w : StandardSimplex (p - 1),
       AffinePositiveRayBoundary.VertexMap.facetAffineValue
@@ -1040,6 +1091,7 @@ private theorem lower_realizedFacetWeight_eq_localIndex
     rw [
       ExplicitAffineRelativeCollar.refinedVertexIndex_eq_facetCoordinateIndex
     ]
+    rw [facetCoordinateIndex_eq_endpointIndex hp i]
     congr 1
     exact congrFun (hvertex i) j
 
@@ -1110,22 +1162,19 @@ private theorem upper_realizedFacetWeight_eq_localIndex
     rw [
       ExplicitAffineRelativeCollar.refinedVertexIndex_eq_facetCoordinateIndex
     ]
+    rw [facetCoordinateIndex_eq_endpointIndex hp i]
     symm
     have h :=
       (hfix i).trans
         (endpointInterpolant_vertexValue
           hp N L EndpointSide.upper a q eta i)
-    simpa [
-      o,
-      endpointOccurrence,
-      endpointPrismCell,
-      endpointOmittedIndex,
-      endpointSpatialMap_eq_chart,
-      AffinePositiveRayBoundary.VertexMap.facetValue,
-      AffinePositiveRayBoundary.VertexMap.facetCoordinateIndex,
-      RefinedAffineMap.vertexValue,
-      RefinedAffineMap.vertex
-    ] using h
+    change F (RefinedAffineMap.vertex hp (N + L)
+        (endpointTopCell hp N L q eta)
+        (Fin.cast (Nat.sub_add_cancel hp.pos).symm i)) =
+      vectorValue hp N L a (sampleVertex hp N L
+        ((endpointOccurrence hp N L EndpointSide.upper q eta).1,
+          (endpointOccurrence hp N L EndpointSide.upper q eta).2.succAbove i))
+    simpa [endpointSpatialMap_eq_chart, RefinedAffineMap.vertex] using h
 
   have haffine : ∀ w : StandardSimplex (p - 1),
       AffinePositiveRayBoundary.VertexMap.facetAffineValue

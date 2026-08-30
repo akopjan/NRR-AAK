@@ -1,6 +1,7 @@
 import NRR.PrimePolyhedron.FoxNeuwirth.RelativeSubdivisionOneStepBoundaryBase
 import NRR.PrimePolyhedron.FoxNeuwirth.RelativeSubdivisionCylinderBoundary
 import NRR.PrimePolyhedron.FoxNeuwirth.EquivariantPrismNonhorizontalCancellation
+set_option backward.isDefEq.respectTransparency false
 set_option linter.unusedVariables false
 set_option linter.unusedSectionVars false
 set_option linter.unnecessarySeqFocus false
@@ -524,8 +525,8 @@ private theorem fixedSideCell_sum_eq_zero_dim
     have hdeleted :
         (StandardSimplex.ofDelta
           (stdSimplex.map j.succAbove (affineCompMap d N theta x))) j = 0 := by
-      simpa [cofacePoint] using
-        cofacePoint_apply_deleted d j (affineCompMap d N theta x)
+      change (cofacePoint d j (affineCompMap d N theta x)) j = 0
+      exact cofacePoint_apply_deleted d j (affineCompMap d N theta x)
     simp only [hdeleted, ite_self, zero_add]
     apply Finset.sum_congr rfl
     intro i hi
@@ -658,8 +659,10 @@ theorem fixedSideCell_sum_eq_zero
   obtain ⟨d, hd⟩ : ∃ d, p = d + 2 :=
     ⟨p - 2, (Nat.sub_add_cancel hp.two_le).symm⟩
   subst p
-  simpa [sideDomainCast, sideDimension_eq, sideRefinementCast] using
-    fixedSideCell_sum_eq_zero_dim d hp N s r
+  convert fixedSideCell_sum_eq_zero_dim d hp N s r using 1
+  apply Finset.sum_congr rfl
+  intro c hc
+  congr 1
 
 private theorem sideMapWeight_baseOccurrence_sideCell
     (d N : Nat) (hp : Nat.Prime (d + 2))

@@ -298,8 +298,9 @@ homotopy has nonzero orbit zero count. -/
 theorem zeroCount_ne_zero
     {M : FiniteOrbitZeroCountModel hp} (D : M.EndpointData) :
     M.cycle.zeroCount D.index ≠ 0 := by
-  simpa [index] using
-    D.homotopy.zeroCount_ne_zero M.referenceCount_ne_zero
+  change M.cycle.zeroCount
+    (fun c => D.map.localZeroIndex (M.topSimplex c)) ≠ 0
+  exact D.homotopy.zeroCount_ne_zero M.referenceCount_ne_zero
 
 end EndpointData
 
@@ -321,7 +322,7 @@ theorem exists_index_ne_zero_of_zeroCount_ne_zero
     ∃ c : C.TopCell, index c ≠ 0 := by
   classical
   by_contra h
-  push_neg at h
+  push Not at h
   apply hcount
   simp [FiniteIncidenceCycle.zeroCount, h]
 

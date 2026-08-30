@@ -2,6 +2,7 @@ import NRR.PrimePolyhedron.FoxNeuwirth.EquivariantPrismGlobalCancellation
 import NRR.PrimePolyhedron.FoxNeuwirth.RefinedChartCarrierEquivariant
 import NRR.OddSphereDegree.AlgebraicTopology.BarycentricBoundaryCancellation
 import NRR.OddSphereDegree.AlgebraicTopology.BarycentricFiniteCancellation
+set_option backward.isDefEq.respectTransparency false
 set_option linter.unusedVariables false
 set_option linter.unusedSectionVars false
 set_option linter.unnecessarySeqFocus false
@@ -178,8 +179,10 @@ theorem oneStep_last_face_eq
       (lastFaceMap_apply_castSucc j rho t).symm
   apply affineSubdiv_face_last_eq_boundary_subdiv
       pi j.succAbove rho hrho
-  · simpa [cofacePoint, Fin.succAbove_last] using
-      cofacePoint_apply_deleted n (Fin.last (n + 1)) x
+  · convert cofacePoint_apply_deleted n (Fin.last (n + 1)) x using 1
+    apply congrArg (cofacePoint n (Fin.last (n + 1)) x)
+    apply Fin.ext
+    rfl
   · intro k
     simpa [cofacePoint, Fin.succAbove_last] using
       (cofacePoint_apply_succAbove n (Fin.last (n + 1)) x k).symm
@@ -516,8 +519,19 @@ noncomputable def genericStaircaseSpatialPoint
       by_cases h : genericStaircaseSpatial k j = i
       · simp [h, w.2.1 j]
       · simp [h]
-  · rw [Finset.sum_comm]
-    simp [genericStaircaseSpatial, w.2.2]
+  · calc
+      (∑ i, ∑ j : Fin (n + 2),
+          if genericStaircaseSpatial k j = i then w j else 0) =
+          ∑ j : Fin (n + 2), w j := by
+        rw [Finset.sum_comm]
+        apply Finset.sum_congr rfl
+        intro j hj
+        rw [Finset.sum_eq_single (genericStaircaseSpatial k j)]
+        · simp
+        · intro i hi hne
+          rw [if_neg (Ne.symm hne)]
+        · simp
+      _ = 1 := w.2.2
 
 /-- Interval barycentric point in the generic staircase simplex. -/
 noncomputable def genericStaircaseIntervalPoint
@@ -1459,17 +1473,25 @@ theorem nonhorizontalContribution_eq_occurrence_sum
       have hl : MapIsLowerHorizontal (occurrenceFacetMap hp N L o) ↔
           IsLowerHorizontal hp N L (facetSignature hp N L o) := by
         constructor <;> intro h i
-        · simpa [MapIsLowerHorizontal, IsLowerHorizontal,
-            signatureTime, facetSignature] using h i
-        · simpa [MapIsLowerHorizontal, IsLowerHorizontal,
-            signatureTime, facetSignature] using h i
+        · have hi := h i
+          rw [occurrenceFacetMap_vertex] at hi
+          change (SubdivisionPrismCharts.vertex hp N L o.1 (o.2.succAbove i)).2.1 = 0
+          exact hi
+        · have hi := h i
+          change (SubdivisionPrismCharts.vertex hp N L o.1 (o.2.succAbove i)).2.1 = 0 at hi
+          rw [occurrenceFacetMap_vertex]
+          exact hi
       have hu : MapIsUpperHorizontal (occurrenceFacetMap hp N L o) ↔
           IsUpperHorizontal hp N L (facetSignature hp N L o) := by
         constructor <;> intro h i
-        · simpa [MapIsUpperHorizontal, IsUpperHorizontal,
-            signatureTime, facetSignature] using h i
-        · simpa [MapIsUpperHorizontal, IsUpperHorizontal,
-            signatureTime, facetSignature] using h i
+        · have hi := h i
+          rw [occurrenceFacetMap_vertex] at hi
+          change (SubdivisionPrismCharts.vertex hp N L o.1 (o.2.succAbove i)).2.1 = 1
+          exact hi
+        · have hi := h i
+          change (SubdivisionPrismCharts.vertex hp N L o.1 (o.2.succAbove i)).2.1 = 1 at hi
+          rw [occurrenceFacetMap_vertex]
+          exact hi
       unfold nonhorizontalMapWeight
       rw [realizedFacetWeight_occurrence]
       by_cases hnon : ¬ IsLowerHorizontal hp N L (facetSignature hp N L o) ∧
@@ -1835,7 +1857,6 @@ theorem occurrenceFacetMap_eq_iteratedFacetMap_succ
         (staircasePrismMap n (RefinedAffineMap.chart hp N base) k)
         rho (facetFaceIndex hp j) := by
   funext x
-  simp only [Nat.add_sub_cancel] at x ⊢
   simp only [occurrenceFacetMap, occurrenceCofacePoint, iteratedFacetMap,
     SubdivisionPrismCharts.chart, staircasePrismMap,
     SubdivisionPrismCharts.staircasePoint]
@@ -1971,8 +1992,8 @@ theorem refined_side_eq_spatialSideWeight_succ
         (iteratedFacetMap n N
           (ReferenceAffineOrbitCount.topRepr hp orbit).realizationContinuousMap
           spatial r) := by
-  simpa [Equiv.cast, deltaCast] using
-    refined_side_eq_spatialSideWeight hp N L a orbit spatial eta r h
+  rw [refined_side_eq_spatialSideWeight hp N L a orbit spatial eta r h]
+  congr 2
 
 /-- The spatial subdivision boundary identity specialized to a fixed side weight. -/
 theorem spatialSide_weighted_boundary
@@ -2245,8 +2266,8 @@ theorem nonhorizontalContribution_eq_zero_core
       have hdeleted :
           (StandardSimplex.ofDelta
             (stdSimplex.map j.succAbove (affineCompMap n N theta x))) j = 0 := by
-        simpa [cofacePoint] using
-          cofacePoint_apply_deleted n j (affineCompMap n N theta x)
+        change (cofacePoint n j (affineCompMap n N theta x)) j = 0
+        exact cofacePoint_apply_deleted n j (affineCompMap n N theta x)
       simp only [hdeleted, ite_self, zero_add]
       apply Finset.sum_congr rfl
       intro i hi

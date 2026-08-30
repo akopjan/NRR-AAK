@@ -78,7 +78,7 @@ theorem hPerimeter_eq_cPerimeter (K : Body) :
         = interior ((fun x : Point2 => -c + x) '' (K : Set Point2)) := by
       simpa using (Homeomorph.addLeft (-c)).image_interior (K : Set Point2)
     rw [hK', NRR.Geometry.ConvexBody.translate_carrier, ← himg]
-    exact ⟨c, hc, by abel⟩
+    exact ⟨c, hc, by abel_nf⟩
   have h1 : hPerimeter K' = cPerimeter K' :=
     hausdorffPerimeter_eq_cauchyPerimeter_of_zero_mem K' h0
   rwa [hK', hPerimeter_translate, cPerimeter_translate] at h1

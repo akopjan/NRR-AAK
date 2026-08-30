@@ -76,19 +76,31 @@ commutes: `cohPullback f n ≫ kroneckerMap X n = kroneckerMap Y n ≫ homologyD
 -/
 theorem kroneckerMap_naturality (f : X ⟶ Y) (n : ℕ) :
     cohPullback f n ≫ kroneckerMap X n = kroneckerMap Y n ≫ homologyDualMap f n := by
-  ext a;
-  obtain ⟨ φ, hφ, rfl ⟩ := cocycleClass_surjective Y n a;
-  obtain ⟨ c, rfl ⟩ := ( ModuleCat.epi_iff_surjective ( chainCxZMod2 X |>.homologyπ n ) |>.1 inferInstance ) ‹_›;
-  convert kroneckerFunctional_apply X n ( cochainPullback f n φ ) ( cochainPullback_cocycle f n φ hφ ) c using 1;
-  · rw [ CategoryTheory.comp_apply, cohPullback_cocycleClass ];
-    rw [ kroneckerMap_cocycleClass ];
-  · convert kroneckerFunctional_apply Y n φ hφ ( ( HomologicalComplex.cyclesMap ( chainMapZMod2 f ) n ).hom c ) using 1;
-    · rw [ ModuleCat.comp_apply, kroneckerMap_cocycleClass, homologyDualMap_hom_apply ];
-      convert congr_arg ( fun x => ( kroneckerFunctional Y n φ hφ ).hom x ) ( HomologicalComplex.homologyπ_naturality ( chainMapZMod2 f ) n |> congr_arg ( fun x => x.hom c ) ) using 1;
-    · convert congr_arg ( fun x => φ.hom x ) ( congr_arg ( fun x => x.hom c ) ( HomologicalComplex.cyclesMap_i ( chainMapZMod2 f ) n ) ) using 1;
-      · unfold cochainPullback; aesop;
-      · congr! 1;
-        convert congr_arg ( fun x => x.hom c ) ( HomologicalComplex.cyclesMap_i ( chainMapZMod2 f ) n ) using 1
+  apply ModuleCat.hom_ext
+  apply LinearMap.ext
+  intro a
+  obtain ⟨φ, hφ, rfl⟩ := cocycleClass_surjective Y n a
+  show (kroneckerMap X n).hom ((cohPullback f n).hom (cocycleClass Y n φ hφ))
+    = (homologyDualMap f n).hom ((kroneckerMap Y n).hom (cocycleClass Y n φ hφ))
+  rw [cohPullback_cocycleClass, kroneckerMap_cocycleClass, kroneckerMap_cocycleClass, homologyDualMap_hom_apply]
+  apply LinearMap.ext
+  intro z
+  obtain ⟨c, rfl⟩ := (ModuleCat.epi_iff_surjective ((chainCxZMod2 X).homologyπ n)).1 inferInstance z
+  have h_lhs := kroneckerFunctional_apply X n (cochainPullback f n φ) (cochainPullback_cocycle f n φ hφ) c
+  have h_push : (homologyPushZMod2 f n).hom (((chainCxZMod2 X).homologyπ n).hom c)
+      = ((chainCxZMod2 Y).homologyπ n).hom ((HomologicalComplex.cyclesMap (chainMapZMod2 f) n).hom c) := by
+    have h_nat := HomologicalComplex.homologyπ_naturality (chainMapZMod2 f) n
+    have := congrArg (fun (m : (chainCxZMod2 X).cycles n ⟶ homologyZMod2 Y n) => m.hom c) h_nat
+    exact this
+  have h_rhs := kroneckerFunctional_apply Y n φ hφ ((HomologicalComplex.cyclesMap (chainMapZMod2 f) n).hom c)
+  rw [LinearMap.comp_apply, h_push, h_rhs, h_lhs]
+  have h_cyc : ((chainCxZMod2 Y).iCycles n).hom ((HomologicalComplex.cyclesMap (chainMapZMod2 f) n).hom c)
+      = ((chainMapZMod2 f).f n).hom (((chainCxZMod2 X).iCycles n).hom c) := by
+    have h_i := HomologicalComplex.cyclesMap_i (chainMapZMod2 f) n
+    have := congrArg (fun (m : (chainCxZMod2 X).cycles n ⟶ (chainCxZMod2 Y).X n) => m.hom c) h_i
+    exact this
+  rw [h_cyc]
+  rfl
 
 /-- Element form of `kroneckerMap_naturality`: `⟨f^* a, z⟩ = ⟨a, f_* z⟩`. -/
 theorem kroneckerMap_naturality_apply (f : X ⟶ Y) (n : ℕ) (a : cohomologyZMod2 Y n) :
@@ -96,7 +108,11 @@ theorem kroneckerMap_naturality_apply (f : X ⟶ Y) (n : ℕ) (a : cohomologyZMo
       = ((kroneckerMap Y n).hom a).comp (homologyPushZMod2 f n).hom := by
   have h := kroneckerMap_naturality f n
   have happ := congrArg (fun m : cohomologyZMod2 Y n ⟶ homologyDualZMod2 X n => m.hom a) h
-  simpa [ModuleCat.hom_comp, LinearMap.comp_apply] using happ
+  have hcomp : (cohPullback f n ≫ kroneckerMap X n).hom a
+      = (kroneckerMap X n).hom ((cohPullback f n).hom a) := rfl
+  have hcomp2 : (kroneckerMap Y n ≫ homologyDualMap f n).hom a
+      = ((kroneckerMap Y n).hom a).comp (homologyPushZMod2 f n).hom := rfl
+  exact hcomp.symm.trans (happ.trans hcomp2)
 
 /-- **Extension of functionals over the field `F₂`.** Every linear functional on a
 submodule `W` of an `F₂`-module `M` extends to a functional on all of `M`. This
@@ -153,17 +169,14 @@ theorem kroneckerMap_injective (X : TopCat.{0}) (n : ℕ) :
   rw [LinearMap.ker_eq_bot']
   intro a ha
   obtain ⟨φ, hφ, rfl⟩ := cocycleClass_surjective X n a
-  -- The Kronecker functional of φ is zero.
   have hkf : (kroneckerFunctional X n φ hφ).hom = 0 := by
     rw [← kroneckerMap_cocycleClass X n φ hφ]; exact ha
   have hkf0 : kroneckerFunctional X n φ hφ = 0 := by
     apply ModuleCat.hom_ext; rw [hkf]; rfl
-  -- Hence φ vanishes on cycles: iCycles ≫ φ = 0.
   have hiφ : (chainCxZMod2 X).iCycles n ≫ φ = 0 := by
     rw [← kroneckerFunctional_homologyπ X n φ hφ, hkf0, comp_zero]
   rcases n with _ | m
-  · -- degree 0: every chain is a cycle, so iCycles is epi and φ = 0.
-    haveI : Epi ((chainCxZMod2 X).iCycles 0) := by
+  · have : Epi ((chainCxZMod2 X).iCycles 0) := by
       have : IsIso ((chainCxZMod2 X).iCycles 0) :=
         (chainCxZMod2 X).isIso_iCycles 0 0 (by simp [ComplexShape.next])
           ((chainCxZMod2 X).shape 0 0 (by simp [ComplexShape.down]))
@@ -171,8 +184,7 @@ theorem kroneckerMap_injective (X : TopCat.{0}) (n : ℕ) :
     have hφ0 : φ = 0 := by
       rw [← cancel_epi ((chainCxZMod2 X).iCycles 0), hiφ, comp_zero]
     rw [cocycleClass_congr X 0 hφ0 hφ (hφ0 ▸ hφ), cocycleClass_zero]
-  · -- degree m+1: φ vanishes on the kernel of d, so φ is a coboundary.
-    have hkerle : LinearMap.ker ((chainCxZMod2 X).d (m + 1) m).hom
+  · have hkerle : LinearMap.ker ((chainCxZMod2 X).d (m + 1) m).hom
         ≤ LinearMap.ker φ.hom := by
       intro x hx
       simp only [LinearMap.mem_ker] at hx ⊢
@@ -187,7 +199,8 @@ theorem kroneckerMap_injective (X : TopCat.{0}) (n : ℕ) :
           = (chainCxZMod2 X).d (m + 1) m ≫ η := rfl
       rw [hstep]
       apply ModuleCat.hom_ext
-      simp only [ModuleCat.hom_comp, hηdef, ModuleCat.hom_ofHom]
+      show φ.hom = ((chainCxZMod2 X).d (m + 1) m ≫ η).hom
+      rw [ModuleCat.hom_comp]
       exact hη.symm
     rw [cocycleClass_congr X (m + 1) hcob hφ
         (cochainCoboundary_cochainCoboundary X m η),

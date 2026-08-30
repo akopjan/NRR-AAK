@@ -41,7 +41,7 @@ theorem exists_supporting_direction (K : Body) {x : Point2} (hx : x ∈ frontier
     simp at hlt
   · intro y hy
     by_contra hcon
-    push_neg at hcon
+    push Not at hcon
     have hfz : (inner ℝ z n : ℝ) < (inner ℝ x n : ℝ) := by
       have := hf z hz
       rwa [hfn, hfn] at this

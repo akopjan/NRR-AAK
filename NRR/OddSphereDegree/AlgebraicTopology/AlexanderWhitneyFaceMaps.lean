@@ -146,9 +146,11 @@ theorem frontFace_comp_δ_of_gt (p q : ℕ) (k : Fin (p + q + 2)) (hk : p < k.va
   ext x : 3; apply Fin.ext
   show ((SimplexCategory.δ k).toOrderHom ((frontFace p q).toOrderHom x) : ℕ)
      = ((frontFace p (q + 1)).toOrderHom x : ℕ)
-  rw [δ_toOrderHom_val]; simp only [frontFace_apply]
+  rw [δ_toOrderHom_val, frontFace_apply, frontFace_apply]
   have hx : x.val < p + 1 := x.isLt
-  rw [if_pos (by omega)]
+  split_ifs with h
+  · rfl
+  · exfalso; omega
 
 /-- **Internal back face, `k ≤ p`.** Deleting a vertex `k ≤ p` from `σ` does not
 disturb the back `q`-block (its vertices are `≥ p`), so the back `q`-face of
@@ -202,8 +204,8 @@ theorem aw_endpoint_front (p q : ℕ) :
             ((SimplexCategory.δ (Fin.last (p + 1))).toOrderHom x))) : ℕ)
      = ((frontFace p (q + 1)).toOrderHom x : ℕ)
   rw [awCastLeft_val, frontFace_apply, δ_toOrderHom_val, frontFace_apply]
-  have hx : x.val < p + 1 := x.isLt
-  rw [Fin.val_last, if_pos (by omega)]
+  rw [Fin.val_last]
+  split_ifs <;> omega
 
 /-- **Back endpoint.** Deleting the *bottom* vertex of the back `(q+1)`-face
 recovers the back `q`-face (block shifted by one): `δ 0 ≫ backFace p (q+1) =
@@ -214,9 +216,10 @@ theorem aw_endpoint_back (p q : ℕ) :
   ext x : 3; apply Fin.ext
   show ((backFace p (q + 1)).toOrderHom ((SimplexCategory.δ (0 : Fin (q + 2))).toOrderHom x) : ℕ)
      = (((awCastLeft p q).toOrderHom ((backFace (p + 1) q).toOrderHom x)) : ℕ)
-  rw [awCastLeft_val, backFace_apply, δ_toOrderHom_val, backFace_apply]
-  simp only [Fin.val_zero]
-  rw [if_neg (by omega)]; omega
+  rw [awCastLeft_val, backFace_apply, backFace_apply, δ_toOrderHom_val]
+  split_ifs with h
+  · exfalso; simp only [Fin.val_zero] at h; omega
+  · omega
 
 /-- **Endpoint cancellation pair.** The front endpoint (top face of the front
 `(p+1)`-block) and the back endpoint (bottom face of the back `(q+1)`-block)

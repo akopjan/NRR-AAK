@@ -177,30 +177,23 @@ lemma continuous_augmentedAreaDeviation
     (K : Geometry.ConvexBody Plane) (s : Fin n → Plane)
     (hn : 0 < n) (hs : Function.Injective s) :
     Continuous (augmentedAreaDeviation K s hn hs) := by
-  convert ( continuous_pi fun i => ?_ );
-  rotate_left;
-  exact EuclideanSpace ℝ ( Fin n );
-  exact Fin n;
-  exact fun _ => ℝ;
-  exact inferInstance;
-  exact fun _ => inferInstance;
-  exact fun w i => areaDeviation K s ( fun j => w j - ( ∑ j, w j ) / n ) i + ( ∑ j, w j ) / n;
-  · refine' Continuous.add _ _;
-    · convert continuous_apply i |> Continuous.comp <| continuous_areaDeviation_weights K s hs |> Continuous.comp <| ?_ using 1;
-      fun_prop;
-    · fun_prop;
-  · constructor <;> intro h <;> rw [ continuous_pi_iff ] at *;
-    · intro i;
-      convert continuous_apply i |> Continuous.comp <| continuous_iff_continuousAt.mpr _ using 1;
-      rotate_left;
-      rotate_left;
-      exact fun _ => inferInstance;
-      exact fun x => augmentedAreaDeviation K s hn hs x;
-      · exact fun x => Continuous.continuousAt ( by exact Continuous.comp ( by continuity ) h );
-      · rfl;
-      · rfl;
-    · convert continuous_pi_iff.mpr h using 1;
-      constructor <;> intro h <;> rw [ continuous_induced_rng ] at *; all_goals convert h using 1
+  apply continuous_induced_rng.2
+  apply continuous_pi
+  intro i
+  dsimp [augmentedAreaDeviation, normalizeWeight, weightMean]
+  have hcoord (k : Fin n) : Continuous (fun w : WeightE n => w k) :=
+    (continuous_apply k).comp continuous_induced_dom
+  have hsum : Continuous (fun w : WeightE n => ∑ k : Fin n, w k) :=
+    continuous_finsetSum (Finset.univ : Finset (Fin n)) fun k _ => hcoord k
+  have hnorm : Continuous (fun w : WeightE n => (fun j => w j - (∑ k, w k) / (n : ℝ))) := by
+    apply continuous_pi
+    intro j
+    exact (hcoord j).sub (hsum.div_const (n : ℝ))
+  have hdev : Continuous (fun w : WeightE n => areaDeviation K s (fun j => w j - (∑ k, w k) / (n : ℝ)) i) :=
+    ((continuous_apply i).comp (continuous_areaDeviation_weights K s hs)).comp hnorm
+  have hmean : Continuous (fun w : WeightE n => (∑ k, w k) / (n : ℝ)) :=
+    hsum.div_const (n : ℝ)
+  exact hdev.add hmean
 
 lemma augmentedPairing_eq
     (K : Geometry.ConvexBody Plane) (s : Fin n → Plane)
@@ -394,15 +387,30 @@ lemma augmentedAreaDeviation_outward_on_radius
     0 < inner Real x
       (augmentedAreaDeviation K s hn hs
         (equalAreaOutwardRadius K s hn • x)) := by
-  have h_gauge : weightCoercivityGauge (fun i => (equalAreaOutwardRadius K s hn) • x i) > (n : ℝ) * (powerGapBound K s + 1) + (powerGapBound K s * K.area + 1) := by
-    have h_gauge : weightCoercivityGauge (fun i => (equalAreaOutwardRadius K s hn) • x i) = (equalAreaOutwardRadius K s hn) * weightCoercivityGauge (fun i => x i) := by
-      convert weightCoercivityGauge_smul hn ( equalAreaOutwardRadius_pos K s hn |> le_of_lt ) ( fun i => x i ) using 1;
-    have := Classical.choose_spec ( exists_positive_gauge_lower_bound_on_sphere hn );
-    unfold equalAreaOutwardRadius at *;
-    rw [ h_gauge, div_mul_eq_mul_div, gt_iff_lt, lt_div_iff₀ ] <;> nlinarith [ this.2 x hx, show 0 < ( n : ℝ ) * ( powerGapBound K s + 1 ) + ( powerGapBound K s * K.area + 1 ) from add_pos_of_nonneg_of_pos ( mul_nonneg ( Nat.cast_nonneg _ ) ( add_nonneg ( powerGapBound_nonneg K s ) zero_le_one ) ) ( add_pos_of_nonneg_of_pos ( mul_nonneg ( powerGapBound_nonneg K s ) ( show 0 ≤ K.area from K.area_nonneg ) ) zero_lt_one ) ];
-  have := NRR.EMP.augmentedPairing_pos_of_gauge_large K s hn hs (equalAreaOutwardRadius K s hn • x) h_gauge;
-  convert div_pos this ( NRR.EMP.equalAreaOutwardRadius_pos K s hn ) using 1;
-  rw [ eq_div_iff ( ne_of_gt ( NRR.EMP.equalAreaOutwardRadius_pos K s hn ) ) ] ; simp +decide [ inner_smul_left ] ; ring!;
+  have h_gauge : weightCoercivityGauge (fun i => (equalAreaOutwardRadius K s hn • x) i) > (n : ℝ) * (powerGapBound K s + 1) + (powerGapBound K s * K.area + 1) := by
+    have h_gauge_eq : weightCoercivityGauge (fun i => (equalAreaOutwardRadius K s hn • x) i) = (equalAreaOutwardRadius K s hn) * weightCoercivityGauge (fun i => x i) := by
+      have h1 : (fun i => (equalAreaOutwardRadius K s hn • x) i) = (equalAreaOutwardRadius K s hn) • (fun i => x i) := rfl
+      rw [h1]
+      exact weightCoercivityGauge_smul hn (equalAreaOutwardRadius_pos K s hn |> le_of_lt) (fun i => x i)
+    have hspec := Classical.choose_spec (exists_positive_gauge_lower_bound_on_sphere hn)
+    have hx_lb := hspec.2 x hx
+    rw [h_gauge_eq]
+    unfold equalAreaOutwardRadius
+    have hpos_min := hspec.1
+    have hT_nonneg : 0 ≤ (n : ℝ) * (powerGapBound K s + 1) + (powerGapBound K s * K.area + 1) :=
+      add_nonneg
+        (mul_nonneg (Nat.cast_nonneg _) (add_nonneg (powerGapBound_nonneg K s) zero_le_one))
+        (add_nonneg (mul_nonneg (powerGapBound_nonneg K s) K.area_nonneg) zero_le_one)
+    have hG_ge : ((n : ℝ) * (powerGapBound K s + 1) + (powerGapBound K s * K.area + 1) + 1) / Classical.choose (exists_positive_gauge_lower_bound_on_sphere hn) * Classical.choose (exists_positive_gauge_lower_bound_on_sphere hn)
+        ≤ ((n : ℝ) * (powerGapBound K s + 1) + (powerGapBound K s * K.area + 1) + 1) / Classical.choose (exists_positive_gauge_lower_bound_on_sphere hn) * weightCoercivityGauge (fun i => x i) :=
+      mul_le_mul_of_nonneg_left hx_lb (div_nonneg (by linarith) (le_of_lt hpos_min))
+    have h_cancel : ((n : ℝ) * (powerGapBound K s + 1) + (powerGapBound K s * K.area + 1) + 1) / Classical.choose (exists_positive_gauge_lower_bound_on_sphere hn) * Classical.choose (exists_positive_gauge_lower_bound_on_sphere hn)
+        = (n : ℝ) * (powerGapBound K s + 1) + (powerGapBound K s * K.area + 1) + 1 :=
+      div_mul_cancel₀ _ (ne_of_gt hpos_min)
+    linarith
+  have hpos := NRR.EMP.augmentedPairing_pos_of_gauge_large K s hn hs (equalAreaOutwardRadius K s hn • x) h_gauge
+  rw [inner_smul_left] at hpos
+  exact (mul_pos_iff_of_pos_left (equalAreaOutwardRadius_pos K s hn)).mp hpos
 
 end EMP
 end NRR

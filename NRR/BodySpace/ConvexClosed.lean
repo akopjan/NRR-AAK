@@ -80,7 +80,7 @@ theorem mem_limit_of_tendsto_nonemptyCompacts
       atTop (𝓝 0) := by simpa using hHaus.add hxe
   have hle := le_of_tendsto_of_tendsto tendsto_const_nhds hsum
     (Filter.Eventually.of_forall hbound)
-  exact le_antisymm hle (zero_le _)
+  exact nonpos_iff_eq_zero.mp hle
 
 /-- Every point of a Hausdorff limit set `C₀` is the limit of a sequence of points drawn from the
 approximating sets `C m`. -/
@@ -108,7 +108,7 @@ theorem exists_tendsto_points_of_tendsto_nonemptyCompacts
   have hHausR : Tendsto (fun m => Metric.hausdorffDist (C₀ : Set Plane) (C m : Set Plane))
       atTop (𝓝 0) := by
     have := (ENNReal.continuousAt_toReal (by simp)).tendsto.comp hHaus
-    simpa [Metric.hausdorffDist] using this
+    exact this
   -- Squeeze `dist x (xseq m)` between `0` and the Hausdorff distance.
   refine squeeze_zero (fun m => dist_nonneg) (fun m => ?_) hHausR
   rw [dist_comm, ← hxdist m]

@@ -128,7 +128,7 @@ theorem exists_angle_mem_Icc_of_nonneg_combination
     nlinarith
   have hβπ : β - α ≤ Real.pi := by
     by_contra hcon
-    push_neg at hcon
+    push Not at hcon
     have h2 : β - α - Real.pi < Real.pi := by
       have := hβmem.2
       simp only [Set.mem_Ico] at *
@@ -155,7 +155,7 @@ theorem exists_angle_mem_Icc_of_nonneg_combination
       positivity
     nlinarith
   by_contra hcon
-  push_neg at hcon
+  push Not at hcon
   have hneg : Real.sin (γ - β) < 0 :=
     Real.sin_neg_of_neg_of_neg_pi_lt (by linarith) (by linarith)
   linarith

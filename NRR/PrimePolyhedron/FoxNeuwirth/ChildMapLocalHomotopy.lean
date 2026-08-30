@@ -73,6 +73,8 @@ theorem exists_uniform_childMap_neighborhood
   have hprod : dist (w, x) (z, x) < delta := by
     simpa [Prod.dist_eq, U] using hw
   have hout := hdelta hprod
+  change ‖(orderComplexModel hp).childTestMap hA phi ((w.1, x), w.2) -
+      (orderComplexModel hp).childTestMap hA phi ((z.1, x), z.2)‖ < eps
   simpa [F, childFamilyMap, dist_eq_norm] using hout
 
 /-- A vector segment stays nonzero when its moving endpoint remains closer than the norm margin. -/

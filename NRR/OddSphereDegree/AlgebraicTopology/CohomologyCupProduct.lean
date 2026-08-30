@@ -54,6 +54,9 @@ abbrev cohomologyZMod2 (X : TopCat.{0}) (n : ℕ) : ModuleCat.{0} (ZMod 2) :=
 theorem cohomologyZMod2_eq (X : TopCat.{0}) (n : ℕ) :
     cohomologyZMod2 X n = (singularCohomologyZMod2 n).obj (Opposite.op X) := rfl
 
+@[simp] theorem cochainCx_next (n : ℕ) : (ComplexShape.up ℕ).next n = n + 1 :=
+  (ComplexShape.up ℕ).next_eq' rfl
+
 /-! ## 1. Cohomology class of a cocycle -/
 
 /-- The cohomology class of a cocycle `φ` (a `p`-cochain with `δφ = 0`):
@@ -61,7 +64,7 @@ theorem cohomologyZMod2_eq (X : TopCat.{0}) (n : ℕ) :
 def cocycleClass (X : TopCat.{0}) (n : ℕ) (φ : singularCochainGroup (ZMod 2) X n)
     (hφ : cochainCoboundary (ZMod 2) X n φ = 0) : cohomologyZMod2 X n :=
   ((cochainCxZMod2 X).homologyπ n).hom
-    ((cochainCxZMod2 X).cyclesMk φ (n + 1) (by simp [ComplexShape.next]) hφ)
+    ((cochainCxZMod2 X).cyclesMk φ (n + 1) (cochainCx_next n) hφ)
 
 /-- The class only depends on the cochain, not on the cocycle proof. -/
 theorem cocycleClass_congr (X : TopCat.{0}) (n : ℕ) {φ φ' : singularCochainGroup (ZMod 2) X n}
@@ -80,7 +83,7 @@ theorem cochainCoboundary_iCycles (X : TopCat.{0}) (n : ℕ) (c : (cochainCxZMod
 /-- `cyclesMk (iCycles c) = c`. -/
 theorem cyclesMk_iCycles (X : TopCat.{0}) (n : ℕ) (c : (cochainCxZMod2 X).cycles n) :
     (cochainCxZMod2 X).cyclesMk (((cochainCxZMod2 X).iCycles n).hom c) (n + 1)
-        (by simp [ComplexShape.next]) (cochainCoboundary_iCycles X n c) = c := by
+        (cochainCx_next n) (cochainCoboundary_iCycles X n c) = c := by
   apply (ModuleCat.mono_iff_injective ((cochainCxZMod2 X).iCycles n)).1 inferInstance
   exact (cochainCxZMod2 X).i_cyclesMk _ _ _ _
 
@@ -92,18 +95,21 @@ theorem cocycleClass_surjective (X : TopCat.{0}) (n : ℕ) (a : cohomologyZMod2 
     (ModuleCat.epi_iff_surjective _).1 inferInstance
   obtain ⟨c, hc⟩ := hepi a
   refine ⟨((cochainCxZMod2 X).iCycles n).hom c, cochainCoboundary_iCycles X n c, ?_⟩
-  rw [cocycleClass, cyclesMk_iCycles, hc]
+  dsimp [cocycleClass]
+  have h_cyc := cyclesMk_iCycles X n c
+  exact congrArg (fun x => ((cochainCxZMod2 X).homologyπ n).hom x) h_cyc |>.trans hc
 
 /-- The zero cochain has zero class. -/
 theorem cocycleClass_zero (X : TopCat.{0}) (n : ℕ)
     (h0 : cochainCoboundary (ZMod 2) X n (0 : singularCochainGroup (ZMod 2) X n) = 0) :
     cocycleClass X n 0 h0 = 0 := by
-  rw [cocycleClass]
+  dsimp [cocycleClass]
   have h : (cochainCxZMod2 X).cyclesMk (0 : singularCochainGroup (ZMod 2) X n) (n + 1)
-      (by simp [ComplexShape.next]) h0 = 0 := by
+      (cochainCx_next n) h0 = 0 := by
     apply (ModuleCat.mono_iff_injective ((cochainCxZMod2 X).iCycles n)).1 inferInstance
+    have h_mk := (cochainCxZMod2 X).i_cyclesMk (0 : singularCochainGroup (ZMod 2) X n) (n + 1) (cochainCx_next n) h0
     rw [map_zero]
-    exact (cochainCxZMod2 X).i_cyclesMk _ _ _ _
+    exact h_mk
   rw [h, map_zero]
 
 /-- `δ ∘ δ = 0`. -/
@@ -120,12 +126,19 @@ theorem cocycleClass_coboundary_zero (X : TopCat.{0}) (m : ℕ)
     (η : singularCochainGroup (ZMod 2) X m)
     (hcoc : cochainCoboundary (ZMod 2) X (m + 1) (cochainCoboundary (ZMod 2) X m η) = 0) :
     cocycleClass X (m + 1) (cochainCoboundary (ZMod 2) X m η) hcoc = 0 := by
-  have h : (cochainCxZMod2 X).cyclesMk (cochainCoboundary (ZMod 2) X m η) (m + 2) (by simp [ComplexShape.next]) hcoc = (cochainCxZMod2 X).toCycles m (m + 1) η := by
-    apply (ModuleCat.mono_iff_injective ((cochainCxZMod2 X).iCycles (m + 1))).1 inferInstance;
-    convert ( cochainCxZMod2 X ).i_cyclesMk _ _ _ _ using 1;
-    convert congr_arg ( fun f => f.hom η ) ( HomologicalComplex.toCycles_i ( cochainCxZMod2 X ) m ( m + 1 ) ) using 1;
-  rw [ cocycleClass, h ];
-  convert congr_arg ( fun f => f η ) ( HomologicalComplex.toCycles_comp_homologyπ ( cochainCxZMod2 X ) m ( m + 1 ) ) using 1
+  have h : (cochainCxZMod2 X).cyclesMk (cochainCoboundary (ZMod 2) X m η) (m + 2) (cochainCx_next (m + 1)) hcoc = (cochainCxZMod2 X).toCycles m (m + 1) η := by
+    apply (ModuleCat.mono_iff_injective ((cochainCxZMod2 X).iCycles (m + 1))).1 inferInstance
+    have h_mk := (cochainCxZMod2 X).i_cyclesMk (cochainCoboundary (ZMod 2) X m η) (m + 2) (cochainCx_next (m + 1)) hcoc
+    have hto := HomologicalComplex.toCycles_i (cochainCxZMod2 X) m (m + 1)
+    have hto_app := congrArg (fun (f : (cochainCxZMod2 X).X m ⟶ (cochainCxZMod2 X).X (m + 1)) => f.hom η) hto
+    dsimp at hto_app
+    exact h_mk.trans hto_app.symm
+  dsimp [cocycleClass]
+  rw [h]
+  have hcomp := HomologicalComplex.toCycles_comp_homologyπ (cochainCxZMod2 X) m (m + 1)
+  have hcomp_app := congrArg (fun (f : (cochainCxZMod2 X).X m ⟶ (cochainCxZMod2 X).homology (m + 1)) => f.hom η) hcomp
+  dsimp at hcomp_app
+  exact hcomp_app
 
 /-
 Compatibility of `cocycleClass` with the degree cast.
@@ -136,7 +149,8 @@ theorem cocycleClass_cast (X : TopCat.{0}) {m m' : ℕ} (h : m = m')
     cocycleClass X m' (cochainCast h φ) hφ' =
       (eqToHom (by rw [h]) : cohomologyZMod2 X m ⟶ cohomologyZMod2 X m').hom
         (cocycleClass X m φ hφ) := by
-  unfold cochainCast; aesop;
+  subst h
+  rfl
 
 /-- A degree-cast coboundary has zero cohomology class. -/
 theorem cocycleClass_cast_coboundary_zero (X : TopCat.{0}) (m m' : ℕ) (h : m + 1 = m')
@@ -199,7 +213,7 @@ def cupLeftMor (X : TopCat.{0}) (p q : ℕ) (ψ : singularCochainGroup (ZMod 2) 
     (hψ : cochainCoboundary (ZMod 2) X q ψ = 0) :
     (cochainCxZMod2 X).cycles p ⟶ cohomologyZMod2 X (p + q) :=
   (cochainCxZMod2 X).liftCycles ((cochainCxZMod2 X).iCycles p ≫ cupRightMor X p q ψ) (p + q + 1)
-      (by simp [ComplexShape.next]) (cupRight_cocycle_cond X p q ψ hψ)
+      (cochainCx_next (p + q)) (cupRight_cocycle_cond X p q ψ hψ)
     ≫ (cochainCxZMod2 X).homologyπ (p + q)
 
 /-- Cup with a fixed right cocycle, as a map `cycles q ⟶ H^{p+q}`. -/
@@ -207,33 +221,28 @@ def cupRightMor' (X : TopCat.{0}) (p q : ℕ) (φ : singularCochainGroup (ZMod 2
     (hφ : cochainCoboundary (ZMod 2) X p φ = 0) :
     (cochainCxZMod2 X).cycles q ⟶ cohomologyZMod2 X (p + q) :=
   (cochainCxZMod2 X).liftCycles ((cochainCxZMod2 X).iCycles q ≫ cupLeftFixedMor X p q φ) (p + q + 1)
-      (by simp [ComplexShape.next]) (cupLeftFixed_cocycle_cond X p q φ hφ)
+      (cochainCx_next (p + q)) (cupLeftFixed_cocycle_cond X p q φ hφ)
     ≫ (cochainCxZMod2 X).homologyπ (p + q)
 
-/-
-`cupLeftMor` evaluated on `cyclesMk φ` is the class of `φ ⌣ ψ`.
--/
 theorem cupLeftMor_cyclesMk (X : TopCat.{0}) (p q : ℕ)
     (ψ : singularCochainGroup (ZMod 2) X q) (hψ : cochainCoboundary (ZMod 2) X q ψ = 0)
     (φ : singularCochainGroup (ZMod 2) X p) (hφ : cochainCoboundary (ZMod 2) X p φ = 0) :
     (cupLeftMor X p q ψ hψ).hom
-        ((cochainCxZMod2 X).cyclesMk φ (p + 1) (by simp [ComplexShape.next]) hφ)
+        ((cochainCxZMod2 X).cyclesMk φ (p + 1) (cochainCx_next p) hφ)
       = cocycleClass X (p + q) (cochainCup p q φ ψ)
           (cochainCupZMod2_respects_cocycles p q φ ψ hφ hψ) := by
-  convert congr_arg _ ( cyclesMk_iCycles X p _ ) using 1;
-  convert congr_arg _ ( cyclesMk_iCycles X p _ ) using 1;
-  rotate_left;
-  exact fun c => ( cochainCxZMod2 X ).homologyπ ( p + q ) ( ( cochainCxZMod2 X ).cyclesMk ( cochainCup p q ( ( cochainCxZMod2 X ).iCycles p c ) ψ ) ( p + q + 1 ) ( by simp +decide [ ComplexShape.next ] ) ( cochainCupZMod2_respects_cocycles p q _ _ ( cochainCoboundary_iCycles X p c ) hψ ) );
-  rotate_left;
-  exact ( cochainCxZMod2 X ).cyclesMk φ ( p + 1 ) ( by simp +decide [ ComplexShape.next ] ) hφ;
-  · simp +decide [ cupLeftMor, cyclesMk_iCycles ];
-    congr! 1;
-    apply (ModuleCat.mono_iff_injective ((cochainCxZMod2 X).iCycles (p + q))).1 inferInstance;
-    convert congr_arg ( fun f => f ( HomologicalComplex.cyclesMk ( cochainCxZMod2 X ) φ ( p + 1 ) ( by simp +decide [ ComplexShape.next ] ) hφ ) ) ( HomologicalComplex.liftCycles_i ( cochainCxZMod2 X ) ( HomologicalComplex.iCycles ( cochainCxZMod2 X ) p ≫ cupRightMor X p q ψ ) ( p + q + 1 ) ( by simp +decide [ ComplexShape.next ] ) ( cupRight_cocycle_cond X p q ψ hψ ) ) using 1;
-    convert ( cochainCxZMod2 X ).i_cyclesMk _ _ _ _ using 1;
-  · unfold cocycleClass;
-    convert rfl;
-    exact ( cochainCxZMod2 X ).i_cyclesMk _ _ _ _
+  dsimp [cupLeftMor, cocycleClass]
+  congr 1
+  apply (ModuleCat.mono_iff_injective ((cochainCxZMod2 X).iCycles (p + q))).1 inferInstance
+  have h_mk := (cochainCxZMod2 X).i_cyclesMk (cochainCup p q φ ψ) (p + q + 1) (cochainCx_next (p + q)) (cochainCupZMod2_respects_cocycles p q φ ψ hφ hψ)
+  have h_lift := congrArg (fun (f : (cochainCxZMod2 X).cycles p ⟶ (cochainCxZMod2 X).X (p + q)) =>
+      f.hom ((cochainCxZMod2 X).cyclesMk φ (p + 1) (cochainCx_next p) hφ))
+    ((cochainCxZMod2 X).liftCycles_i ((cochainCxZMod2 X).iCycles p ≫ cupRightMor X p q ψ) (p + q + 1) (cochainCx_next (p + q)) (cupRight_cocycle_cond X p q ψ hψ))
+  dsimp at h_lift
+  have h_eval : ((cochainCxZMod2 X).iCycles p ≫ cupRightMor X p q ψ).hom ((cochainCxZMod2 X).cyclesMk φ (p + 1) (cochainCx_next p) hφ) = cochainCup p q φ ψ := by
+    simp only [ModuleCat.hom_comp, LinearMap.comp_apply, cupRightMor_hom]
+    exact congrArg (fun x => cochainCup p q x ψ) ((cochainCxZMod2 X).i_cyclesMk φ (p + 1) (cochainCx_next p) hφ)
+  exact h_lift.trans (h_eval.trans h_mk.symm)
 
 /-
 `cupRightMor'` evaluated on `cyclesMk ψ` is the class of `φ ⌣ ψ`.
@@ -242,22 +251,21 @@ theorem cupRightMor'_cyclesMk (X : TopCat.{0}) (p q : ℕ)
     (φ : singularCochainGroup (ZMod 2) X p) (hφ : cochainCoboundary (ZMod 2) X p φ = 0)
     (ψ : singularCochainGroup (ZMod 2) X q) (hψ : cochainCoboundary (ZMod 2) X q ψ = 0) :
     (cupRightMor' X p q φ hφ).hom
-        ((cochainCxZMod2 X).cyclesMk ψ (q + 1) (by simp [ComplexShape.next]) hψ)
+        ((cochainCxZMod2 X).cyclesMk ψ (q + 1) (cochainCx_next q) hψ)
       = cocycleClass X (p + q) (cochainCup p q φ ψ)
           (cochainCupZMod2_respects_cocycles p q φ ψ hφ hψ) := by
-  convert congr_arg _ ( cyclesMk_iCycles X q _ ) using 1;
-  rotate_left;
-  rotate_left;
-  exact fun c => ( cochainCxZMod2 X ).homologyπ ( p + q ) ( ( cochainCxZMod2 X ).cyclesMk ( cochainCup p q φ ( ( cochainCxZMod2 X ).iCycles q c ) ) ( p + q + 1 ) ( by simp +decide [ ComplexShape.next ] ) ( cochainCupZMod2_respects_cocycles p q φ _ hφ ( cochainCoboundary_iCycles X q c ) ) );
-  exact ( cochainCxZMod2 X ).cyclesMk ψ ( q + 1 ) ( by simp +decide [ ComplexShape.next ] ) hψ;
-  · simp +decide [ cupRightMor', cyclesMk_iCycles ];
-    congr! 1;
-    apply (ModuleCat.mono_iff_injective ((cochainCxZMod2 X).iCycles (p + q))).1 inferInstance;
-    convert congr_arg ( fun f => f ( HomologicalComplex.cyclesMk ( cochainCxZMod2 X ) ψ ( q + 1 ) ( by simp +decide [ ComplexShape.next ] ) hψ ) ) ( HomologicalComplex.liftCycles_i ( cochainCxZMod2 X ) ( HomologicalComplex.iCycles ( cochainCxZMod2 X ) q ≫ cupLeftFixedMor X p q φ ) ( p + q + 1 ) ( by simp +decide [ ComplexShape.next ] ) ( cupLeftFixed_cocycle_cond X p q φ hφ ) ) using 1;
-    convert ( cochainCxZMod2 X ).i_cyclesMk _ _ _ _ using 1;
-  · unfold cocycleClass; simp +decide ;
-    convert rfl;
-    exact ( cochainCxZMod2 X ).i_cyclesMk _ _ _ _
+  dsimp [cupRightMor', cocycleClass]
+  congr 1
+  apply (ModuleCat.mono_iff_injective ((cochainCxZMod2 X).iCycles (p + q))).1 inferInstance
+  have h_mk := (cochainCxZMod2 X).i_cyclesMk (cochainCup p q φ ψ) (p + q + 1) (cochainCx_next (p + q)) (cochainCupZMod2_respects_cocycles p q φ ψ hφ hψ)
+  have h_lift := congrArg (fun (f : (cochainCxZMod2 X).cycles q ⟶ (cochainCxZMod2 X).X (p + q)) =>
+      f.hom ((cochainCxZMod2 X).cyclesMk ψ (q + 1) (cochainCx_next q) hψ))
+    ((cochainCxZMod2 X).liftCycles_i ((cochainCxZMod2 X).iCycles q ≫ cupLeftFixedMor X p q φ) (p + q + 1) (cochainCx_next (p + q)) (cupLeftFixed_cocycle_cond X p q φ hφ))
+  dsimp at h_lift
+  have h_eval : ((cochainCxZMod2 X).iCycles q ≫ cupLeftFixedMor X p q φ).hom ((cochainCxZMod2 X).cyclesMk ψ (q + 1) (cochainCx_next q) hψ) = cochainCup p q φ ψ := by
+    simp only [ModuleCat.hom_comp, LinearMap.comp_apply, cupLeftFixedMor_hom]
+    exact congrArg (fun y => cochainCup p q φ y) ((cochainCxZMod2 X).i_cyclesMk ψ (q + 1) (cochainCx_next q) hψ)
+  exact h_lift.trans (h_eval.trans h_mk.symm)
 
 /-- `cupLeftMor` evaluated on a general cycle is the class of its `iCycles` cupped
 with `ψ`. -/
@@ -332,7 +340,8 @@ theorem cocycleClass_cup_d_left_zero (X : TopCat.{0}) (q i p : ℕ)
   · obtain rfl : i + 1 = p := h
     exact cocycleClass_cup_coboundary_left_zero X i q η ψ hψ hcoc
   · have hz : cochainCup p q (((cochainCxZMod2 X).d i p).hom η) ψ = 0 := by
-      rw [(cochainCxZMod2 X).shape i p h]; simp
+      rw [(cochainCxZMod2 X).shape i p h, ModuleCat.hom_zero, LinearMap.zero_apply]
+      exact cochainCup_zero_left p q ψ
     exact cocycleClass_eq_zero_of_eq X (p + q) hz hcoc (map_zero _)
       (cocycleClass_zero X (p + q) (map_zero _))
 
@@ -347,7 +356,8 @@ theorem cocycleClass_cup_d_right_zero (X : TopCat.{0}) (p i q : ℕ)
   · obtain rfl : i + 1 = q := h
     exact cocycleClass_cup_coboundary_right_zero X p i φ hφ η hcoc
   · have hz : cochainCup p q φ (((cochainCxZMod2 X).d i q).hom η) = 0 := by
-      rw [(cochainCxZMod2 X).shape i q h]; simp
+      rw [(cochainCxZMod2 X).shape i q h, ModuleCat.hom_zero, LinearMap.zero_apply]
+      exact cochainCup_zero_right p q φ
     exact cocycleClass_eq_zero_of_eq X (p + q) hz hcoc (map_zero _)
       (cocycleClass_zero X (p + q) (map_zero _))
 
@@ -422,13 +432,11 @@ theorem cupHomologyLeft_apply (X : TopCat.{0}) (p q : ℕ)
     (cupHomologyLeft X p q ψ hψ).hom (cocycleClass X p φ hφ)
       = cocycleClass X (p + q) (cochainCup p q φ ψ)
           (cochainCupZMod2_respects_cocycles p q φ ψ hφ hψ) := by
-  rw [cocycleClass,
-    show (cupHomologyLeft X p q ψ hψ).hom
-          (((cochainCxZMod2 X).homologyπ p).hom
-            ((cochainCxZMod2 X).cyclesMk φ (p + 1) (by simp [ComplexShape.next]) hφ))
-        = ((cochainCxZMod2 X).homologyπ p ≫ cupHomologyLeft X p q ψ hψ).hom
-            ((cochainCxZMod2 X).cyclesMk φ (p + 1) (by simp [ComplexShape.next]) hφ) from rfl,
-    homologyπ_cupHomologyLeft, cupLeftMor_cyclesMk]
+  dsimp [cocycleClass]
+  show ((cochainCxZMod2 X).homologyπ p ≫ cupHomologyLeft X p q ψ hψ).hom
+      ((cochainCxZMod2 X).cyclesMk φ (p + 1) (cochainCx_next p) hφ) = _
+  rw [homologyπ_cupHomologyLeft]
+  exact cupLeftMor_cyclesMk X p q ψ hψ φ hφ
 
 /-- `cupHomologyRight` on the class of `ψ` is the class of `φ ⌣ ψ`. -/
 theorem cupHomologyRight_apply (X : TopCat.{0}) (p q : ℕ)
@@ -437,13 +445,11 @@ theorem cupHomologyRight_apply (X : TopCat.{0}) (p q : ℕ)
     (cupHomologyRight X p q φ hφ).hom (cocycleClass X q ψ hψ)
       = cocycleClass X (p + q) (cochainCup p q φ ψ)
           (cochainCupZMod2_respects_cocycles p q φ ψ hφ hψ) := by
-  rw [cocycleClass,
-    show (cupHomologyRight X p q φ hφ).hom
-          (((cochainCxZMod2 X).homologyπ q).hom
-            ((cochainCxZMod2 X).cyclesMk ψ (q + 1) (by simp [ComplexShape.next]) hψ))
-        = ((cochainCxZMod2 X).homologyπ q ≫ cupHomologyRight X p q φ hφ).hom
-            ((cochainCxZMod2 X).cyclesMk ψ (q + 1) (by simp [ComplexShape.next]) hψ) from rfl,
-    homologyπ_cupHomologyRight, cupRightMor'_cyclesMk]
+  dsimp [cocycleClass]
+  show ((cochainCxZMod2 X).homologyπ q ≫ cupHomologyRight X p q φ hφ).hom
+      ((cochainCxZMod2 X).cyclesMk ψ (q + 1) (cochainCx_next q) hψ) = _
+  rw [homologyπ_cupHomologyRight]
+  exact cupRightMor'_cyclesMk X p q φ hφ ψ hψ
 
 /-! ## 4. The cohomology cup product -/
 
@@ -469,11 +475,10 @@ theorem classRepr_isCocycle (X : TopCat.{0}) (n : ℕ) (a : cohomologyZMod2 X n)
 
 theorem cocycleClass_classRepr (X : TopCat.{0}) (n : ℕ) (a : cohomologyZMod2 X n) :
     cocycleClass X n (classRepr X n a) (classRepr_isCocycle X n a) = a := by
-  rw [cocycleClass,
-    show (cochainCxZMod2 X).cyclesMk (classRepr X n a) (n + 1) (by simp [ComplexShape.next])
-          (classRepr_isCocycle X n a)
-        = classCycleRepr X n a from cyclesMk_iCycles X n (classCycleRepr X n a)]
-  exact homologyπ_classCycleRepr X n a
+  dsimp [cocycleClass, classRepr]
+  have h_cyc := cyclesMk_iCycles X n (classCycleRepr X n a)
+  have h_congr := congrArg (fun c => ((cochainCxZMod2 X).homologyπ n).hom c) h_cyc
+  exact h_congr.trans (homologyπ_classCycleRepr X n a)
 
 /-- The **cohomology-level cup product** `H^p(X; F₂) → H^q(X; F₂) → H^{p+q}(X; F₂)`. -/
 def cupZMod2 {X : TopCat.{0}} {p q : ℕ} (a : cohomologyZMod2 X p) (b : cohomologyZMod2 X q) :
@@ -489,8 +494,6 @@ theorem cupZMod2_mk {X : TopCat.{0}} {p q : ℕ}
       = cocycleClass X (p + q) (cochainCup p q φ ψ)
           (cochainCupZMod2_respects_cocycles p q φ ψ hφ hψ) := by
   rw [cupZMod2, cupHomologyLeft_apply]
-  -- now: cocycleClass (φ ⌣ classRepr (cocycleClass ψ)) = cocycleClass (φ ⌣ ψ)
-  -- use the right-descent congruence
   have key := cupHomologyRight_apply X p q φ hφ (classRepr X q (cocycleClass X q ψ hψ))
     (classRepr_isCocycle X q _)
   rw [cocycleClass_classRepr] at key
@@ -511,10 +514,9 @@ theorem cochainPullback_cochainCoboundary {X Y : TopCat.{0}} (f : X ⟶ Y) (n : 
     cochainCoboundary (ZMod 2) X n (cochainPullback f n φ)
       = cochainPullback f (n + 1) (cochainCoboundary (ZMod 2) Y n φ) := by
   have hcomm := ((singularCochainComplexZMod2).map f.op).comm n (n + 1)
-  change ((cochainCxZMod2 X).d n (n + 1)).hom
-      ((((singularCochainComplexZMod2).map f.op).f n).hom φ) = _
-  rw [← ModuleCat.comp_apply, hcomm]
-  rfl
+  have h := congrArg (fun (g : (cochainCxZMod2 Y).X n ⟶ (cochainCxZMod2 X).X (n + 1)) => g.hom φ) hcomm
+  dsimp at h
+  exact h
 
 /-- The cochain pullback of a cocycle is a cocycle. -/
 theorem cochainPullback_cocycle {X Y : TopCat.{0}} (f : X ⟶ Y) (n : ℕ)
@@ -531,16 +533,28 @@ theorem cohPullback_cocycleClass {X Y : TopCat.{0}} (f : X ⟶ Y) (n : ℕ)
     (φ : singularCochainGroup (ZMod 2) Y n) (hφ : cochainCoboundary (ZMod 2) Y n φ = 0) :
     (cohPullback f n).hom (cocycleClass Y n φ hφ)
       = cocycleClass X n (cochainPullback f n φ) (cochainPullback_cocycle f n φ hφ) := by
-  unfold cocycleClass;
-  rw [ show ( ModuleCat.Hom.hom ( cohPullback f n ) ) = ( ModuleCat.Hom.hom ( HomologicalComplex.homologyMap ( ( singularCochainComplexFunctor ( ZMod 2 ) ( ModuleCat.of ( ZMod 2 ) ( ZMod 2 ) ) ).map f.op ) n ) ) from rfl ];
-  rw [ ← ModuleCat.comp_apply, HomologicalComplex.homologyπ_naturality ];
-  simp +decide [ HomologicalComplex.cyclesMap ];
-  congr! 1;
-  apply (ModuleCat.mono_iff_injective ((cochainCxZMod2 X).iCycles n)).1 inferInstance;
-  convert congr_arg ( fun f => f ( HomologicalComplex.cyclesMk ( cochainCxZMod2 Y ) φ ( n + 1 ) ( by simp +decide [ ComplexShape.next ] ) hφ ) ) ( HomologicalComplex.cyclesMap_i ( ( singularCochainComplexFunctor ( ZMod 2 ) ( ModuleCat.of ( ZMod 2 ) ( ZMod 2 ) ) ).map f.op ) n ) using 1;
-  simp +decide;
-  convert ( cochainCxZMod2 X ).i_cyclesMk _ _ _ _ using 1;
-  exact congr_arg _ ( cochainCxZMod2 Y |>.i_cyclesMk _ _ _ _ )
+  have hnat := HomologicalComplex.homologyπ_naturality ((singularCochainComplexZMod2).map f.op) n
+  have hnat_app := congrArg (fun (g : (cochainCxZMod2 Y).cycles n ⟶ (cochainCxZMod2 X).homology n) =>
+      g.hom ((cochainCxZMod2 Y).cyclesMk φ (n + 1) (cochainCx_next n) hφ)) hnat
+  dsimp at hnat_app
+  have h_cyc : (HomologicalComplex.cyclesMap ((singularCochainComplexZMod2).map f.op) n).hom
+      ((cochainCxZMod2 Y).cyclesMk φ (n + 1) (cochainCx_next n) hφ)
+      = (cochainCxZMod2 X).cyclesMk (cochainPullback f n φ) (n + 1) (cochainCx_next n) (cochainPullback_cocycle f n φ hφ) := by
+    apply (ModuleCat.mono_iff_injective ((cochainCxZMod2 X).iCycles n)).1 inferInstance
+    have h1 : ((cochainCxZMod2 X).iCycles n).hom
+        ((HomologicalComplex.cyclesMap ((singularCochainComplexZMod2).map f.op) n).hom
+          ((cochainCxZMod2 Y).cyclesMk φ (n + 1) (cochainCx_next n) hφ))
+        = cochainPullback f n φ := by
+      have hcyc := HomologicalComplex.cyclesMap_i ((singularCochainComplexZMod2).map f.op) n
+      have hcyc_app := congrArg (fun (g : (cochainCxZMod2 Y).cycles n ⟶ (cochainCxZMod2 X).X n) =>
+          g.hom ((cochainCxZMod2 Y).cyclesMk φ (n + 1) (cochainCx_next n) hφ)) hcyc
+      dsimp at hcyc_app
+      have h_mk := (cochainCxZMod2 Y).i_cyclesMk φ (n + 1) (cochainCx_next n) hφ
+      exact hcyc_app.trans (congrArg (fun x => (((singularCochainComplexZMod2).map f.op).f n).hom x) h_mk)
+    have h2 := (cochainCxZMod2 X).i_cyclesMk (cochainPullback f n φ) (n + 1) (cochainCx_next n) (cochainPullback_cocycle f n φ hφ)
+    exact h1.trans h2.symm
+  have h_res := congrArg (fun c => ((cochainCxZMod2 X).homologyπ n).hom c) h_cyc
+  exact hnat_app.trans h_res
 
 /-- **Naturality of the cohomology cup product.** `f^*(a ⌣ b) = f^* a ⌣ f^* b`. -/
 theorem cohPullback_cupZMod2 {X Y : TopCat.{0}} (f : X ⟶ Y) (p q : ℕ)

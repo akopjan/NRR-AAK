@@ -54,7 +54,7 @@ theorem isClosed_isEqualAreaWeight
           IsEqualAreaWeight hA z.1 z.2.1 z.2.2}
         = ⋂ i, {z | areaVec hA z.1 z.2.1 z.2.2 i = targetArea z.1 n} := by
     ext z
-    simp only [Set.mem_iInter, Set.mem_setOf_eq]
+    simp only [Set.mem_iInter, Set.mem_ofPred_eq]
     exact isEqualAreaWeight_iff_areaVec hA z.1 z.2.1 z.2.2
   rw [hset]
   refine isClosed_iInter (fun i => ?_)
@@ -80,7 +80,7 @@ theorem isClosed_isNormalizedEqualAreaWeight
   refine (isClosed_isEqualAreaWeight hA).inter ?_
   have hsum :
       Continuous fun z : BodySpace K A × Config n × (Fin n → ℝ) => ∑ i, z.2.2 i :=
-    continuous_finset_sum _
+    continuous_finsetSum _
       (fun i _ => (continuous_apply i).comp (continuous_snd.comp continuous_snd))
   exact isClosed_eq hsum continuous_const
 

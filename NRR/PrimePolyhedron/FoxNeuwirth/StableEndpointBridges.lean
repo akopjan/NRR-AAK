@@ -311,7 +311,7 @@ theorem continuous_rawBridgeWeight
     Continuous (rawBridgeWeight hp F A) := by
   unfold rawBridgeWeight
   exact continuous_const.min
-    (continuous_finset_sum _ fun z _ => continuous_sampleBump hp F A z)
+    (continuous_finsetSum _ fun z _ => continuous_sampleBump hp F A z)
 
 theorem rawBridgeWeight_nonneg
     (hp : Nat.Prime p) (F : ZeroFreeMap hp)
@@ -386,7 +386,7 @@ theorem continuous_bridgeWeight
     Continuous (bridgeWeight hp F A) := by
   unfold bridgeWeight
   exact continuous_const.mul
-    (continuous_finset_sum _ fun g _ =>
+    (continuous_finsetSum _ fun g _ =>
       (continuous_rawBridgeWeight hp F A).comp (Realization.continuous_smul hp g))
 
 theorem bridgeWeight_nonneg

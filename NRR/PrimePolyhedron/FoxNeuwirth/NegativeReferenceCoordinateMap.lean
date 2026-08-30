@@ -48,7 +48,7 @@ noncomputable def negativeReferenceCoordinateMap
       (le_of_lt (negativeReferenceCoordinateMap_vertex_neg hp c i))
   obtain ⟨c, hc⟩ : ∃ c, 0 < x c := by
     by_contra h
-    push_neg at h
+    push Not at h
     have hz : ∀ c, x c = 0 := fun c => le_antisymm (h c) (x.nonneg c)
     have hx := x.sum_eq_one
     simp [hz] at hx

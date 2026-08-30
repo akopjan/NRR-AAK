@@ -2,41 +2,13 @@ import NRR.OddSphereDegree.AlgebraicTopology.BarycentricSubdivisionChainMap
 import NRR.OddSphereDegree.AlgebraicTopology.BarycentricSubdivisionHomotopyFormula
 import Mathlib
 
-/-!
-# Barycentric subdivision is chain-homotopic to the identity
-
-This file packages the degree-wise chain-homotopy formula proved in
-`BarycentricSubdivisionHomotopyFormula.lean`,
-
-```text
-∂ H(c) + H(∂ c) = c - sd(c),
-```
-
-into the library's actual chain-homotopy API: a `Homotopy` between the barycentric
-subdivision chain map `barycentricSubdivisionChainMap R X` and the identity chain
-map of the singular chain complex.
-
-Mathlib's `Homotopy f g` of homological complexes carries the sign convention
-`f = dNext H + prevD H + g`. With `f = sd` and `g = 𝟙`, the degree-wise data
-`dNext + prevD` evaluates to `sd - id`, while the library's formula gives
-`∂H + H∂ = id - sd`. We therefore use **`-H`** as the homotopy components.
-
-## Main results
-
-* `barycentricSubdivision_chainHomotopic_id`: the chain homotopy
- `Homotopy (barycentricSubdivisionChainMap R X) (𝟙 _)`.
-* `barycentricSubdivision_induces_identity_on_homology` /
- `barycentricSubdivision_homologyMap_eq_id`: the induced map on homology is the
- identity.
-* `barycentricSubdivision_sub_id_is_boundary`: the explicit chain-level formula
- expressing `sd(c) - c` through the homotopy operator.
--/
-
 open scoped BigOperators
 open CategoryTheory AlgebraicTopology Simplicial SimplexCategory Limits
 
 namespace SphereOddDegree
 namespace AffineBarycentricSubdivision
+
+set_option linter.deprecated false
 
 /-- The components of the chain homotopy between barycentric subdivision and the
 identity: in the slot `(p, q)` it is `-H_p` when `q = p + 1` and `0` otherwise. -/
@@ -60,7 +32,7 @@ theorem barycentricSubdivisionChainHomotopyHom_zero
     barycentricSubdivisionChainHomotopyHom R X p q = 0 := by
   rw [barycentricSubdivisionChainHomotopyHom, dif_neg h]
 
-/-
+/--
 **The chain-homotopy identity in Mathlib's sign convention.** For every degree
 `n`, the degree-`n` component of the subdivision chain map equals
 `dNext + prevD` of the homotopy operator plus the identity component. This is the
@@ -72,20 +44,58 @@ theorem barycentricSubdivisionChainHomotopy_comm
       = dNext n (barycentricSubdivisionChainHomotopyHom R X)
         + prevD n (barycentricSubdivisionChainHomotopyHom R X)
         + HomologicalComplex.Hom.f (𝟙 (singularChainComplex R X)) n := by
-  -- In this case, we have n = 0, and the goal simplifies to showing that the identity map equals itself, which is trivially true.
-  by_cases hn : n = 0;
-  · subst hn;
-    simp +decide [ dNext, prevD, barycentricSubdivisionChainMap, barycentricSubdivisionChainHomotopyHom ];
-    ext c;
-    have h := barycentricSubdivisionHomotopy_boundary_formula R X 0 c; simp_all +decide [ homotopyBoundaryTerm_zero ] ;
-    convert congr_arg ( fun x => -x + c ) h.symm using 1 ; abel1;
-  · obtain ⟨ m, rfl ⟩ := Nat.exists_eq_succ_of_ne_zero hn;
-    unfold dNext prevD;
-    simp +decide [ singularChainComplex, barycentricSubdivisionChainHomotopyHom, barycentricSubdivisionChainMap ];
-    ext c;
-    have := barycentricSubdivisionHomotopy_boundary_formula R X ( m + 1 ) c;
-    simp_all +decide [ homotopyBoundaryTerm_succ, singularBoundary ];
-    grind
+  have hd_0 : (singularChainComplex R X).d 1 0 = singularBoundary R X 0 := rfl
+  have hd_succ : ∀ m : ℕ, (singularChainComplex R X).d (m + 1) m = singularBoundary R X m := fun _ => rfl
+  cases n with
+  | zero =>
+    have h_dNext : dNext 0 (barycentricSubdivisionChainHomotopyHom R X) = 0 := by
+      apply dNext_eq_zero
+      rw [ComplexShape.down_Rel]; intro h; omega
+    have h_prevD : prevD 0 (barycentricSubdivisionChainHomotopyHom R X)
+        = (barycentricSubdivisionChainHomotopyHom R X 0 1) ≫ (singularChainComplex R X).d 1 0 := by
+      apply prevD_eq (w := (show (ComplexShape.down ℕ).Rel 1 0 from rfl))
+    rw [h_dNext, h_prevD, barycentricSubdivisionChainHomotopyHom_succ, hd_0]
+    apply ModuleCat.hom_ext; apply LinearMap.ext; intro c
+    have hform := barycentricSubdivisionHomotopy_boundary_formula R X 0 c
+    rw [homotopyBoundaryTerm_zero] at hform
+    change (barycentricSubdivisionLinearMap R X 0).hom c =
+      0 + (singularBoundary R X 0).hom ((-barycentricSubdivisionHomotopyLinearMap R X 0).hom c) + c
+    rw [zero_add, show (-barycentricSubdivisionHomotopyLinearMap R X 0).hom c
+        = - (barycentricSubdivisionHomotopyLinearMap R X 0).hom c from rfl, map_neg]
+    apply eq_of_sub_eq_zero
+    calc
+      (barycentricSubdivisionLinearMap R X 0).hom c - (-(singularBoundary R X 0).hom ((barycentricSubdivisionHomotopyLinearMap R X 0).hom c) + c)
+        = (singularBoundary R X 0).hom ((barycentricSubdivisionHomotopyLinearMap R X 0).hom c) + 0 - (c - (barycentricSubdivisionLinearMap R X 0).hom c) := by abel
+      _ = 0 := by rw [hform, sub_self]
+  | succ m =>
+    have h_dNext : dNext (m + 1) (barycentricSubdivisionChainHomotopyHom R X)
+        = (singularChainComplex R X).d (m + 1) m ≫ (barycentricSubdivisionChainHomotopyHom R X m (m + 1)) := by
+      apply dNext_eq (w := (show (ComplexShape.down ℕ).Rel (m + 1) m from rfl))
+    have h_prevD : prevD (m + 1) (barycentricSubdivisionChainHomotopyHom R X)
+        = (barycentricSubdivisionChainHomotopyHom R X (m + 1) (m + 2)) ≫ (singularChainComplex R X).d (m + 2) (m + 1) := by
+      apply prevD_eq (w := (show (ComplexShape.down ℕ).Rel (m + 2) (m + 1) from rfl))
+    rw [h_dNext, h_prevD, barycentricSubdivisionChainHomotopyHom_succ, barycentricSubdivisionChainHomotopyHom_succ,
+        hd_succ m, hd_succ (m + 1)]
+    apply ModuleCat.hom_ext; apply LinearMap.ext; intro c
+    have hform := barycentricSubdivisionHomotopy_boundary_formula R X (m + 1) c
+    rw [homotopyBoundaryTerm_succ] at hform
+    change (barycentricSubdivisionLinearMap R X (m + 1)).hom c =
+      (-barycentricSubdivisionHomotopyLinearMap R X m).hom ((singularBoundary R X m).hom c)
+      + (singularBoundary R X (m + 1)).hom ((-barycentricSubdivisionHomotopyLinearMap R X (m + 1)).hom c) + c
+    rw [show (-barycentricSubdivisionHomotopyLinearMap R X m).hom ((singularBoundary R X m).hom c)
+        = - (barycentricSubdivisionHomotopyLinearMap R X m).hom ((singularBoundary R X m).hom c) from rfl,
+        show (-barycentricSubdivisionHomotopyLinearMap R X (m + 1)).hom c
+        = - (barycentricSubdivisionHomotopyLinearMap R X (m + 1)).hom c from rfl,
+        map_neg]
+    apply eq_of_sub_eq_zero
+    calc
+      (barycentricSubdivisionLinearMap R X (m + 1)).hom c
+          - (-(barycentricSubdivisionHomotopyLinearMap R X m).hom ((singularBoundary R X m).hom c)
+             + -(singularBoundary R X (m + 1)).hom ((barycentricSubdivisionHomotopyLinearMap R X (m + 1)).hom c) + c)
+        = ((singularBoundary R X (m + 1)).hom ((barycentricSubdivisionHomotopyLinearMap R X (m + 1)).hom c)
+           + (barycentricSubdivisionHomotopyLinearMap R X m).hom ((singularBoundary R X m).hom c))
+          - (c - (barycentricSubdivisionLinearMap R X (m + 1)).hom c) := by abel
+      _ = 0 := by rw [hform, sub_self]
 
 /-- **Barycentric subdivision is chain-homotopic to the identity.**
 

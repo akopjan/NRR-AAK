@@ -59,26 +59,42 @@ theorem SupportFunctionContinuousFamily.of_continuous
     {α : Type*} [TopologicalSpace α] {K : α → ConvexBody E}
     (hK : Continuous K) :
     SupportFunctionContinuousFamily K := by
-  refine' continuous_iff_continuousAt.mpr _;
-  intro p;
-  refine' Metric.tendsto_nhds.mpr _;
-  intro ε εpos;
-  -- Use the fact that the Hausdorff distance is continuous and the support function is Lipschitz continuous.
-  have h_cont : ∀ᶠ (x : α × E) in 𝓝 p, |(K x.1).supportFunction x.2 - (K p.1).supportFunction x.2| ≤ Metric.hausdorffDist (K x.1 : Set E) (K p.1 : Set E) * ‖x.2‖ := by
-    exact Filter.Eventually.of_forall fun x => NRR.Geometry.ConvexBody.abs_supportFunction_sub_le_hausdorffDist_mul_norm _ _ _;
-  have h_cont : Filter.Tendsto (fun x : α × E => Metric.hausdorffDist (K x.1 : Set E) (K p.1 : Set E) * ‖x.2‖) (𝓝 p) (𝓝 (Metric.hausdorffDist (K p.1 : Set E) (K p.1 : Set E) * ‖p.2‖)) := by
-    refine' Filter.Tendsto.mul _ _;
-    · have h_cont : Continuous (fun x : ConvexBody E => Metric.hausdorffDist (x : Set E) (K p.1 : Set E)) := by
-        have h_cont : Continuous (fun x : _root_.ConvexBody E => Metric.hausdorffDist (x : Set E) (K p.1 : Set E)) := by
-          have h_cont : Continuous (fun x : _root_.ConvexBody E => dist x (K p.1).toMathlib) := by
-            exact continuous_id.dist continuous_const
-          convert h_cont using 1;
-        convert h_cont.comp ( show Continuous ( fun x : ConvexBody E => x.toMathlib ) from continuous_induced_dom ) using 1;
-      exact h_cont.continuousAt.tendsto.comp ( hK.continuousAt.tendsto.comp ( continuousAt_fst ) );
-    · exact Continuous.tendsto ( continuous_norm.comp continuous_snd ) p;
-  have h_cont : Filter.Tendsto (fun x : α × E => (K p.1).supportFunction x.2 - (K p.1).supportFunction p.2) (𝓝 p) (𝓝 0) := by
-    convert Filter.Tendsto.sub ( ( K p.1 ).continuous_supportFunction.continuousAt.comp ( continuous_snd.continuousAt ) ) tendsto_const_nhds using 2 ; simp +decide;
-  filter_upwards [ ‹∀ᶠ x in 𝓝 p, |(K x.1).supportFunction x.2 - (K p.1).supportFunction x.2| ≤ hausdorffDist (K x.1).carrier (K p.1).carrier * ‖x.2‖›, ‹Tendsto ( fun x : α × E => hausdorffDist ( K x.1 ).carrier ( K p.1 ).carrier * ‖x.2‖ ) ( 𝓝 p ) ( 𝓝 ( hausdorffDist ( K p.1 ).carrier ( K p.1 ).carrier * ‖p.2‖ ) ) ›.eventually ( gt_mem_nhds <| show hausdorffDist ( K p.1 ).carrier ( K p.1 ).carrier * ‖p.2‖ < ε / 2 by simp +decide [ εpos ] ), h_cont.eventually ( Metric.ball_mem_nhds _ <| half_pos εpos ) ] with x hx₁ hx₂ hx₃ using abs_lt.mpr ⟨ by linarith [ abs_lt.mp hx₃, abs_le.mp hx₁ ], by linarith [ abs_lt.mp hx₃, abs_le.mp hx₁ ] ⟩
+  refine continuous_iff_continuousAt.mpr fun p => Metric.tendsto_nhds.mpr fun ε εpos => ?_
+  have hbound : ∀ᶠ (x : α × E) in 𝓝 p,
+      |(K x.1).supportFunction x.2 - (K p.1).supportFunction x.2| ≤
+        Metric.hausdorffDist (K x.1 : Set E) (K p.1 : Set E) * ‖x.2‖ :=
+    Filter.Eventually.of_forall fun x =>
+      NRR.Geometry.ConvexBody.abs_supportFunction_sub_le_hausdorffDist_mul_norm (K x.1) (K p.1) x.2
+  have hc : Continuous (fun x : ConvexBody E => Metric.hausdorffDist (x : Set E) (K p.1 : Set E)) := by
+    have h_mathlib : Continuous (fun x : _root_.ConvexBody E => dist x (K p.1).toMathlib) :=
+      continuous_id.dist continuous_const
+    have h_toMathlib : Continuous (fun x : ConvexBody E => x.toMathlib) := continuous_induced_dom
+    have h_comp := h_mathlib.comp h_toMathlib
+    have h_eq : (fun x : ConvexBody E => Metric.hausdorffDist (x : Set E) (K p.1 : Set E))
+        = (fun x : _root_.ConvexBody E => dist x (K p.1).toMathlib) ∘ (fun x : ConvexBody E => x.toMathlib) := by
+      ext x; rfl
+    rw [h_eq]
+    exact h_comp
+  have htend : Filter.Tendsto (fun x : α × E => Metric.hausdorffDist (K x.1 : Set E) (K p.1 : Set E) * ‖x.2‖) (𝓝 p) (𝓝 0) := by
+    have h1 : Continuous (fun x : α × E => Metric.hausdorffDist (K x.1 : Set E) (K p.1 : Set E) * ‖x.2‖) :=
+      (hc.comp (hK.comp continuous_fst)).mul (continuous_norm.comp continuous_snd)
+    have h2 := h1.tendsto p
+    have h3 : Metric.hausdorffDist (K p.1 : Set E) (K p.1 : Set E) * ‖p.2‖ = (0 : ℝ) := by
+      simp [Metric.hausdorffDist_self_zero]
+    exact h3 ▸ h2
+  have hdir : Filter.Tendsto (fun x : α × E => (K p.1).supportFunction x.2 - (K p.1).supportFunction p.2) (𝓝 p) (𝓝 0) := by
+    have h1 : Continuous (fun x : α × E => (K p.1).supportFunction x.2 - (K p.1).supportFunction p.2) :=
+      ((K p.1).continuous_supportFunction.comp continuous_snd).sub continuous_const
+    have h2 := h1.tendsto p
+    have h3 : (K p.1).supportFunction p.2 - (K p.1).supportFunction p.2 = (0 : ℝ) := by ring
+    exact h3 ▸ h2
+  filter_upwards [hbound,
+    htend.eventually (gt_mem_nhds (show (0 : ℝ) < ε / 2 by linarith)),
+    hdir.eventually (Metric.ball_mem_nhds _ (half_pos εpos))] with x hx₁ hx₂ hx₃
+  rw [Real.dist_eq, abs_lt]
+  rw [Real.dist_eq, abs_lt, sub_zero] at hx₃
+  have hb := abs_le.mp hx₁
+  constructor <;> nlinarith [hb.1, hb.2, hx₂, hx₃.1, hx₃.2]
 
 /-- **Body-parameter width continuity** for a Hausdorff-continuous family of solid bodies. -/
 theorem WidthContinuousFamily.of_continuous
@@ -236,8 +252,13 @@ theorem continuous_supportFunction :
           = fun C : ConvexSubbody K => dist C p.1 := by
         funext C; rw [dist_eq_hausdorffDist]
       rw [hEq]; exact continuous_id.dist continuous_const
-    have := ((hc.comp continuous_fst).mul (continuous_norm.comp continuous_snd)).tendsto p
-    simpa [Metric.hausdorffDist_self_zero] using this
+    have h1 : Continuous (fun x : ConvexSubbody K × Plane =>
+        Metric.hausdorffDist (x.1.body : Set Plane) (p.1.body : Set Plane) * ‖x.2‖) :=
+      (hc.comp continuous_fst).mul (continuous_norm.comp continuous_snd)
+    have h2 := h1.tendsto p
+    have h3 : Metric.hausdorffDist (p.1.body : Set Plane) (p.1.body : Set Plane) * ‖p.2‖ = (0 : ℝ) := by
+      simp [Metric.hausdorffDist_self_zero]
+    exact h3 ▸ h2
   have hdir : Tendsto (fun x : ConvexSubbody K × Plane =>
       p.1.supportFunction x.2 - p.1.supportFunction p.2) (𝓝 p) (𝓝 0) := by
     have h := ((continuous_supportFunction_dir p.1).comp continuous_snd).tendsto p
@@ -266,7 +287,7 @@ theorem continuous_width :
     Continuous fun z : ConvexSubbody K × Plane => z.1.widthFunction z.2 := by
   have hneg : Continuous fun z : ConvexSubbody K × Plane => z.1.supportFunction (-z.2) :=
     continuous_supportFunction.comp (continuous_fst.prodMk (continuous_neg.comp continuous_snd))
-  simpa [widthFunction] using continuous_supportFunction.add hneg
+  exact continuous_supportFunction.add hneg
 
 /-- **Width continuous family** for `ConvexSubbody K`: the joint map `(C, u) ↦ w_C(u)` is
 continuous. -/

@@ -33,7 +33,7 @@ noncomputable def referenceL1 (M : PrimeConfigurationModel hp) (x : M.Point) : â
  theorem continuous_referenceL1 (M : PrimeConfigurationModel hp) :
     Continuous M.referenceL1 := by
   unfold referenceL1
-  exact continuous_finset_sum _ fun i _ =>
+  exact continuous_finsetSum _ fun i _ =>
     ((continuous_apply i).comp
       (continuous_induced_dom.comp M.reference.continuous)).abs
 

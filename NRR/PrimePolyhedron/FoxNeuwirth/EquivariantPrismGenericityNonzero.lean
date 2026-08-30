@@ -57,15 +57,23 @@ theorem affineSubdivMap_injective
     have hr := congrArg (fun z : Delta n => z r) hxy
     simp only [Matrix.mulVec, AffineSubdivisionDeterminant.stepVertexMatrix,
       affineSubdivMap_apply, Pi.zero_apply] at *
-    simpa [dotProduct, mul_sub, Finset.sum_sub_distrib,
-      mul_comm, mul_left_comm, mul_assoc] using sub_eq_zero.mpr hr
+    calc
+      _ = ∑ k, (x k - y k) * (prefixBarycenter n pi k).val r := by
+        apply Finset.sum_congr rfl
+        intro k hk
+        ring
+      _ = (∑ k, x k * (prefixBarycenter n pi k).val r) -
+          ∑ k, y k * (prefixBarycenter n pi k).val r := by
+        simp only [sub_mul, Finset.sum_sub_distrib]
+      _ = 0 := sub_eq_zero.mpr hr
   have hz : (fun i => x i - y i) = 0 :=
     Matrix.eq_zero_of_mulVec_eq_zero
       (AffineSubdivisionDeterminant.det_stepVertexMatrix_ne_zero n pi) hmul
   apply Subtype.ext
   funext i
   have hi := congrFun hz i
-  simpa using sub_eq_zero.mp hi
+  change x i = y i
+  exact sub_eq_zero.mp hi
 
 /-- Every iterated barycentric-subdivision affine composite is injective. -/
 theorem affineCompMap_injective
@@ -188,9 +196,9 @@ theorem spatialWeight_pivot
   classical
   unfold spatialWeight
   simp only [spatialIndex, Fin.cast_inj]
-  rw [Finset.sum_eq_add_sum_diff_singleton
+  rw [Finset.sum_eq_add_sum_sdiff_singleton_of_mem
     (by simp : k.castSucc ∈ (Finset.univ : Finset (Fin (p + 1))))]
-  rw [Finset.sum_eq_add_sum_diff_singleton
+  rw [Finset.sum_eq_add_sum_sdiff_singleton_of_mem
     (by
       simp only [Finset.mem_sdiff, Finset.mem_univ, Finset.mem_singleton, true_and]
       intro h
@@ -374,7 +382,7 @@ theorem realizationPoint_orbit_separated
   classical
   have hnonempty : ∃ i : Fin (d + 1), w i ≠ 0 := by
     by_contra hnone
-    push_neg at hnone
+    push Not at hnone
     have hsum := w.sum_eq_one
     simp [hnone] at hsum
   obtain ⟨i, hi⟩ := hnonempty
@@ -613,7 +621,7 @@ theorem facetDeterminant_witness
       (AffinePositiveRayBoundary.VertexMap.augmentedRowEquiv hp c))
     (AffinePositiveRayBoundary.VertexMap.augmentedRowEquiv hp r)
   change Matrix.det M = 1
-  rw [Matrix.det_of_lowerTriangular]
+  rw [Matrix.det_of_isLowerTriangular]
   · have hd : ∀ i, M i i = 1 := by
       intro i
       dsimp [M]

@@ -73,20 +73,17 @@ noncomputable def insertLastPerm {n : ℕ} (j : Fin (n + 2)) :
     insertLastPerm j (lastVertex n) = j := by
   classical
   unfold insertLastPerm lastVertex
-  -- `finRotate` sends the last element to `0`, and `cycleRange.symm` sends `0`
-  -- to `j`.
-  -- Apply the cycleRange.symm to 0, which gives j.
-  have h_cycleRange_symm : (j.cycleRange.symm : Equiv.Perm (Fin (n + 2))) 0 = j := by
-    convert Fin.cycleRange_symm_zero j using 1;
-  grind +suggestions
+  have hrot : finRotate (n + 2) ⟨n + 1, by omega⟩ = 0 := by
+    simp [finRotate]
+  have h_symm : (j.cycleRange.symm : Equiv.Perm (Fin (n + 2))) 0 = j := Fin.cycleRange_symm_zero j
+  change (j.cycleRange.symm : Equiv.Perm (Fin (n + 2))) (finRotate (n + 2) ⟨n + 1, by omega⟩) = j
+  rw [hrot, h_symm]
 
 @[simp] theorem insertLastPerm_castSucc {n : ℕ} (j : Fin (n + 2))
     (t : Fin (n + 1)) :
     insertLastPerm j (Fin.castSucc t) = j.succAbove t := by
   classical
   unfold insertLastPerm
-  -- `finRotate` sends `castSucc t` to `t.succ`, and `cycleRange.symm` sends
-  -- `t.succ` to `j.succAbove t`.
   simp
 
 /-- Sign of the insertion permutation. -/
@@ -122,14 +119,17 @@ theorem factor_lastFace_of_faceData {n : ℕ}
     (hρ : ∀ t : Fin (n + 1), j.succAbove (ρ t) = π (Fin.castSucc t)) :
     π = (extendLastPerm ρ).trans (insertLastPerm j) := by
   classical
-  convert Equiv.ext ?_;
-  intro x; by_cases hx : x = lastVertex n <;> simp_all +decide ;
-  · unfold extendLastPerm; simp +decide ;
-    unfold Equiv.Perm.viaFintypeEmbedding; simp +decide ;
-    simp +decide [ Equiv.Perm.extendDomain ];
-  · convert hρ ( x.castPred hx ) |> Eq.symm using 1;
-    convert insertLastPerm_castSucc _ _ using 2;
-    convert Equiv.Perm.viaFintypeEmbedding_apply_image ρ ( Fin.castSuccOrderEmb.toEmbedding ) ( x.castPred hx ) using 1
+  ext x
+  obtain ⟨t, rfl⟩ | rfl := Fin.eq_castSucc_or_eq_last x
+  · have h_emb : (extendLastPerm ρ) (Fin.castSucc t) = Fin.castSucc (ρ t) :=
+      Equiv.Perm.viaFintypeEmbedding_apply_image ρ Fin.castSuccOrderEmb.toEmbedding t
+    rw [Equiv.trans_apply, h_emb, insertLastPerm_castSucc, hρ]
+  · have h_not : (Fin.last (n + 1) : Fin (n + 2)) ∉ Set.range (Fin.castSuccOrderEmb.toEmbedding) := by
+      simp [Fin.castSuccOrderEmb]
+    have h_fix : (extendLastPerm ρ) (Fin.last (n + 1)) = Fin.last (n + 1) :=
+      Equiv.Perm.viaFintypeEmbedding_apply_notMem_range ρ Fin.castSuccOrderEmb.toEmbedding h_not
+    have h_last : (Fin.last (n + 1) : Fin (n + 2)) = lastVertex n := rfl
+    rw [Equiv.trans_apply, h_fix, h_last, insertLastPerm_last, hj]
 
 /-- Unit-valued last-face sign identity, in the face-data form used by the
 last-face affine identity. -/

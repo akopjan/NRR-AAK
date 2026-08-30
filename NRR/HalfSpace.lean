@@ -49,7 +49,7 @@ theorem hyperplane_null {u : E2} (hu : u ≠ 0) (c : ℝ) :
       {x : E2 | ⟪u, x⟫ = c}
         = (fun y => (c / ‖u‖ ^ 2) • u + y) '' {x | ⟪u, x⟫ = 0} := by
     ext x
-    simp only [Set.mem_setOf_eq, Set.mem_image]
+    simp only [Set.mem_ofPred_eq, Set.mem_image]
     constructor
     · intro hx
       refine ⟨x - (c / ‖u‖ ^ 2) • u, ?_, by abel⟩

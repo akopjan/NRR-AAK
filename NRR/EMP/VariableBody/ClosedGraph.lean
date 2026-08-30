@@ -39,7 +39,7 @@ theorem continuous_of_isClosed_graph_of_compact
     hcap.isCompact.image continuous_fst
   have heq : Prod.fst '' ({z : D × Y | z.2 = f z.1} ∩ (Set.univ ×ˢ F)) = f ⁻¹' F := by
     ext d
-    simp only [Set.mem_image, Set.mem_inter_iff, Set.mem_setOf_eq, Set.mem_prod,
+    simp only [Set.mem_image, Set.mem_inter_iff, Set.mem_ofPred_eq, Set.mem_prod,
       Set.mem_univ, true_and, Set.mem_preimage, Prod.exists]
     constructor
     · rintro ⟨a, b, ⟨hb, hbF⟩, rfl⟩; rw [hb] at hbF; exact hbF
@@ -60,7 +60,7 @@ theorem isClosed_graph_of_isClosed_relation_of_unique
   have hset : {z : D × Y | z.2 = f z.1} = R := by
     ext z
     obtain ⟨d, y⟩ := z
-    simp only [Set.mem_setOf_eq]
+    simp only [Set.mem_ofPred_eq]
     exact ⟨fun h => h ▸ hf d, fun h => huniq d y h⟩
   rw [hset]; exact hR
 

@@ -91,7 +91,7 @@ distinct (`hs`), the map `w ↦ EMP.areaDeviation K s w` is continuous in the we
 theorem continuous_areaDeviation_weights
     (K : Geometry.ConvexBody Plane) (s : Fin n → Plane) (hs : Function.Injective s) :
     Continuous fun w : Fin n → ℝ => EMP.areaDeviation K s w := by
-  convert ( continuous_EMP_areaVec_weights K s hs ).sub continuous_const using 1
+  exact (continuous_EMP_areaVec_weights K s hs).sub continuous_const
 
 end EMP
 

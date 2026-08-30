@@ -1,6 +1,7 @@
 import NRR.OddSphereDegree.AlgebraicTopology.MayerVietoris
 import NRR.OddSphereDegree.AlgebraicTopology.BarycentricSubdivisionHomotopyFormula
 import NRR.OddSphereDegree.BallBoundaryLES
+
 set_option linter.unusedVariables false
 set_option linter.unusedSectionVars false
 set_option linter.unnecessarySeqFocus false
@@ -9,108 +10,67 @@ set_option linter.unreachableTactic false
 set_option linter.unusedSimpArgs false
 set_option linter.unnecessarySimpa false
 
-/-!
-# Bridge: subordinate-chain complex ≅ singular chains of the subspace
-
-For a topological space `X` and a subset `S ⊆ X`, the subordinate-chain complex
-`subChainComplex R X S` (singular chains of `X` supported in `S`) is isomorphic,
-as a chain complex, to the singular chain complex of the *subspace* `S`. The
-isomorphism is induced by the inclusion `S ↪ X`: on a basis simplex `τ` of the
-subspace it sends `[τ]` to `[ι ∘ τ]`, which has image in `S`, hence is
-subordinate.
-
-This is the geometric "bridge" needed to feed contractibility (and homotopy
-equivalence) of subspaces into the Mayer–Vietoris vanishing hypotheses.
-
-## Main results
-
-* `subspaceHomologyIso` — the chain-level homology isomorphism in every degree.
-* `subspaceHomologyIsoℤ` — its integral specialization, identifying the
- subordinate-chain homology with `Hₙ` of the subspace.
-* `isZero_subChainComplex_homology_of_contractible` — for a contractible subspace
- `S` and `n ≥ 1`, the subordinate-chain homology vanishes.
--/
-
-open CategoryTheory AlgebraicTopology Limits
+open scoped BigOperators
+open CategoryTheory AlgebraicTopology Simplicial SimplexCategory Limits
 open SphereOddDegree.AffineBarycentricSubdivision
 
 noncomputable section
+
 namespace SphereOddDegree
 
 variable {R : Type} [CommRing R] {X : TopCat.{0}}
 
-/-- The inclusion of a subspace `S ⊆ X` as a morphism of topological spaces. -/
 def sInclusion (S : Set X) : TopCat.of S ⟶ X :=
   TopCat.ofHom ⟨Subtype.val, continuous_subtype_val⟩
 
 @[simp] theorem sInclusion_hom_apply (S : Set X) (x : S) :
     (ConcreteCategory.hom (sInclusion S)) x = (x : X) := rfl
 
-/-
-Pushing a simplex of the subspace forward along the inclusion lands a simplex
-subordinate to `S`.
--/
 theorem isSubordinate_pushSimplex_sInclusion (S : Set X) (n : ℕ)
     (τ : singularSimplices (TopCat.of S) n) :
     IsSubordinate S (pushSimplex (sInclusion S) n τ) := by
-      -- Unfold `IsSubordinate` and `singularSimplexAsContinuousMap` to reduce the goal to showing the range of
-      -- `singularSimplexAsContinuousMap X n (pushSimplex (sInclusion S) n τ)` is contained in `S`.
-      simp [IsSubordinate, singularSimplexAsContinuousMap,
-        pushSimplex_continuousMap (sInclusion S) n τ];
-      exact Set.range_subset_iff.mpr fun x => by simp +decide [ sInclusion ] ;
+  rintro _ ⟨x, rfl⟩
+  exact (singularSimplexAsContinuousMap (TopCat.of S) n τ x).2
 
-/-
-The pushforward of simplices along the inclusion is injective.
--/
 theorem pushSimplex_sInclusion_injective (S : Set X) (n : ℕ) :
     Function.Injective (pushSimplex (sInclusion S) n) := by
-      intro τ₁ τ₂ h_eq;
-      apply_fun fun x => singularSimplexAsContinuousMap X n x at h_eq;
-      rw [ pushSimplex_continuousMap, pushSimplex_continuousMap ] at h_eq;
-      simp_all +decide [ funext_iff, sInclusion ];
-      convert h_eq using 1;
-      simp +decide [ funext_iff, ContinuousMap.ext_iff, singularSimplexAsContinuousMap ]
+  intro τ₁ τ₂ h_eq
+  apply ((TopCat.of S).toSSetObjEquiv (Opposite.op ⦋n⦌)).injective
+  ext x
+  have h := congrArg (fun σ => (X.toSSetObjEquiv (Opposite.op ⦋n⦌) σ) x) h_eq
+  exact h
 
-/-
-Every simplex of `X` subordinate to `S` is the pushforward of a (unique)
-simplex of the subspace `S`.
--/
 theorem exists_pushSimplex_of_subordinate (S : Set X) (n : ℕ)
     {σ : singularSimplices X n} (hσ : IsSubordinate S σ) :
     ∃ τ, pushSimplex (sInclusion S) n τ = σ := by
-      -- By definition of `IsSubordinate`, we know that the range of `mvSimplexMap σ` is contained in `S`.
-      have h_range : Set.range (singularSimplexAsContinuousMap X n σ) ⊆ S := hσ
-      obtain ⟨g, hg⟩ : ∃ g : C(Delta n, S), (ConcreteCategory.hom (sInclusion S)).comp g = singularSimplexAsContinuousMap X n σ := by
-        exact ⟨ ContinuousMap.mk fun x => ⟨ singularSimplexAsContinuousMap X n σ x, h_range <| Set.mem_range_self x ⟩, by ext; rfl ⟩;
-      use continuousMapAsSingularSimplex (TopCat.of S) n g;
-      apply_fun singularSimplexAsContinuousMap X n at *;
-      convert hg using 1
+  have h_range : Set.range (singularSimplexAsContinuousMap X n σ) ⊆ S := hσ
+  let g : C(Delta n, S) :=
+    ContinuousMap.mk (fun x => ⟨singularSimplexAsContinuousMap X n σ x, h_range ⟨x, rfl⟩⟩)
+  use continuousMapAsSingularSimplex (TopCat.of S) n g
+  apply (X.toSSetObjEquiv (Opposite.op ⦋n⦌)).injective
+  ext x
+  rfl
 
-/-
-The chain map induced by the inclusion sends any chain of the subspace into
-the subordinate-chain submodule.
--/
 theorem singularChainMap_sInclusion_mem (S : Set X) (n : ℕ)
     (c : singularChainGroup R (TopCat.of S) n) :
     (singularChainMap R (sInclusion S) n).hom c ∈ subChainSubmodule R X S n := by
-      obtain ⟨μ, hμ⟩ : ∃ (μ : Finset (singularSimplices (TopCat.of S) n)) (c' : singularSimplices (TopCat.of S) n →₀ R),
-          c = μ.sum (fun (σ : singularSimplices (TopCat.of S) n) => c' σ • chainGenerator R { carrier := S, str := instTopologicalSpaceSubtype } n σ) := by
-                                                                                                obtain ⟨μ, c', hc⟩ : ∃ (μ : Finset (singularSimplices (TopCat.of S) n)) (c' : singularSimplices (TopCat.of S) n →₀ R),
-                                                                                                      c = μ.sum (fun (σ : singularSimplices (TopCat.of S) n) => c' σ • chainGenerator R { carrier := S, str := instTopologicalSpaceSubtype } n σ) := by
-                                                                                                  have h_span : Submodule.span R (Set.range (fun σ : singularSimplices (TopCat.of S) n => chainGenerator R { carrier := S, str := instTopologicalSpaceSubtype } n σ)) = ⊤ := by
-                                                                                                                                                                                                              grind +suggestions
-                                                                                                  have := h_span.ge ( Submodule.mem_top : c ∈ ⊤ );
-                                                                                                  rw [ Finsupp.mem_span_range_iff_exists_finsupp ] at this;
-                                                                                                  obtain ⟨ c', hc' ⟩ := this; use c'.support, c'; simp_all +decide [ Finsupp.sum ] ;
-                                                                                                use μ, c';
-      obtain ⟨ c', rfl ⟩ := hμ;
-      simp +decide [ subChainSubmodule, singularChainMap_generator ];
-      exact Submodule.sum_mem _ fun x hx => Submodule.smul_mem _ _ <| Submodule.subset_span ⟨ _, isSubordinate_pushSimplex_sInclusion S n x, rfl ⟩
+  let f : singularChainGroup R (TopCat.of S) n ⟶ ModuleCat.of R (singularChainGroup R X n ⧸ subChainSubmodule R X S n) :=
+    singularChainMap R (sInclusion S) n ≫ ModuleCat.ofHom (Submodule.mkQ (subChainSubmodule R X S n))
+  have hf : f = 0 := by
+    apply Limits.colimit.hom_ext
+    intro τ
+    have h1 : (Sigma.ι (fun _ : singularSimplices (TopCat.of S) n => ModuleCat.of R R) τ.as ≫ f).hom (1 : R) = 0 := by
+      show Submodule.mkQ _ ((singularChainMap R (sInclusion S) n).hom (chainGenerator R (TopCat.of S) n τ.as)) = 0
+      rw [Submodule.mkQ_apply, Submodule.Quotient.mk_eq_zero, singularChainMap_generator]
+      exact chainGenerator_mem_subChainSubmodule (isSubordinate_pushSimplex_sInclusion S n τ.as)
+    apply ModuleCat.hom_ext
+    apply LinearMap.ext_ring
+    exact h1
+  have hc := DFunLike.congr_fun (congrArg ModuleCat.Hom.hom hf) c
+  change (Submodule.mkQ (subChainSubmodule R X S n)) ((singularChainMap R (sInclusion S) n).hom c) = 0 at hc
+  rw [Submodule.mkQ_apply, Submodule.Quotient.mk_eq_zero] at hc
+  exact hc
 
-/-
-The inclusion-induced chain map, corestricted to the subordinate-chain
-complex of `S`.
--/
 def subChainCorestrict (R : Type) [CommRing R] (X : TopCat.{0}) (S : Set X) :
     ((singularChainComplexFunctor (ModuleCat.{0} R)).obj (ModuleCat.of R R)).obj (TopCat.of S) ⟶
       subChainComplex R X S where
@@ -118,88 +78,85 @@ def subChainCorestrict (R : Type) [CommRing R] (X : TopCat.{0}) (S : Set X) :
     (LinearMap.codRestrict (subChainSubmodule R X S n)
       (singularChainMap R (sInclusion S) n).hom (singularChainMap_sInclusion_mem S n))
   comm' i j hij := by
-    obtain ⟨ k, hk ⟩ := hij;
-    ext c;
-    have := singularChainMap_boundary_apply R ( sInclusion S ) j ( c : singularChainGroup R ( TopCat.of S ) ( j + 1 ) ) ; simp_all +decide [ singularBoundary ] ;
-    exact Subtype.ext this
+    obtain ⟨k, hk⟩ := hij
+    apply ModuleCat.hom_ext
+    apply LinearMap.ext
+    intro c
+    apply Subtype.ext
+    have := singularChainMap_boundary_apply R (sInclusion S) j (c : singularChainGroup R (TopCat.of S) (j + 1))
+    simp_all [singularBoundary]
+    show (subBoundary R X S j).hom ((LinearMap.codRestrict (subChainSubmodule R X S (j + 1)) (singularChainMap R (sInclusion S) (j + 1)).hom (singularChainMap_sInclusion_mem S (j + 1))) c) =
+         ⟨(singularChainMap R (sInclusion S) j).hom ((singularBoundary R (TopCat.of S) j).hom c), _⟩
+    apply Subtype.ext
+    exact this
 
-/-- A reindexing of simplices `g` induces, via the coproduct universal property, a
-linear map on chain groups; it sends a basis generator `[σ]` to `[g σ]`. -/
-noncomputable def reindexChainMap (R : Type) [CommRing R] {Y : TopCat.{0}} (n : ℕ)
+noncomputable def reindexChainMap (R : Type) [CommRing R] {X Y : TopCat.{0}} (n : ℕ)
     (g : singularSimplices Y n → singularSimplices X n) :
     singularChainGroup R Y n ⟶ singularChainGroup R X n :=
   Limits.Sigma.desc (fun s => Limits.Sigma.ι (fun _ : singularSimplices X n => ModuleCat.of R R) (g s))
 
-@[simp] theorem reindexChainMap_generator {Y : TopCat.{0}} (n : ℕ)
+@[simp] theorem reindexChainMap_generator {X Y : TopCat.{0}} (n : ℕ)
     (g : singularSimplices Y n → singularSimplices X n) (σ : singularSimplices Y n) :
     (reindexChainMap R n g).hom (chainGenerator R Y n σ) = chainGenerator R X n (g σ) := by
-      convert DFunLike.congr_fun ( congrArg ModuleCat.Hom.hom ( show ( Limits.Sigma.ι ( fun _ : singularSimplices Y n => ModuleCat.of R R ) σ ) ≫ ( Limits.Sigma.desc ( fun s => Limits.Sigma.ι ( fun _ : singularSimplices X n => ModuleCat.of R R ) ( g s ) ) ) = Limits.Sigma.ι ( fun _ : singularSimplices X n => ModuleCat.of R R ) ( g σ ) from ?_ ) ) 1 using 1;
-      aesop
+  have key : (Sigma.ι (fun _ : singularSimplices Y n => ModuleCat.of R R) σ) ≫
+      (reindexChainMap R n g) = Sigma.ι (fun _ : singularSimplices X n => ModuleCat.of R R) (g σ) :=
+    Sigma.ι_desc _ _
+  have := DFunLike.congr_fun (congrArg ModuleCat.Hom.hom key) (1 : R)
+  erw [ModuleCat.hom_comp, LinearMap.comp_apply] at this
+  exact this
 
-/-
-If `g` is a set-level left inverse of `pushSimplex f n`, then `reindexChainMap R n g`
-is a left inverse of `singularChainMap R f n` at the level of chain groups.
--/
-theorem reindexChainMap_comp_singularChainMap {Y : TopCat.{0}}
+theorem reindexChainMap_comp_singularChainMap {X Y : TopCat.{0}}
     (f : X ⟶ Y) (n : ℕ) (g : singularSimplices Y n → singularSimplices X n)
     (hg : Function.LeftInverse g (pushSimplex f n)) :
     singularChainMap R f n ≫ reindexChainMap R n g = 𝟙 _ := by
-      ext τ
-      simp [singularChainMap_generator, reindexChainMap_generator, hg];
-      obtain ⟨μ, c', hc⟩ : ∃ (μ : Finset (singularSimplices X n)) (c' : singularSimplices X n →₀ R),
-          τ = μ.sum (fun (σ : singularSimplices X n) => c' σ • chainGenerator R X n σ) := by
-            have h_span : Submodule.span R (Set.range (fun σ : singularSimplices X n => chainGenerator R X n σ)) = ⊤ := by
-              grind +suggestions;
-            have := h_span.ge ( Submodule.mem_top : τ ∈ ⊤ );
-            rw [ Finsupp.mem_span_range_iff_exists_finsupp ] at this; obtain ⟨ c', hc' ⟩ := this; use c'.support, c'; simp_all +decide [ Finsupp.sum ] ;
-      simp +decide [ hc, singularChainMap_generator, reindexChainMap_generator, hg ];
-      exact Finset.sum_congr rfl fun x hx => by rw [ hg x ] ;
+  apply Limits.colimit.hom_ext
+  intro τ
+  apply ModuleCat.hom_ext
+  apply LinearMap.ext_ring
+  show (reindexChainMap R n g).hom ((singularChainMap R f n).hom (chainGenerator R X n τ.as)) =
+       chainGenerator R X n τ.as
+  rw [singularChainMap_generator, reindexChainMap_generator, hg τ.as]
 
-/-
-The free-module chain map induced by an injective reindexing of simplices is
-injective. A left inverse is built from any set-level retraction of the index
-map.
--/
-theorem singularChainMap_injective_of_pushSimplex_injective {Y : TopCat.{0}}
+theorem singularChainMap_injective_of_pushSimplex_injective {X Y : TopCat.{0}}
     (f : X ⟶ Y) (n : ℕ) (hf : Function.Injective (pushSimplex f n)) :
     Function.Injective (singularChainMap R f n).hom := by
-      by_cases h : Nonempty (singularSimplices X n);
-      · have := @reindexChainMap_comp_singularChainMap R _ X Y f n ( Function.invFun ( pushSimplex f n ) ) ( Function.leftInverse_invFun hf );
-        exact Function.HasLeftInverse.injective ⟨ _, fun x => by simpa using congr_arg ( fun g => g x ) this ⟩;
-      · intro x y; simp_all +decide [ singularChainMap ] ;
-        -- Since the index type is empty, the coproduct is initial, hence zero.
-        have h_zero : Subsingleton (singularChainGroup R X n) := by
-          have h_empty : ∀ (x : singularChainGroup R X n), x = 0 := by
-            intro x; exact (by
-            obtain ⟨ μ, c', hc ⟩ := ( show ∃ μ : Finset ( singularSimplices X n ), ∃ c' : singularSimplices X n →₀ R, x = μ.sum ( fun σ => c' σ • chainGenerator R X n σ ) from by
-                                        have h_span : Submodule.span R (Set.range (fun σ : singularSimplices X n => chainGenerator R X n σ)) = ⊤ := by
-                                          grind +suggestions;
-                                        have := h_span.ge ( Submodule.mem_top : x ∈ ⊤ ) ; rw [ Finsupp.mem_span_range_iff_exists_finsupp ] at this; obtain ⟨ c', hc' ⟩ := this; use c'.support, c'; simp_all +decide [ Finsupp.sum ] ; );
-            exact hc.trans ( Finset.sum_eq_zero fun σ hσ => False.elim <| h.elim σ ))
-          exact ⟨fun x y => h_empty x ▸ h_empty y ▸ rfl⟩;
-        exact fun _ => Subsingleton.elim _ _
+  have : Mono (singularChainMap R f n) :=
+    @MonoCoprod.mono_of_injective' (ModuleCat.{0} R) _ _ (singularSimplices Y n) (singularSimplices X n)
+      (fun _ => ModuleCat.of R R) (pushSimplex f n) hf _ _ _
+  exact (ModuleCat.mono_iff_injective _).mp this
 
-/-
-Each degree of the corestricted chain map is bijective.
--/
 theorem subChainCorestrict_bijective (S : Set X) (n : ℕ) :
     Function.Bijective ((subChainCorestrict R X S).f n).hom := by
-      constructor;
-      · intro x y hxy;
-        apply_fun (singularChainMap R (sInclusion S) n).hom at * ; simp_all +decide [ subChainCorestrict ];
-        · convert congr_arg Subtype.val hxy using 1;
-        · grind +suggestions;
-      · intro x;
-        rcases x with ⟨ x, hx ⟩;
-        induction hx using Submodule.span_induction;
-        · obtain ⟨ σ, hσ, rfl ⟩ := ‹_›;
-          obtain ⟨ τ, hτ ⟩ := exists_pushSimplex_of_subordinate S n hσ;
-          use chainGenerator R (TopCat.of S) n τ;
-          exact Subtype.ext ( by simpa [ hτ ] using singularChainMap_generator R ( sInclusion S ) n τ );
-        · exact ⟨ 0, by aesop ⟩;
-        · rename_i hx hy;
-          exact ⟨ hx.choose + hy.choose, by simpa using congr_arg₂ ( · + · ) hx.choose_spec hy.choose_spec ⟩;
-        · obtain ⟨ a, ha ⟩ := ‹_›; use ‹R› • a; aesop;
+  constructor
+  · intro x y hxy
+    have h_inj := @singularChainMap_injective_of_pushSimplex_injective R _ (TopCat.of S) X (sInclusion S) n
+      (pushSimplex_sInclusion_injective S n)
+    apply h_inj
+    apply Subtype.ext_iff.mp at hxy
+    exact hxy
+  · rintro ⟨x, hx⟩
+    induction hx using Submodule.span_induction with
+    | mem _ h =>
+      rcases h with ⟨σ, hσ, rfl⟩
+      obtain ⟨τ, rfl⟩ := exists_pushSimplex_of_subordinate S n hσ
+      refine ⟨chainGenerator R (TopCat.of S) n τ, ?_⟩
+      apply Subtype.ext
+      exact singularChainMap_generator R (sInclusion S) n τ
+    | zero =>
+      refine ⟨0, ?_⟩
+      apply Subtype.ext
+      exact map_zero _
+    | add u v hu hv hx hy =>
+      rcases hx with ⟨u', hu'⟩
+      rcases hy with ⟨v', hv'⟩
+      refine ⟨u' + v', ?_⟩
+      rw [map_add, hu', hv']
+      rfl
+    | smul a u hu hx =>
+      rcases hx with ⟨u', hu'⟩
+      refine ⟨a • u', ?_⟩
+      rw [map_smul, hu']
+      rfl
 
 instance subChainCorestrict_component_isIso (S : Set X) (n : ℕ) :
     IsIso ((subChainCorestrict R X S).f n) :=
@@ -209,22 +166,16 @@ instance subChainCorestrict_isIso (S : Set X) :
     IsIso (subChainCorestrict R X S) :=
   HomologicalComplex.Hom.isIso_of_components _
 
-/-- **The bridge on homology.** The subordinate-chain homology of `S ⊆ X` is
-isomorphic to the singular homology of the subspace `S`. -/
 def subspaceHomologyIso (S : Set X) (n : ℕ) :
     (subChainComplex R X S).homology n ≅
       (((singularChainComplexFunctor (ModuleCat.{0} R)).obj
         (ModuleCat.of R R)).obj (TopCat.of S)).homology n :=
   ((HomologicalComplex.homologyFunctor _ _ n).mapIso (asIso (subChainCorestrict R X S))).symm
 
-/-- **Integral bridge on homology.** The subordinate-chain homology of `S ⊆ X` is
-isomorphic to `Hₙ(S; ℤ)`, the integral singular homology of the subspace. -/
 def subspaceHomologyIsoℤ (X : TopCat.{0}) (S : Set X) (n : ℕ) :
     (subChainComplex ℤ X S).homology n ≅ (singularHomologyℤ n).obj (TopCat.of S) :=
   subspaceHomologyIso S n
 
-/-- **Vanishing for contractible subspaces.** If `S ⊆ X` is contractible and
-`n ≥ 1`, then the subordinate-chain homology vanishes. -/
 theorem isZero_subChainComplex_homology_of_contractible
     (X : TopCat.{0}) (S : Set X) [ContractibleSpace S] (n : ℕ) (hn : 1 ≤ n) :
     IsZero ((subChainComplex ℤ X S).homology n) :=

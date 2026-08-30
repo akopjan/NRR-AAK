@@ -88,24 +88,21 @@ theorem cochain_ext {R : Type} [CommRing R] {Z : TopCat.{0}} {p : ℕ}
   intro τ
   apply ModuleCat.hom_ext
   apply LinearMap.ext_ring
-  have := h τ
-  unfold cochainEval at this
-  simpa [ModuleCat.hom_comp, LinearMap.comp_apply] using this
+  have ht := h τ
+  dsimp [cochainEval] at ht
+  exact ht
 
 @[simp] theorem cochainEval_add {R : Type} [CommRing R] {Z : TopCat.{0}} (p : ℕ)
     (φ ψ : singularCochainGroup R Z p) (τ : singularSimplices Z p) :
-    cochainEval p (φ + ψ) τ = cochainEval p φ τ + cochainEval p ψ τ := by
-  unfold cochainEval; simp
+    cochainEval p (φ + ψ) τ = cochainEval p φ τ + cochainEval p ψ τ := rfl
 
 @[simp] theorem cochainEval_smul {R : Type} [CommRing R] {Z : TopCat.{0}} (p : ℕ)
     (s : R) (φ : singularCochainGroup R Z p) (τ : singularSimplices Z p) :
-    cochainEval p (s • φ) τ = s * cochainEval p φ τ := by
-  unfold cochainEval; simp
+    cochainEval p (s • φ) τ = s * cochainEval p φ τ := rfl
 
 @[simp] theorem cochainEval_zero {R : Type} [CommRing R] {Z : TopCat.{0}} (p : ℕ)
     (τ : singularSimplices Z p) :
-    cochainEval p (0 : singularCochainGroup R Z p) τ = 0 := by
-  unfold cochainEval; simp
+    cochainEval p (0 : singularCochainGroup R Z p) τ = 0 := rfl
 
 /-! ## 2. The cochain cup product -/
 
@@ -126,14 +123,15 @@ noncomputable def cochainCup {R : Type} [CommRing R] {Z : TopCat.{0}} (p q : ℕ
     (σ : singularSimplices Z (p + q)) :
     cochainEval (p + q) (cochainCup p q φ ψ) σ
       = cochainEval p φ (frontSimplex Z p q σ) * cochainEval q ψ (backSimplex Z p q σ) := by
-  show (cochainCup p q φ ψ).hom _ = _
-  unfold cochainCup
-  have h := DFunLike.congr_fun (congrArg ModuleCat.Hom.hom
+  dsimp [cochainEval, cochainCup]
+  have h := congrArg (fun (f : ModuleCat.of R R ⟶ ModuleCat.of R R) => f.hom (1 : R))
     (Sigma.ι_desc (fun (σ : singularSimplices Z (p + q)) =>
       ModuleCat.ofHom ((cochainEval p φ (frontSimplex Z p q σ)
-        * cochainEval q ψ (backSimplex Z p q σ)) • (LinearMap.id : R →ₗ[R] R))) σ)) (1 : R)
-  simp only [ModuleCat.hom_comp, LinearMap.comp_apply] at h
-  simpa [cochainEval, ModuleCat.hom_ofHom] using h
+        * cochainEval q ψ (backSimplex Z p q σ)) • (LinearMap.id : R →ₗ[R] R))) σ)
+  dsimp at h
+  have hone : cochainEval p φ (frontSimplex Z p q σ) * cochainEval q ψ (backSimplex Z p q σ) * (1 : R)
+      = cochainEval p φ (frontSimplex Z p q σ) * cochainEval q ψ (backSimplex Z p q σ) := mul_one _
+  exact hone ▸ h
 
 /-! ### Bilinearity -/
 
@@ -196,23 +194,20 @@ theorem chainmap_generator {R : Type} [CommRing R] {X Y : TopCat.{0}} (f : X ⟶
     (Sigma.ι (fun (_ : singularSimplices X n) => ModuleCat.of R R) τ)
       ≫ ((((singularChainComplexFunctor (ModuleCat.{0} R)).obj (ModuleCat.of R R)).map f).f n)
       = Sigma.ι (fun (_ : singularSimplices Y n) => ModuleCat.of R R)
-          ((TopCat.toSSet.map f).app (Opposite.op (SimplexCategory.mk n)) τ) := by
-  simp [singularChainComplexFunctor, SSet.singularChainComplexFunctor]
+          ((TopCat.toSSet.map f).app (Opposite.op (SimplexCategory.mk n)) τ) :=
+  @SSet.ι_chainComplexMap_f (ModuleCat R) _ _ _ (TopCat.toSSet.obj X) (TopCat.toSSet.obj Y) (TopCat.toSSet.map f) (ModuleCat.of R R) n τ
 
 /-- **Pullback evaluation.** `(f^* φ)(τ) = φ(f ∘ τ)`. -/
 theorem cochainPullback_eval {R : Type} [CommRing R] {X Y : TopCat.{0}} (f : X ⟶ Y)
     (p : ℕ) (φ : singularCochainGroup R Y p) (τ : singularSimplices X p) :
     cochainEval p (cochainPullback f p φ) τ
       = cochainEval p φ ((TopCat.toSSet.map f).app (Opposite.op (SimplexCategory.mk p)) τ) := by
-  unfold cochainEval cochainPullback
-  have hpb : (((singularCochainComplexFunctor R (ModuleCat.of R R)).map f.op).f p).hom φ
-      = (((singularChainComplexFunctor (ModuleCat.{0} R)).obj (ModuleCat.of R R)).map f).f p ≫ φ :=
-    rfl
-  rw [hpb]
-  simp only [ModuleCat.hom_comp, LinearMap.comp_apply]
-  congr 1
-  have := DFunLike.congr_fun (congrArg ModuleCat.Hom.hom (chainmap_generator f p τ (R := R))) (1 : R)
-  simpa [ModuleCat.hom_comp, LinearMap.comp_apply] using this
+  dsimp [cochainEval, cochainPullback]
+  have h1 := chainmap_generator f p τ (R := R)
+  have h2 := congrArg (· ≫ φ) h1
+  have h3 := congrArg (fun (g : ModuleCat.of R R ⟶ ModuleCat.of R R) => g.hom (1 : R)) h2
+  dsimp at h3
+  exact h3
 
 /-- **Naturality of the cup product (cochain level).**
 `f^*(φ ⌣ ψ) = (f^* φ) ⌣ (f^* ψ)`. This is the cochain-level substrate for the

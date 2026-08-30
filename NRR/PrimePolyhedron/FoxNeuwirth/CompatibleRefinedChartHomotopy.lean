@@ -165,7 +165,7 @@ noncomputable def baseOriginalPLMap
     intro q
     apply continuous_pi
     intro c
-    exact continuous_finset_sum _ (fun i _ =>
+    exact continuous_finsetSum _ (fun i _ =>
       ((continuous_apply i).comp continuous_subtype_val).mul continuous_const)
   decorated_compatible := by
     intro g h q r w v hchart

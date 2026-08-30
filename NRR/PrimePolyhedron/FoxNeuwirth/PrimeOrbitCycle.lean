@@ -45,7 +45,12 @@ theorem primeSymmetry_action_free
     change c.rank ((PrimeSymmetry.toPerm hp g).symm i) = c.rank i at hrank
     exact c.rank.injective hrank
   have hperm : PrimeSymmetry.toPerm hp g = 1 := by
-    simpa using congrArg Equiv.symm hsymm
+    calc
+      PrimeSymmetry.toPerm hp g =
+          (PrimeSymmetry.toPerm hp g).symm.symm :=
+        (Equiv.symm_symm _).symm
+      _ = (1 : Equiv.Perm (Fin p)).symm := congrArg Equiv.symm hsymm
+      _ = 1 := by rfl
   simpa using hperm
 
 end BarredPermutation
@@ -91,6 +96,7 @@ theorem barDifferenceMatrix_smul
     barDifferenceMatrix (g • s) = barDifferenceMatrix s := by
   ext r k
   simp [barDifferenceMatrix, barIndicator]
+  rfl
 
 /-- The bar-removal determinant is invariant under prime-symmetry relabelling. -/
 theorem barRemovalDeterminant_smul

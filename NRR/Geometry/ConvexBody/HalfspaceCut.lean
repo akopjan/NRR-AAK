@@ -70,7 +70,7 @@ def upperClosedHalfspace (u : E) (t : ℝ) : Set E :=
 theorem lowerClosedHalfspace_convex (u : E) (t : ℝ) :
     Convex ℝ (lowerClosedHalfspace u t) := by
   intro x hx y hy a b ha hb hab
-  simp only [lowerClosedHalfspace, Set.mem_setOf_eq] at *
+  simp only [lowerClosedHalfspace, Set.mem_ofPred_eq] at *
   rw [inner_add_right, inner_smul_right, inner_smul_right]
   have ht : a * t + b * t = t := by rw [← add_mul, hab, one_mul]
   have h1 := mul_le_mul_of_nonneg_left hx ha
@@ -80,7 +80,7 @@ theorem lowerClosedHalfspace_convex (u : E) (t : ℝ) :
 theorem upperClosedHalfspace_convex (u : E) (t : ℝ) :
     Convex ℝ (upperClosedHalfspace u t) := by
   intro x hx y hy a b ha hb hab
-  simp only [upperClosedHalfspace, Set.mem_setOf_eq] at *
+  simp only [upperClosedHalfspace, Set.mem_ofPred_eq] at *
   rw [inner_add_right, inner_smul_right, inner_smul_right]
   have ht : a * t + b * t = t := by rw [← add_mul, hab, one_mul]
   have h1 := mul_le_mul_of_nonneg_left hx ha

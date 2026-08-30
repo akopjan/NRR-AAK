@@ -197,7 +197,8 @@ theorem row_dot_signedMaximalMinor_eq_zero
     intro k
     apply congrArg Matrix.det
     ext i j
-    simp [B]
+    change A i (k.succAbove j) = A i (k.succAbove j)
+    rfl
   simpa [signedMaximalMinor, B, hminor, mul_assoc, mul_left_comm, mul_comm] using hdet
 
 /-- Deleting a column from the augmented deviation matrix gives the corresponding facet matrix. -/
@@ -293,7 +294,9 @@ theorem eq_zero_of_zero_at_zero_of_augmented_rows_eq_zero
     funext r
     have hr := hzrows r
     rw [Fin.sum_univ_succ] at hr
-    simpa [Matrix.mulVec, zTail, hz0] using hr
+    simp only [hz0, mul_zero, zero_add] at hr
+    change (∑ i : Fin p, augmentedDeviationMatrix hp V r i.succ * z i.succ) = 0
+    exact hr
   have hdet : Matrix.det (facetMatrix hp V 0) ≠ 0 := by
     simpa [facetDeterminant] using hregular 0
   have htail : zTail = 0 :=
@@ -529,7 +532,7 @@ theorem exists_pos_cofactorDirection
     (hregular : FacetRegular hp V) :
     ∃ k : Fin (p + 1), 0 < cofactorDirection hp V k := by
   by_contra h
-  push_neg at h
+  push Not at h
   have hstrict : cofactorDirection hp V 0 < 0 :=
     lt_of_le_of_ne (h 0) (cofactorDirection_ne_zero hp V hregular 0)
   have hsumneg :
@@ -544,7 +547,7 @@ theorem exists_neg_cofactorDirection
     (hregular : FacetRegular hp V) :
     ∃ k : Fin (p + 1), cofactorDirection hp V k < 0 := by
   by_contra h
-  push_neg at h
+  push Not at h
   have hstrict : 0 < cofactorDirection hp V 0 :=
     lt_of_le_of_ne (h 0) (Ne.symm (cofactorDirection_ne_zero hp V hregular 0))
   have hsumpos :

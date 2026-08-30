@@ -80,8 +80,12 @@ theorem integralCoefficient_toSimplex
   rw [barRemovalDeterminant_toSimplex hp z]
   congr 1
   have hzero : (toSimplex hp z 0).rank = z.bottom := by
-    change (stageCell z (stageIndex hp 0)).rank = z.bottom
-    simpa using stageRank_zero hp z
+    change stageRank z (stageIndex hp 0) = z.bottom
+    have hindex : stageIndex hp 0 = firstStage hp := by
+      apply Fin.ext
+      rfl
+    rw [hindex]
+    exact stageRank_zero hp z
   exact congrArg
     (fun sigma : Equiv.Perm (Fin p) => ((Equiv.Perm.sign sigma : ℤˣ) : ℤ)) hzero
 

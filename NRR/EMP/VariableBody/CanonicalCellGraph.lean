@@ -93,6 +93,16 @@ theorem isClosed_canonicalCellLowerGraph
     exact ( mem_canonicalCell_iff sites hA hn ( f m |>.1 ) i ( yseq m ) ) |>.1 h_wall |>.2 j;
   refine' le_of_tendsto_of_tendsto' ( Filter.Tendsto.inner ( _ ) hyseq.2 ) ( _ ) fun m => h_wall m;
   · exact Continuous.continuousAt ( continuous_sepNormal i j ) |> fun h => h.tendsto.comp ( Continuous.continuousAt ( sites.continuous ) |> fun h => h.tendsto.comp ( continuous_snd.continuousAt.tendsto.comp ( continuous_fst.continuousAt.tendsto.comp hlim ) ) );
-  · convert Filter.Tendsto.comp ( continuous_sepOffset i j.1 |> Continuous.tendsto <| ( sites hf.1.2, normalizedWeight hA hn hf.1.1 ( sites hf.1.2 ) ) ) ( Filter.Tendsto.prodMk_nhds ( Filter.Tendsto.comp ( sites.continuous.tendsto hf.1.2 ) ( continuous_snd.comp continuous_fst |> Continuous.continuousAt |> fun h => h.tendsto.comp hlim ) ) ( Filter.Tendsto.comp ( continuous_normalizedWeight_compactFamily sites hA hn |> Continuous.tendsto <| hf.1 ) ( continuous_fst |> Continuous.continuousAt |> fun h => h.tendsto.comp hlim ) ) ) using 1
+  · convert Filter.Tendsto.comp
+        (continuous_sepOffset i j.1 |>.tendsto
+          (sites hf.1.2, normalizedWeight hA hn hf.1.1 (sites hf.1.2)))
+        (Filter.Tendsto.prodMk_nhds
+          (Filter.Tendsto.comp (sites.continuous.tendsto hf.1.2)
+            (continuous_snd.comp continuous_fst |>.continuousAt |>.tendsto.comp hlim))
+          (Filter.Tendsto.comp
+            (continuous_normalizedWeight_compactFamily sites hA hn |>.tendsto hf.1)
+            (continuous_fst |>.continuousAt |>.tendsto.comp hlim))) using 1
+    funext m
+    rfl
 
 end NRR.EMP.VariableBody

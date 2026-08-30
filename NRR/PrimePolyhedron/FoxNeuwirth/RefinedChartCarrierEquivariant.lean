@@ -60,7 +60,9 @@ theorem realizationPoint_prime_smul
       have := congrArg (fun z : BarredPermutation p =>
         z.relabel (PrimeSymmetry.toPerm hp g)) hs
       simpa using this
-    rw [if_neg h, if_neg h']
+    rw [if_neg h']
+    change (if g • (s i : BarredPermutation p) = c then w i else 0) = 0
+    exact if_neg h
 
 /-- Prime relabelling commutes with every iterated refined chart. -/
 theorem refinedPoint_prime_smul
@@ -68,11 +70,13 @@ theorem refinedPoint_prime_smul
     (s : Simplex p (p - 1)) (N : Nat) (rho : RefinementWord p N)
     (w : StandardSimplex (p - 1)) :
     (g • s).refinedPoint N rho w = g • s.refinedPoint N rho w := by
-  simpa [Simplex.refinedPoint, Simplex.refinedContinuousMap,
-    Simplex.realizationContinuousMap] using
-    realizationPoint_prime_smul hp g s
-      (StandardSimplex.ofDelta (affineCompMap (p - 1) N (maximalRefinementWord N rho)
-        (StandardSimplex.toDelta w)))
+  change (g • s).realizationPoint
+      (StandardSimplex.ofDelta (affineCompMap (p - 1) N
+        (maximalRefinementWord N rho) (StandardSimplex.toDelta w))) =
+    g • s.realizationPoint
+      (StandardSimplex.ofDelta (affineCompMap (p - 1) N
+        (maximalRefinementWord N rho) (StandardSimplex.toDelta w)))
+  exact realizationPoint_prime_smul hp g s _
 
 /-- Prime relabelling commutes with every represented refined vertex. -/
 theorem refinedVertex_prime_smul
@@ -108,8 +112,9 @@ theorem simplex_active_vertex_and_coefficient_eq
   have hreal :
       s.realizationPoint (StandardSimplex.ofDelta u) =
         t.realizationPoint (StandardSimplex.ofDelta v) := by
-    simpa [Simplex.refinedPoint, Simplex.refinedContinuousMap,
-      Simplex.realizationContinuousMap, u, v] using h
+    change s.realizationPoint (StandardSimplex.ofDelta u) =
+      t.realizationPoint (StandardSimplex.ofDelta v) at h
+    exact h
   have hinner : u = v := by
     have hstd := maximal_source_eq_of_realizationPoint_eq hp s t
       (StandardSimplex.ofDelta u) (StandardSimplex.ofDelta v) hreal
@@ -117,7 +122,9 @@ theorem simplex_active_vertex_and_coefficient_eq
   have hiter := affineCompMap_active_vertex_and_coefficient_eq
     (p - 1) N (maximalRefinementWord N rho) (maximalRefinementWord N sigma) x y hinner
     (Fin.cast (Nat.sub_add_cancel hp.pos).symm i)
-    (by simpa [Nat.sub_add_cancel hp.pos] using hi)
+    (by
+      change 0 < x (Fin.cast (Nat.sub_add_cancel hp.pos).symm i) at hi
+      exact hi)
   let z : Delta (p - 1) :=
     affineCompMap (p - 1) N (maximalRefinementWord N rho)
       (stdSimplex.vertex (S := Real)
@@ -146,7 +153,9 @@ theorem simplex_active_vertex_and_coefficient_eq
         affineCompMap_vertex_support_subset
           (p - 1) N (maximalRefinementWord N rho) x
           (Fin.cast (Nat.sub_add_cancel hp.pos).symm i) j
-          (by simpa [Nat.sub_add_cancel hp.pos] using hi)
+          (by
+            change 0 < x (Fin.cast (Nat.sub_add_cancel hp.pos).symm i) at hi
+            exact hi)
           (by simpa [z] using hzpos)
       have hst : t j = s j :=
         vertex_eq_of_mem_support hp s t
@@ -168,7 +177,9 @@ theorem simplex_active_vertex_and_coefficient_eq
               (Fin.cast (Nat.sub_add_cancel hp.pos).symm i))))
     rw [← hzEq]
     exact hglobal
-  · simpa [Nat.sub_add_cancel hp.pos] using hiter.2
+  · have hcoeff := hiter.2
+    change y (maximalCoordinateIndex i) = x (maximalCoordinateIndex i) at hcoeff
+    exact hcoeff
 
 /-- Affine interpolation of globally sampled values agrees on arbitrary overlapping refined
 maximal charts. -/
@@ -190,19 +201,23 @@ theorem simplexValue_eq_of_refinedPoint_eq
       have hvpos : 0 < v (maximalCoordinateIndex i) := lt_of_le_of_ne (v.nonneg (maximalCoordinateIndex i)) (Ne.symm hvi)
       have hrev := simplex_active_vertex_and_coefficient_eq hp N
         t s sigma rho (StandardSimplex.toDelta v) (StandardSimplex.toDelta w)
-        h.symm i (by simpa using hvpos)
+        h.symm i (by
+          change 0 < v (maximalCoordinateIndex i)
+          exact hvpos)
       apply hvi
-      have heq : v (maximalCoordinateIndex i) = w (maximalCoordinateIndex i) := by
-        simpa using hrev.2.symm
+      have heq := hrev.2.symm
+      change v (maximalCoordinateIndex i) = w (maximalCoordinateIndex i) at heq
       exact heq.trans hwi
     simp [hwi, hvi]
   · have hwpos : 0 < w (maximalCoordinateIndex i) := lt_of_le_of_ne (w.nonneg (maximalCoordinateIndex i)) (Ne.symm hwi)
     have hactive := simplex_active_vertex_and_coefficient_eq hp N
       s t rho sigma (StandardSimplex.toDelta w) (StandardSimplex.toDelta v)
-      h i (by simpa using hwpos)
+      h i (by
+        change 0 < w (maximalCoordinateIndex i)
+        exact hwpos)
     rw [hactive.1]
-    have heq : v (maximalCoordinateIndex i) = w (maximalCoordinateIndex i) := by
-      simpa using hactive.2
+    have heq := hactive.2
+    change v (maximalCoordinateIndex i) = w (maximalCoordinateIndex i) at heq
     rw [heq]
 
 /-- Sampling an equivariant map after relabelling the whole refined simplex relabels the affine

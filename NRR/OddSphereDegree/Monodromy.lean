@@ -299,6 +299,7 @@ two-element fibre of the double cover, obtained by transporting the canonical
 fundamental-group action that *Route A* toward `H¹(RPⁿ; F₂)` requires; it is
 provided as a `def` (not a global `instance`) so as not to pollute typeclass
 resolution. -/
+@[instance_reducible]
 def projMonodromyMulAction (n : ℕ) (x : RP n) :
     MulAction (FundamentalGroup (RP n) x) (proj n ⁻¹' {x}) :=
   MulAction.compHom _ (projMonodromyHom n x)
@@ -355,32 +356,27 @@ theorem inducedOnRPFiberMap_projMonodromy (n : ℕ) (f : C(Sphere n, Sphere n))
     inducedOnRPFiberMap n f hf (projMonodromy n γ e)
       = projMonodromy n (γ.map ⟨inducedOnRP f hf, (inducedOnRP f hf).continuous⟩)
           (inducedOnRPFiberMap n f hf e) := by
-  obtain ⟨γ_path, hγ_path⟩ : ∃ γ_path : Path x y, γ = Path.Homotopic.Quotient.mk γ_path := by
-    exact ⟨ γ.out, γ.out_eq.symm ⟩;
-  rw [ hγ_path, show ( Path.Homotopic.Quotient.mk γ_path ).map ⟨ ⇑ ( inducedOnRP f hf ), ( inducedOnRP f hf ).continuous ⟩ = Path.Homotopic.Quotient.mk ( γ_path.map ( inducedOnRP f hf |> ContinuousMap.continuous ) ) from ?_ ];
-  · -- By definition of `projMonodromy`, we know that
-    have h_monodromy : projMonodromy n (Path.Homotopic.Quotient.mk γ_path) e = ⟨projLiftPath n (↑γ_path) e.1 (by
-    aesop) 1, by
-      all_goals generalize_proofs at *;
-      have := congr_fun ( projLiftPath_lifts n ( γ_path : C(unitInterval, RP n) ) e.1 ‹_› ) 1; aesop;⟩ := by
-      rfl
-    generalize_proofs at *;
-    have h_lift : f.comp (projLiftPath n (↑γ_path) (↑e) ‹_›) = projLiftPath n (↑(γ_path.map ‹_›)) (f e.1) (by
-    simp +decide [ *, Path.map ];
-    convert inducedOnRP_proj f hf e using 1;
-    exact e.2.symm ▸ rfl) := by
-      apply eq_projLiftPath;
-      · ext t; simp +decide [ *, Function.comp ] ;
-        convert inducedOnRP_comm f hf ( projLiftPath n ( γ_path ) e.1 ‹_› t ) using 1;
-        convert inducedOnRP_comm f hf ( projLiftPath n ( γ_path ) e.1 ‹_› t ) using 1;
-        rw [ show ( projLiftPath n ( γ_path ) e.1 ‹_› ) t = ( projLiftPath n ( γ_path ) e.1 ‹_› ) t from rfl, show ( γ_path t ) = ( γ_path t ) from rfl, show ( proj n ) ( ( projLiftPath n ( γ_path ) e.1 ‹_› ) t ) = ( γ_path t ) from by
-                                                                                                                                                          exact congr_fun ( projLiftPath_lifts n ( γ_path ) e.1 ‹_› ) t ];
-      · simp +decide [ projLiftPath_zero ]
-    generalize_proofs at *;
-    convert congr_arg ( fun f => f 1 ) h_lift using 1;
-    simp +decide [ Subtype.ext_iff, inducedOnRPFiberMap ];
-    congr! 2;
-  · rfl
+  induction γ using Quotient.inductionOn with
+  | h γ_path =>
+    rcases e with ⟨p, hp⟩
+    apply Subtype.ext
+    dsimp [inducedOnRPFiberMap, projMonodromy, IsCoveringMap.monodromy]
+    have he : (γ_path : C(unitInterval, RP n)) 0 = proj n p := by
+      show γ_path 0 = proj n p
+      rw [γ_path.source, hp.symm]
+    have he_f : (γ_path.map (inducedOnRP f hf).continuous : C(unitInterval, RP n)) 0 = proj n (f p) := by
+      change inducedOnRP f hf (γ_path 0) = proj n (f p)
+      rw [γ_path.source, ← hp, inducedOnRP_comm f hf]
+    have h_lift : f.comp (projLiftPath n γ_path p he) = projLiftPath n (γ_path.map (inducedOnRP f hf).continuous) (f p) he_f := by
+      apply eq_projLiftPath
+      · ext t
+        have h_proj : proj n (projLiftPath n γ_path p he t) = γ_path t :=
+          congr_fun (projLiftPath_lifts n γ_path p he) t
+        change proj n (f (projLiftPath n γ_path p he t)) = inducedOnRP f hf (γ_path t)
+        rw [← inducedOnRP_comm f hf, h_proj]
+      · simp [projLiftPath_zero]
+    have h1 := congr_fun (congr_arg ContinuousMap.toFun h_lift) 1
+    exact h1
 
 /-- The descended-odd-map naturality, specialised to a loop and expressed as an
 intertwining of the monodromy permutations. For a loop `γ` at `x`, the fibre map

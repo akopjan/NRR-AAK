@@ -30,7 +30,7 @@ theorem exists_eval_ne_zero (P : MvPolynomial J Real) (hP : P ≠ 0) :
     ∃ b : J → Real, MvPolynomial.eval b P ≠ 0 := by
   classical
   by_contra h
-  push_neg at h
+  push Not at h
   apply hP
   apply MvPolynomial.funext
   intro b

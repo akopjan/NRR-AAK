@@ -56,10 +56,12 @@ theorem norm_cell_indicator_le_parent
     (s : Config n) (w : Fin n → ℝ) (i : Fin n) (x : Plane) :
     ‖(cellSet hA C s w i).indicator (fun _ => (1 : ℝ)) x‖
       ≤ (K : Set Plane).indicator (fun _ => (1 : ℝ)) x := by
-  convert Set.indicator_le_indicator_of_subset (cellSet_subset_parent hA C s w i)
-      (fun _ => zero_le_one) x using 1
-  · rw [Real.norm_of_nonneg (Set.indicator_nonneg (fun _ _ => zero_le_one) _)]
-  · exact fun _ => inferInstance
+  by_cases hx : x ∈ cellSet hA C s w i
+  · have hxK : x ∈ (K : Set Plane) := cellSet_subset_parent hA C s w i hx
+    rw [Set.indicator_of_mem hx, Set.indicator_of_mem hxK]
+    norm_num
+  · rw [Set.indicator_of_notMem hx, norm_zero]
+    exact Set.indicator_nonneg (fun _ _ => zero_le_one) x
 
 /-- **Joint continuity of the restricted power-cell area.** The area depends continuously on the
 parent subbody, the configuration, and the weight vector. -/

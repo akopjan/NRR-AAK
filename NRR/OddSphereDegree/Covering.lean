@@ -76,7 +76,8 @@ private theorem antipodalSMul_def {n : ℕ} (g : DeckGroup) (x : Sphere n) :
 
 private theorem antipodalSMul_one {n : ℕ} (x : Sphere n) :
     (1 : DeckGroup) • x = x := by
-  convert @antipodalSMul_def n 1 x
+  show (if Multiplicative.toAdd (1 : DeckGroup) = 0 then x else -x) = x
+  rfl
 
 /-- The antipodal `DeckGroup`-action on `S^n`. -/
 local instance antipodalMulAction (n : ℕ) : MulAction DeckGroup (Sphere n) where
@@ -91,9 +92,15 @@ local instance antipodalContinuousConstSMul (n : ℕ) :
   continuous_const_smul := by
     intro g
     by_cases hg : Multiplicative.toAdd g = 0
-    · simp only [antipodalSMul_def, hg, if_pos]
+    · have : (g • · : Sphere n → Sphere n) = id := by
+        ext x
+        simp [antipodalSMul_def, hg]
+      rw [this]
       exact continuous_id
-    · simp only [antipodalSMul_def, if_neg hg]
+    · have : (g • · : Sphere n → Sphere n) = fun x => -x := by
+        ext x
+        simp [antipodalSMul_def, hg]
+      rw [this]
       exact continuous_neg
 
 /-- The antipodal action is free (cancellative): no point on the unit sphere is
@@ -116,14 +123,31 @@ antipodal orbit; equivalently the orbit of `x` is `{x, -x}`. Internal: this is
 the orbit-relation input to the Mathlib quotient-covering lemma. -/
 private theorem proj_eq_iff_mem_orbit {n : ℕ} {x y : Sphere n} :
     proj n x = proj n y ↔ x ∈ MulAction.orbit DeckGroup y := by
+  rw [proj_eq_iff_antipodalRel]
   constructor <;> intro h
-  · have h_orbit : AntipodalRel x y := Quotient.exact h
-    cases h_orbit <;> simp_all +decide [MulAction.orbit]
-    · exact ⟨0, by simp +decide⟩
-    · exact ⟨1, by simp +decide [antipodalSMul_def]⟩
-  · obtain ⟨g, rfl⟩ := h
-    fin_cases g <;> simp +decide
-    exact Or.inr (by rw [antipodalSMul_def]; simp +decide)
+  · rcases h with rfl | rfl
+    · exact ⟨1, antipodalSMul_one x⟩
+    · refine ⟨Multiplicative.ofAdd (1 : ZMod 2), ?_⟩
+      dsimp
+      have h1 : Multiplicative.toAdd (Multiplicative.ofAdd (1 : ZMod 2)) = 1 := rfl
+      have hne : (1 : ZMod 2) ≠ 0 := by decide
+      rw [antipodalSMul_def, h1]
+      simp [hne]
+  · obtain ⟨g, hg⟩ := h
+    dsimp at hg
+    have hg_cases : ∀ g : DeckGroup, g = 1 ∨ g = Multiplicative.ofAdd (1 : ZMod 2) := by decide
+    rcases hg_cases g with rfl | rfl
+    · left
+      rw [antipodalSMul_one] at hg
+      exact hg.symm
+    · right
+      have h1 : Multiplicative.toAdd (Multiplicative.ofAdd (1 : ZMod 2)) = 1 := rfl
+      have hne : (1 : ZMod 2) ≠ 0 := by decide
+      have : (Multiplicative.ofAdd (1 : ZMod 2)) • y = -y := by
+        rw [antipodalSMul_def, h1]
+        simp [hne]
+      rw [this] at hg
+      exact hg.symm
 
 /-- The projection `proj n : S^n → RP n` is a covering map: the canonical double
 cover of real projective space by the sphere. -/

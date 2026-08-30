@@ -84,10 +84,13 @@ theorem EMP.powerPartitionPerimeterVec_relabel
     (σ : Equiv.Perm (Fin n)) (s : Config n) :
     EMP.powerPartitionPerimeterVec K (Config.relabel σ s) hn hK
       = fun i => EMP.powerPartitionPerimeterVec K s hn hK (σ.symm i) := by
-  ext i;
-  convert NRR.Geometry.planarPerimeter_congr _;
-  convert PowerDiagram.bodyCellSet_relabel K σ s.pts ( EMP.normalizedWeight K s.pts hn s.injective_pts ) i using 1;
-  convert EMP.powerPartitionPiece_carrier K ( Config.relabel σ s ) hn hK i using 1;
-  convert EMP.normalizedWeight_relabel K hn σ s |> Eq.symm |> fun h => congr_arg ( fun f => PowerDiagram.bodyCellSet K ( Config.relabel σ s ).pts f i ) h using 1
+  ext i
+  unfold EMP.powerPartitionPerimeterVec ConvexPartition.perimeterVec
+  rw [NRR.Geometry.ConvexBody.perimeter_def]
+  apply NRR.Geometry.planarPerimeter_congr
+  rw [EMP.powerPartition_piece_carrier, EMP.powerPartition_piece_carrier,
+    EMP.normalizedWeight_relabel K hn σ s]
+  exact PowerDiagram.bodyCellSet_relabel K σ s.pts
+    (EMP.normalizedWeight K s.pts hn s.injective_pts) i
 
 end NRR

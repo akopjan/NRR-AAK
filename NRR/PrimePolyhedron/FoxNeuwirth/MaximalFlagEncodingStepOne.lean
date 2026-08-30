@@ -128,7 +128,7 @@ theorem perm_eq_of_lt_iff
   have heq_card : Fintype.card {j : Fin n | sigma j < sigma i} = Fintype.card {j : Fin n | tau j < tau i} := by
     apply Fintype.card_congr
     refine Equiv.subtypeEquivRight ?_ |>.symm
-    simp only [Set.mem_setOf_eq]
+    simp only [Set.mem_ofPred_eq]
     intro x
     exact ⟨fun h => (horder x i).mpr h, fun h => (horder x i).mp h⟩
   omega
@@ -242,7 +242,9 @@ theorem toSimplex_injective (hp : Nat.Prime p) :
     intro j
     have hj := congrArg
       (fun s : Simplex p (p - 1) => (s (simplexIndex hp j)).bars) hzw
-    simpa [toSimplex_apply] using hj
+    change (stageCell z j).bars = (stageCell w j).bars at hj
+    change retainedBars z j = retainedBars w j at hj
+    exact hj
   · have hlast := congrArg
       (fun s : Simplex p (p - 1) =>
         (s (Fin.last (p - 1))).rank) hzw

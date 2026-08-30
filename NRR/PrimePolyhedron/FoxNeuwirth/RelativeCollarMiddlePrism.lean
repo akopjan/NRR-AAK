@@ -88,12 +88,18 @@ noncomputable def cellSystem
   chart_vertex := chart_vertex hp N L
   chart_spatial_affine := by
     intro q w c
-    simpa [chart, vertex] using
-      SubdivisionPrismAffine.chart_spatial_affine hp N L q w c
+    change
+      ((EquivariantPrismSubdivisionMargin.basePrismChart hp N q.1)
+        ((affineCompMap p L q.2) w)).1 c =
+        ∑ i, w i * (SubdivisionPrismCharts.vertex hp N L q i).1 c
+    exact SubdivisionPrismAffine.chart_spatial_affine hp N L q w c
   chart_time_affine := by
     intro q w
-    simpa [chart, vertex] using
-      SubdivisionPrismAffine.chart_time_affine hp N L q w
+    change
+      ((EquivariantPrismSubdivisionMargin.basePrismChart hp N q.1)
+        ((affineCompMap p L q.2) w)).2 =
+        ∑ i, w i * (SubdivisionPrismCharts.vertex hp N L q i).2
+    exact SubdivisionPrismAffine.chart_time_affine hp N L q w
   chart_injective := by
     intro q x y hxy
     apply EquivariantPrismGenericityNonzero.prism_chart_injective hp N L q

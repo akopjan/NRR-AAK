@@ -91,7 +91,7 @@ theorem isClosed_allChildrenZeroSet :
   have : φ.allChildrenZeroSet sites hA hn =
       ⋂ i : Fin n, {z | φ.childEval sites hA hn z i = 0} := by
     ext z
-    simp only [allChildrenZeroSet, Set.mem_setOf_eq, Set.mem_iInter, zero_iff, childEval]
+    simp only [allChildrenZeroSet, Set.mem_ofPred_eq, Set.mem_iInter, zero_iff, childEval]
   rw [this]
   exact isClosed_iInter fun i =>
     isClosed_eq (φ.continuous_childEval sites hA hn i) continuous_const

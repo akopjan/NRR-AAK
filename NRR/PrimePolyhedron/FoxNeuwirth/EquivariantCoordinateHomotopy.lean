@@ -160,8 +160,9 @@ theorem childMap_equivariant
     (z : BodySpace K A × SignedInterval) :
     IsEquivariant hp (childMap hp hA phi z) := by
   intro g x
-  simpa [childMap, PrimeConfigurationModel.smulBodyPointInterval] using
-    (orderComplexModel hp).childTestMap_smul hA phi g (((z.1, x), z.2))
+  convert (orderComplexModel hp).childTestMap_smul hA phi g
+    (((z.1, x), z.2)) using 1 <;>
+    rfl
 
 /-- Outside the projected zero set, the frozen child coordinate map avoids the origin. -/
 theorem childMap_zeroFree

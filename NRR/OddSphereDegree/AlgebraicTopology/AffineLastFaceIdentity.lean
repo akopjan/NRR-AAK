@@ -52,14 +52,16 @@ theorem prefixBarycenter_castSucc_eq_map_of_prefix {n : ℕ}
     (k : Fin (n + 1)) :
     prefixBarycenter (n + 1) π (Fin.castSucc k)
       = stdSimplex.map (S := ℝ) ι (prefixBarycenter n ρ k) := by
-  classical
-  -- By definition of `prefixVertex`, we can rewrite the left-hand side using the hypothesis `hιρ`.
-  have h_prefixVertex : prefixVertex (n + 1) π (Fin.castSucc k) = fun i => ι (ρ ⟨i.val, by
-    exact lt_of_lt_of_le i.2 ( Nat.succ_le_of_lt k.2 )⟩) := by
-    ext i; simp +decide [ prefixVertex, hιρ ] ;
-  generalize_proofs at *;
-  convert congr_arg ( fun f => stdSimplex.map f ( stdSimplex.barycenter ( X := Fin ( k.val + 1 ) ) ( 𝕜 := ℝ ) ) ) h_prefixVertex using 1;
-  convert stdSimplex.map_comp_apply _ _ _ using 2
+  have h_comp : prefixVertex (n + 1) π (Fin.castSucc k) = ι ∘ prefixVertex n ρ k := by
+    ext ⟨i, hi_val⟩
+    have hi : i < n + 1 := by
+      have : i < k.val + 1 := by simpa using hi_val
+      have := k.isLt
+      omega
+    have h1 : prefixVertex (n + 1) π (Fin.castSucc k) ⟨i, hi_val⟩ = π (Fin.castSucc ⟨i, hi⟩) := rfl
+    have h2 : (ι ∘ prefixVertex n ρ k) ⟨i, hi_val⟩ = ι (ρ ⟨i, hi⟩) := rfl
+    rw [h1, h2, ← hιρ ⟨i, hi⟩]
+  rw [prefixBarycenter_def, h_comp, ← stdSimplex.map_comp_apply, prefixBarycenter_def]
 
 /-
 Last-face affine identity, in coordinate-face form.

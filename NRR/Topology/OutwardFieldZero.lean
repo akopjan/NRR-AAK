@@ -64,7 +64,7 @@ theorem exists_zero_closedBall_of_inner_pos_on_sphere
     (hout : ∀ x : Ambient d, ‖x‖ = 1 → 0 < inner Real x (F x)) :
     ∃ x : Ambient d, x ∈ closedBall 0 1 ∧ F x = 0 := by
   by_contra hzero
-  push_neg at hzero
+  push Not at hzero
   have hFne : ∀ x : SphereOddDegree.Disk d, F x.1 ≠ 0 := by
     intro x hx
     exact hzero x.1 x.2 hx
@@ -94,11 +94,11 @@ theorem exists_zero_closedBall_of_inner_pos_on_sphere
 
   have hincl_null : ContinuousMap.Homotopic incl
       (ContinuousMap.const (Sphere d) yDisk) := by
-    convert hyDisk.comp (ContinuousMap.Homotopic.refl incl) using 1
+    simpa using hyDisk.comp (ContinuousMap.Homotopic.refl incl)
 
   have hboundary_null : ContinuousMap.Homotopic boundaryMap
       (ContinuousMap.const (Sphere d) (r yDisk)) := by
-    convert (ContinuousMap.Homotopic.refl r).comp hincl_null using 1
+    simpa [boundaryMap] using (ContinuousMap.Homotopic.refl r).comp hincl_null
 
   have hboundary_id : ContinuousMap.Homotopic boundaryMap
       (ContinuousMap.id (Sphere d)) := by

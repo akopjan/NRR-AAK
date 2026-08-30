@@ -225,6 +225,7 @@ theorem avoidsCodimTwo_of_minorRegular
   have hmul :
       (codimTwoDeviationMatrix hp N L a q f).mulVec x = 0 := by
     funext r
+    change (codimTwoDeviationMatrix hp N L a q f).mulVec x r = (0 : Real)
     have hsum :
         ∑ k : Fin (p + 1),
           w k * VertexMap.deviation hp

@@ -79,7 +79,7 @@ theorem modelAlpha_pow_eq_zero_iff (n k : ℕ) :
   constructor
   · intro h
     by_contra hc
-    push_neg at hc
+    push Not at hc
     rw [Polynomial.X_pow_dvd_iff] at h
     have := h k (by omega)
     rw [Polynomial.coeff_X_pow, if_pos rfl] at this

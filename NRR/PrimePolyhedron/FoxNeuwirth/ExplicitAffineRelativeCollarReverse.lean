@@ -1,5 +1,7 @@
 import NRR.PrimePolyhedron.FoxNeuwirth.RelativeSubdivisionOneStepCollar
 
+set_option backward.isDefEq.respectTransparency false
+
 /-!
 # Reversal of an endpoint-identified relative affine collar
 

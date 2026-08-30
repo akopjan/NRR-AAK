@@ -72,8 +72,14 @@ noncomputable def smallBoundary (R : Type) [CommRing R] (X : TopCat.{0})
 theorem smallBoundary_comp_smallBoundary
     {𝒰 : OpenCoverData X} (n : ℕ) :
     smallBoundary R X 𝒰 (n + 1) ≫ smallBoundary R X 𝒰 n = 0 := by
-  ext c ; simp +decide [ smallBoundary ];
-  convert congr_arg ( fun f => f c.val ) ( singularChainComplex R X |>.d_comp_d ( n + 2 ) ( n + 1 ) n ) using 1
+  apply ModuleCat.hom_ext
+  apply LinearMap.ext
+  intro c
+  apply Subtype.ext
+  show (singularBoundary R X n).hom ((singularBoundary R X (n + 1)).hom (c : singularChainGroup R X (n + 2))) = 0
+  have h := (singularChainComplex R X).d_comp_d (n + 2) (n + 1) n
+  have happ := congrArg (fun (m : (singularChainComplex R X).X (n + 2) ⟶ (singularChainComplex R X).X n) => m.hom (c : singularChainGroup R X (n + 2))) h
+  exact happ
 
 /-! ## 2. The small-chain complex -/
 
@@ -94,7 +100,9 @@ noncomputable def smallChainComplex (R : Type) [CommRing R] (X : TopCat.{0})
 @[simp] theorem smallChainComplex_d
     {𝒰 : OpenCoverData X} (n : ℕ) :
     (smallChainComplex R X 𝒰).d (n + 1) n = smallBoundary R X 𝒰 n :=
-  ChainComplex.of_d _ _ _ n
+  @ChainComplex.of_d (ModuleCat.{0} R) _ _ ℕ _ _ _
+    (fun n => ModuleCat.of R (smallChainSubmodule R X 𝒰 n))
+    (fun n => smallBoundary R X 𝒰 n) n
 
 /-! ## 3. Small generators -/
 
@@ -118,8 +126,11 @@ noncomputable def smallChainsInclusion (R : Type) [CommRing R] (X : TopCat.{0})
     (𝒰 : OpenCoverData X) : smallChainComplex R X 𝒰 ⟶ singularChainComplex R X where
   f n := ModuleCat.ofHom (smallChainSubmodule R X 𝒰 n).subtype
   comm' i j hij := by
-    obtain ⟨ k, hk ⟩ := hij;
-    simp +decide [ smallBoundary, smallChainComplex ];
+    subst hij
+    rw [smallChainComplex_d]
+    apply ModuleCat.hom_ext
+    apply LinearMap.ext
+    intro c
     rfl
 
 /-- The inclusion is, degreewise, the natural inclusion of the submodule:

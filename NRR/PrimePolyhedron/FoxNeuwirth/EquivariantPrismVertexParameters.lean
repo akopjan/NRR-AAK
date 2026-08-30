@@ -192,7 +192,10 @@ noncomputable def sampleVertex
 @[simp] theorem globalPoint_sampleVertex
     (hp : Nat.Prime p) (N L : Nat) (s : VertexSlot hp N L) :
     globalPoint hp N L (sampleVertex hp N L s) = slotPoint hp N L s := by
-  simp [sampleVertex, globalPoint, coverPoint]
+  change globalPoint hp N L (Quotient.mk _ ((1 : PrimeSymmetry hp), s)) = _
+  rw [globalPoint_mk]
+  change (1 : PrimeSymmetry hp) • slotPoint hp N L s = slotPoint hp N L s
+  exact one_smul _ _
 
 /-- Local copies of one geometric prism vertex determine the same global sampled vertex. -/
 theorem sampleVertex_eq_of_vertex_eq

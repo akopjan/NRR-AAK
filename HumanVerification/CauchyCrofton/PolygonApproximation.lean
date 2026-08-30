@@ -114,7 +114,7 @@ theorem mem_convexHull_triangle_of_norm_le {α γ t : ℝ} (hαt : α ≤ t) (ht
       have hsin_sum : Real.sin (γ - t) + Real.sin (t - α)
           = 2 * Real.sin ((γ - α) / 2) * Real.cos ((γ + α - 2 * t) / 2) := by
         rw [Real.sin_add_sin]
-        congr 2 <;> ring
+        congr 2 <;> ring_nf
       have hsin_gap : Real.sin (γ - α) = 2 * Real.sin ((γ - α) / 2) * Real.cos ((γ - α) / 2) := by
         rw [show γ - α = 2 * ((γ - α) / 2) by ring, Real.sin_two_mul]
         ring_nf

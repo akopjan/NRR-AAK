@@ -1,5 +1,6 @@
 import NRR.PrimePolyhedron.FoxNeuwirth.RelativeSubdivisionCylinderCombinatorics
 import NRR.PrimePolyhedron.FoxNeuwirth.FiniteSimplexDoubleBoundary
+set_option backward.isDefEq.respectTransparency false
 set_option linter.unusedVariables false
 set_option linter.unusedSectionVars false
 set_option linter.unnecessarySeqFocus false
@@ -236,7 +237,7 @@ theorem upper_boundary_pairing
   simpa [Wmap, tupleBoundaryWeight, iteratedFacetMap, iteratedBoundaryMap,
     RelativeSubdivisionCylinderCombinatorics.upperBoundaryVertex, RelativeSubdivisionCylinderCombinatorics.sidePoint, cofacePoint,
     affineCompMap_succ, affineSubdivContinuousMap_apply,
-    affineSubdivMap_vertex] using h
+    affineSubdivMap_vertex, SimplicialChain.faceSign] using h
 
 /-- A lower boundary face is the lower boundary tuple in the corresponding spatial side. -/
 theorem delete_lowerBoundaryVertex_eq_side
@@ -354,8 +355,9 @@ theorem upperPairing_tupleBoundaryWeight
       ∑ k : Fin (d + 2), SimplicialChain.faceSign k *
         RelativeSubdivisionCylinderCombinatorics.Oriented.upperPairing R d
           (fun v => W (sideTuple d k v)) := by
-  simpa [RelativeSubdivisionCylinderCombinatorics.Oriented.upperPairing, sideTuple] using
-    upper_boundary_pairing R d W
+  unfold RelativeSubdivisionCylinderCombinatorics.Oriented.upperPairing
+  unfold sideTuple
+  exact upper_boundary_pairing R d W
 
 /-- Taking the boundary of every recursive side cell gives the negative signed sum of the complete
 lower-dimensional cylinder boundaries in the ambient spatial sides. -/

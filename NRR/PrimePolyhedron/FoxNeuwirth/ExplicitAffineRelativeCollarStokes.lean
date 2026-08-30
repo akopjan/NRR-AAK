@@ -67,7 +67,9 @@ theorem facetValue_eq_primeSmul_of_facetClass_eq
   let s : C.cells.VertexSlot := (o.1, o.2.succAbove i)
   let t : C.cells.VertexSlot := (o'.1, o'.2.succAbove i)
   have hpoint : g • C.cells.slotPoint s = C.cells.slotPoint t := by
-    simpa [s, t, RelativeAffineCellSystem.facetSignature] using congrFun hg i
+    change g • C.cells.vertex o.1 (o.2.succAbove i) =
+      C.cells.vertex o'.1 (o'.2.succAbove i)
+    exact congrFun hg i
   have hvertex : g • sampleVertex hp C.cells s = sampleVertex hp C.cells t := by
     apply Quotient.sound
     change coverPoint hp C.cells (g, s) = coverPoint hp C.cells (1, t)

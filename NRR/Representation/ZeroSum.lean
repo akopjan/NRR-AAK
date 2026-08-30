@@ -70,7 +70,7 @@ def ZeroSum.relabel (σ : Equiv.Perm (Fin n)) (v : ZeroSum n) : ZeroSum n :=
     ZeroSum.relabel 1 v = v := by
   apply ZeroSum.ext
   intro i
-  simp
+  rfl
 
 theorem ZeroSum.relabel_mul (σ τ : Equiv.Perm (Fin n)) (v : ZeroSum n) :
     ZeroSum.relabel (σ * τ) v =

@@ -68,7 +68,7 @@ def relabel {n : ℕ} (σ : Equiv.Perm (Fin n)) (s : Config n) : Config n :=
 @[simp] theorem relabel_one {n : ℕ} (s : Config n) : relabel 1 s = s := by
   apply Subtype.ext
   funext i
-  simp [relabel, pts]
+  rfl
 
 theorem relabel_mul {n : ℕ} (σ τ : Equiv.Perm (Fin n)) (s : Config n) :
     relabel (σ * τ) s = relabel σ (relabel τ s) := by
@@ -102,8 +102,10 @@ theorem relabel_eq_self_imp {n : ℕ} (σ : Equiv.Perm (Fin n)) (s : Config n)
     have hi : s.pts (σ.symm i) = s.pts i := by
       rw [← relabel_pts σ s i, h]
     exact s.injective_pts hi
-  have key : σ.symm = 1 := Equiv.ext hpt
-  simpa using congrArg Equiv.symm key
+  apply Equiv.ext
+  intro i
+  show σ i = i
+  rw [← hpt (σ i), Equiv.symm_apply_apply]
 
 /-- **Freeness of relabelling, biconditional form.** Relabelling a configuration by `σ` leaves
 it unchanged iff `σ` is the identity permutation. -/

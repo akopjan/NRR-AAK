@@ -109,12 +109,14 @@ theorem reference_zero_in_full_permutation_orbit
   apply Prod.ext
   · apply Subtype.ext
     apply BarredPermutation.ext
-    · simp [sigma, relabelPoint, referenceZeroRepresentative,
-        FoxNeuwirthTopCell.identity, FoxNeuwirthTopCell.relabel,
-        BarredPermutation.relabel]
-    · simpa [sigma, relabelPoint, referenceZeroRepresentative,
-        FoxNeuwirthTopCell.identity, FoxNeuwirthTopCell.relabel,
-        BarredPermutation.relabel] using z.1.2
+    · change z.1.1.rank = z.1.1.rank.trans (1 : Equiv.Perm (Fin p))
+      apply Equiv.ext
+      intro i
+      rfl
+    · change z.1.1.bars = ∅
+      have htop := z.1.2
+      change z.1.1.bars = ∅ at htop
+      exact htop
   · have hw := (reference_eq_zero_iff_weights_eq_uniform hp z).1 hz
     simpa [relabelPoint, referenceZeroRepresentative,
       uniformWeights_relabel hp sigma] using hw

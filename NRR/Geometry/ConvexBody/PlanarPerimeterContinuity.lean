@@ -51,7 +51,7 @@ pull in `import Mathlib`, so no extra imports are required.
 
 namespace NRR.Geometry
 
-open Real MeasureTheory ConvexBody
+open Real MeasureTheory _root_.NRR.Geometry.ConvexBody
 
 variable {α : Type*} [TopologicalSpace α]
 
@@ -107,6 +107,7 @@ theorem continuous_planarPerimeter_scalePos_family
     (hK : Continuous fun a => planarPerimeter (K a))
     (r : α → ℝ) (hr : ∀ a, 0 < r a) (hrc : Continuous r) :
     Continuous fun a => planarPerimeter ((K a).scalePos (r a) (hr a)) := by
-  simpa only [planarPerimeter_scalePos] using hrc.mul hK
+  simp_rw [planarPerimeter_scalePos]
+  exact hrc.mul hK
 
 end NRR.Geometry

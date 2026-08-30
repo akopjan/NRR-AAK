@@ -422,7 +422,8 @@ noncomputable def sampleVertex (s : C.VertexSlot) : GlobalVertex hp C :=
 
 @[simp] theorem globalPoint_sampleVertex (s : C.VertexSlot) :
     globalPoint hp C (sampleVertex hp C s) = C.slotPoint s := by
-  simp [sampleVertex, globalPoint, coverPoint]
+  change coverPoint hp C ((1 : PrimeSymmetry hp), s) = C.slotPoint s
+  simp [coverPoint]
 
 /-- Geometrically equal local slots determine the same global sampled vertex. -/
 theorem sampleVertex_eq_of_slotPoint_eq

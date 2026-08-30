@@ -4,12 +4,14 @@ import re
 import sys
 
 ROOT = Path(__file__).resolve().parents[1]
-EXCLUDED_PARTS = {".git", ".lake"}
+EXCLUDED_PARTS = {".cache", ".git", ".lake"}
+EXCLUDED_FILES = {ROOT / "Challenge.lean"}
 
 lean_files = sorted(
     path
     for path in ROOT.rglob("*.lean")
-    if not EXCLUDED_PARTS.intersection(path.relative_to(ROOT).parts)
+    if path not in EXCLUDED_FILES
+    and not EXCLUDED_PARTS.intersection(path.relative_to(ROOT).parts)
 )
 
 module_to_file = {

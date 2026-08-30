@@ -1,4 +1,5 @@
 import NRR.PrimePolyhedron.FoxNeuwirth.EquivariantPrismHorizontalEndpointIdentification
+set_option backward.isDefEq.respectTransparency false
 set_option linter.unusedVariables false
 set_option linter.unusedSectionVars false
 set_option linter.unnecessarySeqFocus false
@@ -58,8 +59,11 @@ theorem extendSpatialPermutation_eq_lastFaceEquiv
     have hlast :
         ((extendLastPerm pi).trans (insertLastPerm (Fin.last (n + 1))))
             (Fin.last (n + 1)) = Fin.last (n + 1) := by
-      simpa [lastVertex] using
-        (lastFaceMap_apply_last (Fin.last (n + 1)) pi)
+      convert lastFaceMap_apply_last (Fin.last (n + 1)) pi using 1
+      apply congrArg ((extendLastPerm pi).trans
+        (insertLastPerm (Fin.last (n + 1))))
+      apply Fin.ext
+      rfl
     rw [hlast]
     apply Fin.ext
     simp [extendSpatialPermutation]
@@ -92,7 +96,8 @@ theorem affineCompMap_extendSpatialRefinementWord_lastFace
               (cofacePoint n (Fin.last (n + 1)) x) =
             cofacePoint n (Fin.last (n + 1))
               (affineSubdivContinuousMap n (eta (Fin.last L)) x) := by
-        simpa [iteratedFacetMap, iteratedBoundaryMap,
+        simpa [iteratedFacetMap, iteratedBoundaryMap, affineCompMap_succ,
+          affineSubdivContinuousMap_apply,
           extendSpatialPermutation_eq_lastFaceEquiv] using hstep
       rw [affineCompMap_succ, affineCompMap_succ]
       change
@@ -154,7 +159,8 @@ theorem affineCompMap_liftFaceRefinementWord
             (oneStep_last_face_eq n (fun z : Delta (n + 1) => z) j (eta 0)) x
           rw [affineCompMap_succ, affineCompMap_succ]
           simpa [liftFaceRefinementWord, endpointOmitted, iteratedFacetMap,
-            iteratedBoundaryMap, liftFacePermutation_eq_lastFaceEquiv] using hstep
+            iteratedBoundaryMap, affineCompMap_succ, affineSubdivContinuousMap_apply,
+            liftFacePermutation_eq_lastFaceEquiv] using hstep
       | succ L =>
           have hstep := congrFun
             (oneStep_last_face_eq n (fun z : Delta (n + 1) => z)
@@ -165,7 +171,8 @@ theorem affineCompMap_liftFaceRefinementWord
                   (cofacePoint n (Fin.last (n + 1)) x) =
                 cofacePoint n (Fin.last (n + 1))
                   (affineSubdivContinuousMap n (eta (Fin.last (L + 1))) x) := by
-            simpa [iteratedFacetMap, iteratedBoundaryMap,
+            simpa [iteratedFacetMap, iteratedBoundaryMap, affineCompMap_succ,
+              affineSubdivContinuousMap_apply,
               extendSpatialPermutation_eq_lastFaceEquiv] using hstep
           have hprefix :
               (fun i : Fin (L + 1) =>
@@ -323,7 +330,7 @@ theorem affineCompMap_append
         rw [hi]
         exact Fin.addCases_right (Fin.last L)
       rw [hprefix, hfinal]
-      simpa only [ContinuousMap.comp_apply] using
+      simpa only [ContinuousMap.comp_apply, affineCompMap_succ] using
         congrArg (fun f : C(Delta n, Delta n) =>
           f (affineSubdivContinuousMap n (eta (Fin.last L)) x))
           (ih (fun i => eta i.castSucc))

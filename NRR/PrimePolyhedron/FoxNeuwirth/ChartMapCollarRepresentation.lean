@@ -1,5 +1,6 @@
 import NRR.PrimePolyhedron.FoxNeuwirth.CompatibleRefinedChartHomotopyPrism
 import NRR.PrimePolyhedron.FoxNeuwirth.ExplicitAffineRelativeCollarAssignmentReverse
+set_option backward.isDefEq.respectTransparency false
 set_option linter.unusedVariables false
 set_option linter.unusedSectionVars false
 set_option linter.unnecessarySeqFocus false
@@ -157,13 +158,17 @@ theorem combinedGlobalVector_represents
   | inl q =>
       obtain ⟨r, w, hpnt, hval⟩ := hC (g, (q, i))
       refine ⟨r, w, ?_, ?_⟩
-      · simpa [coverPoint_leftCoverVertex, leftPoint] using hpnt
-      · simpa [combinedGlobalVector_left] using hval
+      · change (coverPoint hp C (g, (q, i))).spatial = _
+        exact hpnt
+      · change VC (Quotient.mk _ (g, (q, i))) = _
+        exact hval
   | inr q =>
       obtain ⟨r, w, hpnt, hval⟩ := hD (g, (q, i))
       refine ⟨r, w, ?_, ?_⟩
-      · simpa [coverPoint_rightCoverVertex, rightPoint] using hpnt
-      · simpa [combinedGlobalVector_right] using hval
+      · change (coverPoint hp D (g, (q, i))).spatial = _
+        exact hpnt
+      · change VD (Quotient.mk _ (g, (q, i))) = _
+        exact hval
 
 /-- The combined assignment of two represented assignments again represents the same chart map. -/
 theorem combinedAssignment_represents
@@ -178,9 +183,11 @@ theorem combinedAssignment_represents
       (vectorValue hp (combinedCells C D)
         (combinedAssignment C D a b
           (seamCompatible C D K (vectorValue hp C a) (vectorValue hp D b) ha hb))) := by
-  simpa [combinedAssignment, vectorValue_assignmentOfEquivariantVector] using
-    combinedGlobalVector_represents C D K
-      (vectorValue hp C a) (vectorValue hp D b) ha hb
+  change Represents (combinedCells C D) K
+    (combinedGlobalVector C D (vectorValue hp C a) (vectorValue hp D b)
+      (seamCompatible C D K (vectorValue hp C a) (vectorValue hp D b) ha hb))
+  exact combinedGlobalVector_represents C D K
+    (vectorValue hp C a) (vectorValue hp D b) ha hb
 
 
 /-- The upper boundary of a composed assignment is represented by the right component's upper
@@ -209,8 +216,10 @@ theorem combinedAssignment_upper_represents_right
         linarith
       obtain ⟨r, w, hpnt, hval⟩ := hb (g, (q, i)) hcomponent
       refine ⟨r, w, ?_, ?_⟩
-      · simpa [coverPoint_rightCoverVertex, rightPoint] using hpnt
-      · simpa [vectorValue_combinedAssignment_right_sample] using hval
+      · change (coverPoint hp D (g, (q, i))).spatial = _
+        exact hpnt
+      · change vectorValue hp D b (Quotient.mk _ (g, (q, i))) = _
+        exact hval
 
 /-- The lower boundary of a composed assignment is represented by the left component's lower
 boundary representation. -/
@@ -233,8 +242,10 @@ theorem combinedAssignment_lower_represents_left
         linarith
       obtain ⟨r, w, hpnt, hval⟩ := ha (g, (q, i)) hcomponent
       refine ⟨r, w, ?_, ?_⟩
-      · simpa [coverPoint_leftCoverVertex, leftPoint] using hpnt
-      · simpa [vectorValue_combinedAssignment_left_sample] using hval
+      · change (coverPoint hp C (g, (q, i))).spatial = _
+        exact hpnt
+      · change vectorValue hp C a (Quotient.mk _ (g, (q, i))) = _
+        exact hval
   | inr q =>
       have hnonneg := (D.vertex q i).time.2.1
       change (1 + (D.vertex q i).time.1) / 2 = 0 at htime
@@ -247,9 +258,13 @@ theorem reverseGlobalVector_represents
     (K : ChartMap hp N) (a : Assignment hp C)
     (ha : Represents C K (vectorValue hp C a)) :
     Represents (reverseCells C) K (reverseGlobalVector C a) := by
-  intro s
-  obtain ⟨q, w, hpnt, hval⟩ := ha (originalCoverVertex C s)
-  exact ⟨q, w, by simpa [coverPoint_reverse] using hpnt, by simpa using hval⟩
+  rintro ⟨g, ⟨r, i⟩⟩
+  obtain ⟨q, w, hpnt, hval⟩ := ha (g, (r, i))
+  refine ⟨q, w, ?_, ?_⟩
+  · change (coverPoint hp C (g, (r, i))).spatial = _
+    exact hpnt
+  · change vectorValue hp C a (Quotient.mk _ (g, (r, i))) = _
+    exact hval
 
 /-- Reversed assignments represent the same chart map. -/
 theorem reverseAssignment_represents
@@ -258,8 +273,8 @@ theorem reverseAssignment_represents
     (ha : Represents C K (vectorValue hp C a)) :
     Represents (reverseCells C) K
       (vectorValue hp (reverseCells C) (reverseAssignment C a)) := by
-  simpa [reverseAssignment, vectorValue_assignmentOfEquivariantVector] using
-    reverseGlobalVector_represents C K a ha
+  change Represents (reverseCells C) K (reverseGlobalVector C a)
+  exact reverseGlobalVector_represents C K a ha
 
 open SphereOddDegree
 open SphereOddDegree.AffineBarycentricSubdivision

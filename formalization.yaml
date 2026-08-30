@@ -97,7 +97,7 @@ alignment:
       status: "proved"
       note: >-
         Formalizes the theorem that every compact convex
-        figure can be partitioned into any positive number of convex
+        figure can be partitioned into any number of convex
         pieces with equal areas and equal perimeters.
 
 acknowledgements: >-

@@ -1,5 +1,4 @@
 import Mathlib
-import HumanVerification.EqualAreaEqualPerimeterPartitionWrapper
 
 noncomputable section
 

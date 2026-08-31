@@ -3,8 +3,8 @@ version: "v0.4"
 project:
   name: "NRR-AAK"
   description: >-
-    Formalization of the result of A. Akopyan, S. Avvakumov, R. Karasev that every
-    convex figure in the plane can be partitioned into n convex pieces having equal areas and equal perimeters, for any n≥1.
+    Formalization of the result by A. Akopyan, S. Avvakumov, and R. Karasev that every
+    convex figure in the plane can be partitioned into n convex pieces having equal area and equal perimeter for any n≥1.
   authors:
     - "Arseniy Akopyan"
   license: "Apache-2.0"
@@ -33,7 +33,7 @@ status:
   scope: >-
     Formalizes the planar convex fair partition theorem: every nondegenerate
     compact convex figure can be partitioned into any positive number of compact
-    convex pieces with equal areas and equal perimeters. The formalization
+    convex pieces with equal area and equal perimeter. The formalization
     focuses on this main theorem rather than the full contents of the source paper.
 
   sorry_count: 0

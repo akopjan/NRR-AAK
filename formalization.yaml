@@ -3,9 +3,8 @@ version: "v0.4"
 project:
   name: "NRR-AAK"
   description: >-
-    Lean 4 formalization of the theorem that every nondegenerate compact
-    convex figure in the Euclidean plane can be partitioned into any positive
-    number of compact convex pieces having equal areas and equal perimeters.
+    Formalization of the result of A. Akopyan, S. Avvakumov, R. Karasev that every
+    convex figure in the plane can be partitioned into n convex pieces having equal areas and equal perimeters, for any n≥1.
   authors:
     - "Arseniy Akopyan"
   license: "Apache-2.0"

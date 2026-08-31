@@ -56,6 +56,11 @@ checkout_exact() {
 
 checkout_exact https://github.com/leanprover/lean4export.git "$lean4export_dir" "$lean4export_commit"
 
+# A previous verification with a different project toolchain may have adjusted
+# this cached checkout.  Restore the toolchain pinned by lean4export itself
+# before checking exact compatibility with the current project.
+git -C "$lean4export_dir" restore --source HEAD -- lean-toolchain
+
 if [ ! -f "$lean4export_dir/lean-toolchain" ]; then
   echo "error: pinned lean4export revision $lean4export_commit has no lean-toolchain file" >&2
   echo "select a lean4export revision that declares its Lean toolchain" >&2
@@ -66,20 +71,9 @@ project_toolchain=$(tr -d '[:space:]' < "$repository_root/lean-toolchain")
 lean4export_toolchain=$(tr -d '[:space:]' < "$lean4export_dir/lean-toolchain")
 
 if [ "$project_toolchain" != "$lean4export_toolchain" ]; then
-  if [ "$project_toolchain" = "leanprover/lean4:v4.33.1" ] &&
-     [ "$lean4export_toolchain" = "leanprover/lean4:v4.33.0" ]; then
-
-    echo "info: rebuilding pinned lean4export with Lean 4.33.1" >&2
-
-    cp "$repository_root/lean-toolchain" \
-       "$lean4export_dir/lean-toolchain"
-
-    rm -rf "$lean4export_dir/.lake/build"
-  else
-    echo "error: project toolchain $project_toolchain does not match" >&2
-    echo "the pinned lean4export toolchain $lean4export_toolchain" >&2
-    exit 1
-  fi
+  echo "error: project toolchain $project_toolchain does not match" >&2
+  echo "the pinned lean4export toolchain $lean4export_toolchain" >&2
+  exit 1
 fi
 
 checkout_exact https://github.com/leanprover/comparator.git "$comparator_dir" "$comparator_commit"
